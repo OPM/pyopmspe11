@@ -1,0 +1,64 @@
+# SPDX-FileCopyrightText: 2023 NORCE
+# SPDX-License-Identifier: MIT
+
+name: Run the pyopmcsp11 executable
+
+on:
+ push:
+   branches:
+     - main
+ pull_request:
+   
+jobs:
+  run-pyff-local:
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.8']
+        os: [ubuntu-latest]
+        
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install Flow Simulator
+      run: |
+        sudo apt-get update
+        sudo apt-get install software-properties-common
+        sudo apt-add-repository ppa:opm/ppa
+        sudo apt-get update
+        sudo apt-get install mpi-default-bin
+        sudo apt-get install libopm-simulators-bin
+        
+    - name: Install test dependecies
+      run: |
+        pip install --upgrade pip setuptools wheel
+        pip install -r dev-requirements.txt
+        
+    - name: Install pyopmcsp11
+      run: |
+        pip install .
+        
+    - name: Check code style and linting 
+      run: |
+        black --check src/ tests/ setup.py
+        pylint src/ tests/ setup.py
+        mypy --ignore-missing-imports src/ tests/ setup.py
+      
+    - name: Run the tests
+      run: |
+        pytest --cov=pyopmcsp11 --cov-report term-missing tests/
+        
+    - name: Build documentation
+      run: |
+        pushd docs
+        make html

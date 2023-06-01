@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuration file &mdash; pyopmcsp11  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #aaaaaa" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration file</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#reservoir-related-parameters">Reservoir-related parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#soil-related-parameters">Soil-related parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#well-related-parameters">Well-related parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">pyopmcsp11 Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmcsp11</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #aaaaaa" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyopmcsp11</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Configuration file</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/configuration_file.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="configuration-file">
+<h1>Configuration file<a class="headerlink" href="#configuration-file" title="Permalink to this heading"></a></h1>
+<p>The first input parameter in the configuration file is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="sd">&quot;&quot;&quot;Set the full path to the flow executable and flags&quot;&quot;&quot;</span>
+<span class="linenos">2</span><span class="n">flow</span> <span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="n">tuning</span><span class="o">=</span><span class="n">true</span> <span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="n">opm</span><span class="o">-</span><span class="n">rst</span><span class="o">-</span><span class="n">file</span><span class="o">=</span><span class="n">true</span>
+</pre></div>
+</div>
+<p>If <strong>flow</strong> is not in your path, then write the full path to the executable
+(e.g., /Users/dmar/Github/opm/build/opm-simulators/bin/flow). We also add in the same
+line as many flags as required (see the OPM Flow documentation <a class="reference external" href="https://opm-project.org/?page_id=955">here</a>).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you have installed flow with MPI support, then you can run the simulations in
+parallel by adding <strong>mpirun -np N flow …</strong> where N is the number of cpus.</p>
+</div>
+<section id="reservoir-related-parameters">
+<h2>Reservoir-related parameters<a class="headerlink" href="#reservoir-related-parameters" title="Permalink to this heading"></a></h2>
+<p>The following input lines in the configuration file are:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 4</span><span class="sd">&quot;&quot;&quot;Set the model parameters&quot;&quot;&quot;</span>
+<span class="linenos"> 5</span><span class="n">csp11c</span>            <span class="c1">#Name of the csp case (csp11a, csp11b, or csp11c)</span>
+<span class="linenos"> 6</span><span class="n">complete</span>          <span class="c1">#Name of the co2 model (immiscible or complete)</span>
+<span class="linenos"> 7</span><span class="n">cartesian</span>         <span class="c1">#Type of grid (cartesian, tensor, or corner-point)</span>
+<span class="linenos"> 8</span><span class="mf">8400.</span> <span class="mf">5000.</span> <span class="mf">1200.</span> <span class="c1">#Length, width, and depth [m]</span>
+<span class="linenos"> 9</span><span class="mi">84</span>                <span class="c1">#If cartesian, number of x cells [-]; otherwise, variable array of x-refinment</span>
+<span class="linenos">10</span><span class="mi">50</span>                <span class="c1">#If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for csp11c)</span>
+<span class="linenos">11</span><span class="mi">12</span>                <span class="c1">#If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (17 entries)</span>
+<span class="linenos">12</span><span class="mf">70.</span> <span class="mf">36.25</span>         <span class="c1">#Temperature bottom and top rig [C]</span>
+<span class="linenos">13</span><span class="mf">19620000.</span>         <span class="c1">#Pressure on the top [Pa]</span>
+<span class="linenos">14</span><span class="mf">1e-9</span> <span class="mf">2e-8</span>         <span class="c1">#CO2 diffusion (in liquid and gas) [m^2/s]</span>
+<span class="linenos">15</span><span class="mf">8.5e-1</span> <span class="mf">2500.</span>      <span class="c1">#Rock specific heat and density (for csp11b/c)</span>
+<span class="linenos">16</span><span class="mf">5e4</span> <span class="mf">1.</span>            <span class="c1">#Pore volume on lateral boundaries and width of buffer cell [m] (for csp11b/c)</span>
+<span class="linenos">17</span><span class="mf">150.</span> <span class="mf">10.</span>          <span class="c1">#Elevation of the parabola and back [m] (for csp11c)</span>
+</pre></div>
+</div>
+<p>The immiscible model allows for faster prototyping while the complete model includes dissolution of the components in the
+gas and liquid phases, in addition to thermal effects. Regarding the grid type, the cartesian mode generates an uniform grid
+with the defined number of elements in lines 9 to 11. The tensor grid allows to define arrays in each direction where the grid
+is first divided with the number of entries in the array, and after it divides each of these elements by the assigned number in
+the array entry. The corner-point mode generates a grid where the x and y direction are defined as in the array mode, but the
+cell faces in the z-direction follows the lines as defined in the <a class="reference external" href="https://github.com/daavid00/pyopmcsp11/blob/main/src/pyopmcsp11/reference_mesh/lines_coordinates.geo">lines_coordinates.geo</a> script,
+resulting in 17 levels. Then, the z-refinment in each of these levels is set. See the configuration files in the <a class="reference external" href="https://github.com/daavid00/pyopmcsp11/blob/main/tests">tests</a> and
+<a class="reference external" href="https://github.com/daavid00/pyopmcsp11/blob/main/examples">examples</a> folder for the setting of these grids.</p>
+<figure class="align-default">
+<img alt="_images/cartesian.png" src="_images/cartesian.png" />
+</figure>
+<figure class="align-default">
+<img alt="_images/tensor.png" src="_images/tensor.png" />
+</figure>
+<figure class="align-default" id="id1">
+<img alt="_images/corner.png" src="_images/corner.png" />
+<figcaption>
+<p><span class="caption-text">Examples of a cartesian (top), tensor (middle), and corner-point (bottom) grids. The cartesian is generated using 170, 100, and 120
+elements, the tensor grid by setting the x-array to 50,100,20; the y-array to 5,10,70,10,5; and the z-array to 5,10,20,20,20,20,20,5; and
+the corner-point grid using the same xy-arrays as in the tensor grid and for the z-refinment 4,4,3,3,5,3,7,5,13,5,7,5,3,9,21,21,2.</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="soil-related-parameters">
+<h2>Soil-related parameters<a class="headerlink" href="#soil-related-parameters" title="Permalink to this heading"></a></h2>
+<p>The following entries define the properties of the different facies:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">19</span><span class="sd">&quot;&quot;&quot;Set the saturation functions&quot;&quot;&quot;</span>
+<span class="linenos">20</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">s_w</span> <span class="o">-</span> <span class="n">swi</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">swi</span><span class="p">)))</span> <span class="o">**</span> <span class="mf">1.5</span>                                                        <span class="c1">#Wetting rel perm saturation function [-]</span>
+<span class="linenos">21</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">s_w</span> <span class="o">-</span> <span class="n">sni</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">sni</span><span class="p">)))</span> <span class="o">**</span> <span class="mf">1.5</span>                                                    <span class="c1">#Non-wetting rel perm saturation function [-]</span>
+<span class="linenos">22</span><span class="n">penmax</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">erf</span><span class="p">(</span><span class="n">pen</span> <span class="o">*</span> <span class="p">((</span><span class="n">s_w</span><span class="o">-</span><span class="n">swi</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span><span class="o">-</span><span class="n">swi</span><span class="p">))</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">1.5</span><span class="p">))</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mf">0.5</span> <span class="o">/</span> <span class="p">(</span><span class="n">penmax</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span> <span class="c1">#Capillary pressure saturation function [Pa]</span>
+<span class="linenos">23</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="n">npoints</span><span class="p">)))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">5.0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>                         <span class="c1">#Points to evaluate the saturation functions (s_w) [-]</span>
+<span class="linenos">24</span>
+<span class="linenos">25</span><span class="sd">&quot;&quot;&quot;Properties sat functions&quot;&quot;&quot;</span>
+<span class="linenos">26</span><span class="sd">&quot;&quot;&quot;swi [-], sni [-], pen [Pa], penmax [Pa], npoints [-]&quot;&quot;&quot;</span>
+<span class="linenos">27</span><span class="n">SWI1</span> <span class="mf">0.32</span> <span class="n">SNI1</span> <span class="mf">0.1</span> <span class="n">PEN1</span> <span class="mf">193531.39</span> <span class="n">PENMAX1</span> <span class="mf">3e7</span> <span class="n">NPOINTS1</span> <span class="mi">200000</span>
+<span class="linenos">28</span><span class="n">SWI2</span> <span class="mf">0.14</span> <span class="n">SNI2</span> <span class="mf">0.1</span> <span class="n">PEN2</span>   <span class="mf">8654.99</span> <span class="n">PENMAX2</span> <span class="mf">3e7</span> <span class="n">NPOINTS2</span> <span class="mi">200000</span>
+<span class="linenos">29</span><span class="n">SWI3</span> <span class="mf">0.12</span> <span class="n">SNI3</span> <span class="mf">0.1</span> <span class="n">PEN3</span>   <span class="mf">6120.00</span> <span class="n">PENMAX3</span> <span class="mf">3e7</span> <span class="n">NPOINTS3</span> <span class="mi">200000</span>
+<span class="linenos">30</span><span class="n">SWI4</span> <span class="mf">0.12</span> <span class="n">SNI4</span> <span class="mf">0.1</span> <span class="n">PEN4</span>   <span class="mf">3870.63</span> <span class="n">PENMAX4</span> <span class="mf">3e7</span> <span class="n">NPOINTS4</span> <span class="mi">200000</span>
+<span class="linenos">31</span><span class="n">SWI5</span> <span class="mf">0.12</span> <span class="n">SNI5</span> <span class="mf">0.1</span> <span class="n">PEN5</span>   <span class="mf">3060.00</span> <span class="n">PENMAX5</span> <span class="mf">3e7</span> <span class="n">NPOINTS5</span> <span class="mi">200000</span>
+<span class="linenos">32</span><span class="n">SWI6</span> <span class="mf">0.10</span> <span class="n">SNI6</span> <span class="mf">0.1</span> <span class="n">PEN6</span>   <span class="mf">2560.18</span> <span class="n">PENMAX6</span> <span class="mf">3e7</span> <span class="n">NPOINTS6</span> <span class="mi">200000</span>
+<span class="linenos">33</span><span class="n">SWI7</span>    <span class="mi">0</span> <span class="n">SNI7</span>   <span class="mi">0</span> <span class="n">PEN7</span>         <span class="mi">0</span> <span class="n">PENMAX7</span> <span class="mf">3e7</span> <span class="n">NPOINTS7</span>      <span class="mi">2</span>
+<span class="linenos">34</span>
+<span class="linenos">35</span><span class="sd">&quot;&quot;&quot;Properties rock&quot;&quot;&quot;</span>
+<span class="linenos">36</span><span class="sd">&quot;&quot;&quot;K [mD], phi [-], thconr [W m-1 K-1]&quot;&quot;&quot;</span>
+<span class="linenos">37</span><span class="n">PERM1</span> <span class="mf">0.10132</span> <span class="n">PORO1</span> <span class="mf">0.10</span> <span class="n">THCONR1</span> <span class="mf">1.90</span>
+<span class="linenos">38</span><span class="n">PERM2</span> <span class="mf">101.324</span> <span class="n">PORO2</span> <span class="mf">0.20</span> <span class="n">THCONR2</span> <span class="mf">1.25</span>
+<span class="linenos">39</span><span class="n">PERM3</span> <span class="mf">202.650</span> <span class="n">PORO3</span> <span class="mf">0.20</span> <span class="n">THCONR3</span> <span class="mf">1.25</span>
+<span class="linenos">40</span><span class="n">PERM4</span> <span class="mf">506.625</span> <span class="n">PORO4</span> <span class="mf">0.20</span> <span class="n">THCONR4</span> <span class="mf">1.25</span>
+<span class="linenos">41</span><span class="n">PERM5</span> <span class="mf">1013.25</span> <span class="n">PORO5</span> <span class="mf">0.25</span> <span class="n">THCONR5</span> <span class="mf">0.92</span>
+<span class="linenos">42</span><span class="n">PERM6</span> <span class="mf">2026.50</span> <span class="n">PORO6</span> <span class="mf">0.35</span> <span class="n">THCONR6</span> <span class="mf">0.26</span>
+<span class="linenos">43</span><span class="n">PERM7</span>       <span class="mi">0</span> <span class="n">PORO7</span>    <span class="mi">0</span> <span class="n">THCONR7</span> <span class="mf">2.00</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="_images/kr.png" src="_images/kr.png" />
+</figure>
+<figure class="align-default" id="id2">
+<img alt="_images/cap.png" src="_images/cap.png" />
+<figcaption>
+<p><span class="caption-text">Visualization in ResInsight of the relative permeability and capillary pressure functions in the facie 1.</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="well-related-parameters">
+<h2>Well-related parameters<a class="headerlink" href="#well-related-parameters" title="Permalink to this heading"></a></h2>
+<p>The last part of the configuration file sets the wells radius, location, and the injection schedule.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">45</span><span class="sd">&quot;&quot;&quot;Wells radius and position&quot;&quot;&quot;</span>
+<span class="linenos">46</span><span class="sd">&quot;&quot;&quot;radius, x, y, and z position [m] (final positions as well for csp11c)&quot;&quot;&quot;</span>
+<span class="linenos">47</span><span class="mf">0.15</span> <span class="mf">2700.</span> <span class="mf">1000.</span> <span class="mf">300.</span> <span class="mf">2700.</span> <span class="mf">4000.</span> <span class="mf">300.</span> <span class="c1">#Well 1</span>
+<span class="linenos">48</span><span class="mf">0.15</span> <span class="mf">5100.</span> <span class="mf">1000.</span> <span class="mf">700.</span> <span class="mf">5100.</span> <span class="mf">4000.</span> <span class="mf">700.</span> <span class="c1">#Well 2</span>
+<span class="linenos">49</span>
+<span class="linenos">50</span><span class="sd">&quot;&quot;&quot;Define the injection values &#39;inj[]&#39;&quot;&quot;&quot;</span>
+<span class="linenos">51</span><span class="sd">&quot;&quot;&quot;injection time [s], time step size to write results [s], maximum solver time step [s], injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ...&quot;&quot;&quot;</span>
+<span class="linenos">52</span><span class="mi">31536000000</span> <span class="mi">31536000000</span> <span class="mi">315360000</span> <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">10</span> <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">10</span>
+<span class="linenos">53</span><span class="mi">788400000</span>   <span class="mi">788400000</span>  <span class="mi">31536000</span> <span class="mi">1</span> <span class="mi">50</span> <span class="mi">10</span> <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">10</span>
+<span class="linenos">54</span><span class="mi">788400000</span>   <span class="mi">788400000</span>  <span class="mi">31536000</span> <span class="mi">1</span> <span class="mi">50</span> <span class="mi">10</span> <span class="mi">1</span> <span class="mi">50</span> <span class="mi">10</span>
+<span class="linenos">55</span><span class="mi">29959200000</span> <span class="mi">29959200000</span> <span class="mi">315360000</span> <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">10</span> <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">10</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Keep the linebreak between the sections (in the current implementation this is used for the reading of the parameters).</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="introduction.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, NORCE Norwegian Research Centre AS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
