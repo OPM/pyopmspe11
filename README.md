@@ -74,6 +74,8 @@ Then using `docker images`, the created or pulled image should be visible. Runni
 
 Then you can inspect what has been produced at \<host-path-to-result\>. \<tag-docker\> being the tag you choose when building the image or if pulled from _docker://_ , _jafranc/opm-u22-spe11csp:latest_. Eventually \<a,b or c\> will set a variable in the docker container generating and running the simulation either for csp SPE 11th case a (2D surface conditions), case b (2D reservoir conditions) or c (3D extruded reservoir conditions). 
 
+Results can be visualized using [ResInsight](https://resinsight.org/) or other viewers.
+
 
 ## Getting started
 See the [_documentation_](https://daavid00.github.io/pyopmcsp11/introduction.html).
