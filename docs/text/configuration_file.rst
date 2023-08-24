@@ -29,7 +29,7 @@ The following input lines in the configuration file are:
     :lineno-start: 4
 
     """Set the model parameters"""
-    csp11c            #Name of the csp case (csp11a, csp11b, or csp11c)
+    csp11c master     #Name of the csp case (csp11a, csp11b, or csp11c) and OPM Flow version (master or release)
     complete          #Name of the co2 model (immiscible or complete)
     cartesian         #Type of grid (cartesian, tensor, or corner-point)
     8400. 5000. 1200. #Length, width, and depth [m]
@@ -43,6 +43,9 @@ The following input lines in the configuration file are:
     5e4 1.            #Pore volume on lateral boundaries and width of buffer cell [m] (for csp11b/c)
     150. 10.          #Elevation of the parabola and back [m] (for csp11c) 
 
+In line 5 you specify if you are using OPM Flow from the master branch or from the latest stable release (OPM-flow 2023.4 release).
+This since there are continuous changues in the OPM master branch (e.g., the format of the boundary condition keyword BC). Then we 
+will keep updating the decks for using Flow from master and also we will keep the framework to produce decks compatible for the latest OPM stable release .
 The immiscible model allows for faster prototyping while the complete model includes dissolution of the components in the
 gas and liquid phases, in addition to thermal effects. Regarding the grid type, the cartesian mode generates an uniform grid
 with the defined number of elements in lines 9 to 11. The tensor grid allows to define arrays in each direction where the grid
