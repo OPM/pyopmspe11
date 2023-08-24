@@ -38,7 +38,7 @@ pip install -r dev-requirements.txt
 ``` 
 
 See the [_CI.yml_](https://github.com/daavid00/pyopmcsp11/blob/main/.github/workflows/CI.yml) script
-for installation of OPM Flow and the pyopmcsp11 package in ubuntu.
+for installation of OPM Flow and the pyopmcsp11 package in Ubuntu.
 
 ## Running pyopmcsp11
 You can run _pyopmcsp11_ as a single command line:

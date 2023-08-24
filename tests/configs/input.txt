@@ -2,13 +2,13 @@
 flow --enable-tuning=true --enable-opm-rst-file=true
 
 """Set the model parameters"""
-csp11a            #Name of the csp case (csp11a, csp11b, or csp11c)
+csp11a release    #Name of the csp case (csp11a, csp11b, or csp11c) and OPM Flow version (master or release)
 immiscible        #Name of the co2 model (immiscible or complete)
 cartesian         #Type of grid (cartesian or corner-point)
 2.8 0.01 1.2      #Length, width, and depth [m]
 50                #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
 1                 #If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for csp11c)
-25                #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (17 entries)
+25                #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
 20. 20.           #Temperature bottom and top rig [C]
 110000.           #Pressure on the top [Pa] 
 1e-9 1.6e-5       #CO2 diffusion (in liquid and gas) [m^2/s]

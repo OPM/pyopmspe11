@@ -42,9 +42,12 @@ def readthefirstpart(lol, dic):
         dic (dict): Global dictionary with new added parameters
     """
     dic["flow"] = str(lol[1])[2:-2]  # Path to the flow executable
-    dic["csp11"] = str(
-        lol[4][0]
-    ).strip()  # Name of the spe case (csp11a, csp11b, or csp11c)
+    dic["csp11"] = (str(lol[4][0]).strip()).split()[
+        0
+    ]  # Name of the spe case (csp11a, csp11b, or csp11c)
+    dic["version"] = (str(lol[4][0]).strip()).split()[
+        1
+    ]  # OPM Flow version (release or master)
     dic["model"] = str(lol[5][0]).strip()  # Model to run (immiscible or complete)
     dic["grid"] = str(lol[6][0]).strip()  # Type of grid (cartesian or corner-point)
     dic["dims"] = [float((lol[7][0].strip()).split()[j]) for j in range(3)]

@@ -161,3 +161,11 @@ cython_debug/
 
 # MacOS
 .DS_Store
+
+# Environment
+vpyopmcsp11
+
+# Examples outputs
+examples/csp11a
+examples/csp11b
+examples/csp11c

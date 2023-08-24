@@ -67,6 +67,12 @@ PERMX PERMZ /
 
 INCLUDE
 '${dic['exe']}/${dic['fol']}/preprocessing/PORO.INC' /
+
+% if dic["version"] == "master":
+BCCON 
+1 1 ${dic['noCells'][0]} 1 1 1 1 Z-/
+/
+% endif
 ----------------------------------------------------------------------------
 PROPS
 ----------------------------------------------------------------------------
@@ -95,10 +101,6 @@ RPTRST
  'BASIC=2' DEN/
 %endif
 
-BC 
-1 ${dic['noCells'][0]} 1 1 1 1 Z- FREE /
-/
-
 % if dic['model'] == 'complete':
 RSVD
 0   0.0
@@ -112,6 +114,12 @@ RTEMPVD
 0   ${dic["temperature"][1]}
 ${dic['dims'][2]} ${dic["temperature"][0]} /
 % endif
+
+% if dic["version"] == "release":
+BC 
+1 ${dic['noCells'][0]} 1 1 1 1 Z- FREE /
+/
+% endif
 ----------------------------------------------------------------------------
 SCHEDULE
 ----------------------------------------------------------------------------
@@ -121,6 +129,12 @@ RPTRST
 % else:
  'BASIC=2' DEN/
 %endif
+
+% if dic["version"] == "master":
+BCPROP
+ 1 FREE /
+/
+% endif
 
 WELSPECS
 % for i in range(len(dic['wellijk'])):

@@ -11,11 +11,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b3ba4146"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -101,7 +101,7 @@ parallel by adding <strong>mpirun -np N flow …</strong> where N is the number 
 <h2>Reservoir-related parameters<a class="headerlink" href="#reservoir-related-parameters" title="Permalink to this heading"></a></h2>
 <p>The following input lines in the configuration file are:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 4</span><span class="sd">&quot;&quot;&quot;Set the model parameters&quot;&quot;&quot;</span>
-<span class="linenos"> 5</span><span class="n">csp11c</span>            <span class="c1">#Name of the csp case (csp11a, csp11b, or csp11c)</span>
+<span class="linenos"> 5</span><span class="n">csp11c</span> <span class="n">master</span>     <span class="c1">#Name of the csp case (csp11a, csp11b, or csp11c) and OPM Flow version (master or release)</span>
 <span class="linenos"> 6</span><span class="n">complete</span>          <span class="c1">#Name of the co2 model (immiscible or complete)</span>
 <span class="linenos"> 7</span><span class="n">cartesian</span>         <span class="c1">#Type of grid (cartesian, tensor, or corner-point)</span>
 <span class="linenos"> 8</span><span class="mf">8400.</span> <span class="mf">5000.</span> <span class="mf">1200.</span> <span class="c1">#Length, width, and depth [m]</span>
@@ -116,7 +116,10 @@ parallel by adding <strong>mpirun -np N flow …</strong> where N is the number 
 <span class="linenos">17</span><span class="mf">150.</span> <span class="mf">10.</span>          <span class="c1">#Elevation of the parabola and back [m] (for csp11c)</span>
 </pre></div>
 </div>
-<p>The immiscible model allows for faster prototyping while the complete model includes dissolution of the components in the
+<p>In line 5 you specify if you are using OPM Flow from the master branch or from the latest stable release (OPM-flow 2023.4 release).
+This since there are continuous changues in the OPM master branch (e.g., the format of the boundary condition keyword BC). Then we
+will keep updating the decks for using Flow from master and also we will keep the framework to produce decks compatible for the latest OPM stable release .
+The immiscible model allows for faster prototyping while the complete model includes dissolution of the components in the
 gas and liquid phases, in addition to thermal effects. Regarding the grid type, the cartesian mode generates an uniform grid
 with the defined number of elements in lines 9 to 11. The tensor grid allows to define arrays in each direction where the grid
 is first divided with the number of entries in the array, and after it divides each of these elements by the assigned number in
