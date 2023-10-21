@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Output folder &mdash; pyopmcsp11  documentation</title>
+  <title>Output folder &mdash; pyopmspe11  documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -13,15 +13,15 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b3ba4146"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="About pyopmcsp11" href="about.html" />
-    <link rel="prev" title="pyopmcsp11.utils.writefile module" href="pyopmcsp11.utils.writefile.html" /> 
+    <link rel="next" title="About pyopmspe11" href="about.html" />
+    <link rel="prev" title="pyopmspe11.utils.writefile module" href="pyopmspe11.utils.writefile.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -48,9 +48,9 @@
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">pyopmcsp11 Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Output folder</a></li>
-<li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmcsp11</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a></li>
 </ul>
 
         </div>
@@ -59,7 +59,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #aaaaaa" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">pyopmcsp11</a>
+          <a href="index.html">pyopmspe11</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -78,35 +78,29 @@
            <div itemprop="articleBody">
              
   <section id="output-folder">
-<h1>Output folder<a class="headerlink" href="#output-folder" title="Permalink to this heading"></a></h1>
+<h1>Output folder<a class="headerlink" href="#output-folder" title="Link to this heading"></a></h1>
 <p>The following screenshot shows the generated files in the selected output folder after
-executing <strong>pyopmcsp11</strong>.</p>
+executing <strong>pyopmspe11</strong>.</p>
 <figure class="align-default" id="id1">
 <img alt="_images/output.png" src="_images/output.png" />
 <figcaption>
-<p><span class="caption-text">Generated files after executing <strong>pyopmcsp11</strong>.</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Generated files after executing <strong>pyopmspe11</strong>.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
-<p>The simulation results are saved in the output folder, and
+<p>The simulation results are saved in the <strong>flow</strong> folder, and
 <a class="reference external" href="https://resinsight.org">ResInsight</a> can be used for the visualization.
-In addition, some figures are plotted in png format in the postprocessing folder.
-Then after running <strong>pyopmcsp11</strong>, one could modify the generated OPM related files and
+In addition, some figures are plotted in png format in the <strong>figures</strong> folder.
+Then after running <strong>pyopmspe11</strong>, one could modify the generated OPM related files and
 run directly the simulations calling the Flow solvers, e.g., to add tracers
 (see the OPM Flow documentation <a class="reference external" href="https://opm-project.org/?page_id=955">here</a>).</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Currently the figures in the postprocessing folder are generated only for cartesian
-grids and the computation of mass is for the immiscible model. The calculator in ResInsight
-can be used to visualize quantities such as the mass of the dissolve CO2 in the water phase.</p>
-</div>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="pyopmcsp11.utils.writefile.html" class="btn btn-neutral float-left" title="pyopmcsp11.utils.writefile module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="about.html" class="btn btn-neutral float-right" title="About pyopmcsp11" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pyopmspe11.utils.writefile.html" class="btn btn-neutral float-left" title="pyopmspe11.utils.writefile module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="about.html" class="btn btn-neutral float-right" title="About pyopmspe11" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

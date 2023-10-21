@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Examples &mdash; pyopmcsp11  documentation</title>
+  <title>Examples &mdash; pyopmspe11  documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -13,14 +13,14 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b3ba4146"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="pyopmcsp11 Python API" href="api.html" />
+    <link rel="next" title="pyopmspe11 Python API" href="api.html" />
     <link rel="prev" title="Configuration file" href="configuration_file.html" /> 
 </head>
 
@@ -48,13 +48,13 @@
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#csp11c">CSP11C</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hello-world">Hello world</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#presentation">Presentation</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">pyopmcsp11 Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
-<li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmcsp11</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a></li>
 </ul>
 
         </div>
@@ -63,7 +63,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #aaaaaa" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">pyopmcsp11</a>
+          <a href="index.html">pyopmspe11</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -82,54 +82,57 @@
            <div itemprop="articleBody">
              
   <section id="examples">
-<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h1>
-<section id="csp11c">
-<h2>CSP11C<a class="headerlink" href="#csp11c" title="Permalink to this heading"></a></h2>
-<p>In this example we consider the configuration file in the
-<a class="reference internal" href="configuration_file.html"><span class="doc">configuration file</span></a> section (also available
-in the <a class="reference external" href="https://github.com/daavid00/pyopmcsp11/blob/main/examples">examples</a> folder).</p>
-<p>If the configuration file is saved as ‘csp11c.txt’ and the generated files are to be
-saved in a folder called ‘csp11c’, then this is achieved by the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmcsp11<span class="w"> </span>-i<span class="w"> </span>csp11c.txt<span class="w"> </span>-o<span class="w"> </span>csp11c
+<h1>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h1>
+<section id="hello-world">
+<h2>Hello world<a class="headerlink" href="#hello-world" title="Link to this heading"></a></h2>
+<p>Let us now consider the spe11b.txt file in the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples">examples</a> folder.
+To generate the data as required for the benchmark, as well as some figures to visualize the results, this can be achived by executing:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.txt<span class="w"> </span>-o<span class="w"> </span>spe11b<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">200</span><span class="w"> </span>-r<span class="w"> </span><span class="m">50</span>,1,20
 </pre></div>
 </div>
-<p>The following are screenshots of the simulation results:</p>
+<p>The following is the figure generated related to the temperature in the domain over time:</p>
 <figure class="align-default">
-<img alt="_images/facies.png" src="_images/facies.png" />
+<img alt="_images/spe11b_temp_2Dmaps.png" src="_images/spe11b_temp_2Dmaps.png" />
+</figure>
+<p>Let us now tight the mass balance tolerance by adding the flag --tolerance-mb=1e-7 in line 2 of the configuration file (1e-6 is the default one).
+Then we run the simulations and we save the results in a different output folder:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.txt<span class="w"> </span>-o<span class="w"> </span>stricter_mb<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">200</span><span class="w"> </span>-r<span class="w"> </span><span class="m">50</span>,1,20
+</pre></div>
+</div>
+<p>Then, to visualize the comparison between both runs, this can be achived by executing:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-c<span class="w"> </span>spe11b
+</pre></div>
+</div>
+<p>The following are the comparison figures generated in the compare folder:</p>
+<figure class="align-default">
+<img alt="_images/spe11b_sparse_data.png" src="_images/spe11b_sparse_data.png" />
 </figure>
 <figure class="align-default">
-<img alt="_images/saturation.png" src="_images/saturation.png" />
+<img alt="_images/spe11b_performance.png" src="_images/spe11b_performance.png" />
 </figure>
-<figure class="align-default" id="id3">
-<img alt="_images/dissolved.png" src="_images/dissolved.png" />
-<figcaption>
-<p><span class="caption-text">Simulation results of the (top) facies, (middle) saturation, and (bottom) dissolved CO2.</span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<p>This example uses a very coarser grid to run fast (it takes ca. 5 minutes). See the following
-section for finer grids.</p>
+<p>This example uses a very coarser grid to run fast. See the following section for finer grids.</p>
 </section>
 <section id="presentation">
-<h2>Presentation<a class="headerlink" href="#presentation" title="Permalink to this heading"></a></h2>
-<p>Using the same grid size for the reporting of the results in the CSP11 description, the following computational times
+<h2>Presentation<a class="headerlink" href="#presentation" title="Link to this heading"></a></h2>
+<p>Using the same grid size for the reporting of the results in the SPE11 description, the following computational times
 were reported for the 2023 SPE Reservoir Simulation Conference (see the presentation <a class="reference external" href="https://github.com/Simulation-Benchmarks/11thSPE-CSP/blob/main/description/SPE11%20CSP.pdf">here</a>,
 where you can also see some of the preliminary simulation results using OPM Flow):</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">Case      Dimensions [m]      Max. grid size [m]   No. grid cells  Total no. cells  No. active cells   Solver time step [d]¨  Total simulation time [s]</span>
-<span class="l l-Scalar l-Scalar-Plain">csp11a^   [2.8,  0.01,  1.2]  [0.01, 0.01, 0.01]    [280, 1, 120]            33600             31034                   1e-5                    2118.30</span>
-<span class="l l-Scalar l-Scalar-Plain">csp11b^*  [8400,    1, 1200]  [10,      1,   10]    [842, 1, 120]           101040             93318                     50                    1420.15</span>
-<span class="l l-Scalar l-Scalar-Plain">csp11c^*  [8400, 5000, 1350]  [50,     50,   10]  [170, 100, 120]          2040000           1885200                     50                   25450.68</span>
+<span class="l l-Scalar l-Scalar-Plain">spe11a^   [2.8,  0.01,  1.2]  [0.01, 0.01, 0.01]    [280, 1, 120]            33600             31034                   1e-5                    2118.30</span>
+<span class="l l-Scalar l-Scalar-Plain">spe11b^*  [8400,    1, 1200]  [10,      1,   10]    [842, 1, 120]           101040             93318                     50                    1420.15</span>
+<span class="l l-Scalar l-Scalar-Plain">spe11c^*  [8400, 5000, 1350]  [50,     50,   10]  [170, 100, 120]          2040000           1885200                     50                   25450.68</span>
 
 
 <span class="l l-Scalar l-Scalar-Plain">^ All three cases were run with 70 MPI processes and 2 threads per MPI process. i.e., 140 cpu cores.</span>
-<span class="l l-Scalar l-Scalar-Plain">* csp11b and csp11c have an extra layer [1 m] of grid cells on the left and right boundaries to include the buffer volume</span>
+<span class="l l-Scalar l-Scalar-Plain">* spe11b and spe11c have an extra layer [1 m] of grid cells on the left and right boundaries to include the buffer volume</span>
 <span class="l l-Scalar l-Scalar-Plain">¨ The solver time step is the maximum value allowed by the simulator</span>
 </pre></div>
 </div>
-<p>Then, the configuration files in the <a class="reference external" href="https://github.com/daavid00/pyopmcsp11/blob/main/examples">examples</a> folder can be modified to use the same grid sizes.</p>
+<p>Then, the configuration files in the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples">examples</a> folder can be modified to use the same grid sizes.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>By executing flow –help you get an overview of the available flags in the flow simulator to improve/fix convergence issues
-(i.e., by setting the flag –solver-max-time-step-in-days to the reported values in the above table).</p>
+(i.e., by setting the flag –linear-solver=cprw to changue the linear solver).</p>
 </div>
 </section>
 </section>
@@ -139,7 +142,7 @@ where you can also see some of the preliminary simulation results using OPM Flow
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="configuration_file.html" class="btn btn-neutral float-left" title="Configuration file" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="api.html" class="btn btn-neutral float-right" title="pyopmcsp11 Python API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="api.html" class="btn btn-neutral float-right" title="pyopmspe11 Python API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

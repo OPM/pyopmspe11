@@ -1,6 +1,6 @@
-.. pyopmcsp11 documentation master file
+.. pyopmspe11 documentation master file
 
-Welcome to pyopmcsp11's documentation!
+Welcome to pyopmspe11's documentation!
 ======================================
 
 .. toctree::

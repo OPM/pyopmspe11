@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyopmspe11.utils.mapproperties module &mdash; pyopmspe11  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pyopmspe11.utils.runs module" href="pyopmspe11.utils.runs.html" />
+    <link rel="prev" title="pyopmspe11.utils.inputvalues module" href="pyopmspe11.utils.inputvalues.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #aaaaaa" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #aaaaaa" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyopmspe11</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api.html">pyopmspe11 Python API</a></li>
+          <li class="breadcrumb-item"><a href="pyopmspe11.html">pyopmspe11 package</a></li>
+          <li class="breadcrumb-item"><a href="pyopmspe11.utils.html">pyopmspe11.utils package</a></li>
+      <li class="breadcrumb-item active">pyopmspe11.utils.mapproperties module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/pyopmspe11.utils.mapproperties.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pyopmspe11.utils.mapproperties">
+<span id="pyopmspe11-utils-mapproperties-module"></span><h1>pyopmspe11.utils.mapproperties module<a class="headerlink" href="#module-pyopmspe11.utils.mapproperties" title="Link to this heading"></a></h1>
+<p>Utiliy function for the grid and finding the wells i,j, and k ids.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.boxes">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">boxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.boxes" title="Link to this definition"></a></dt>
+<dd><p>Find the box positions</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.corner">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">corner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.corner" title="Link to this definition"></a></dt>
+<dd><p>Function to create a spe11 corner-point grid</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters</p>
+</dd>
+<dt>Returns:</dt><dd><p>dic (dict): Global dictionary with new added parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.corner_point_handling_spe11a">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">corner_point_handling_spe11a</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.corner_point_handling_spe11a" title="Link to this definition"></a></dt>
+<dd><p>Function to locate sand and well positions in a corner-point grid</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters</p>
+</dd>
+<dt>Returns:</dt><dd><p>dic (dict): Global dictionary with new added parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.corner_point_handling_spe11bc">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">corner_point_handling_spe11bc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.corner_point_handling_spe11bc" title="Link to this definition"></a></dt>
+<dd><p>Function to locate sand and well positions in a corner-point grid</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters</p>
+</dd>
+<dt>Returns:</dt><dd><p>dic (dict): Global dictionary with new added parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.get_lines">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">get_lines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.get_lines" title="Link to this definition"></a></dt>
+<dd><p>Function to read the points in the z-surface lines</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters</p>
+</dd>
+<dt>Returns:</dt><dd><p>lines: List with the coordinates of the lines</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.getfacies">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">getfacies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.getfacies" title="Link to this definition"></a></dt>
+<dd><p>Function to read the reference gmsh file</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters</p>
+</dd>
+<dt>Returns:</dt><dd><p>dic (dict): Global dictionary with new added parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.grid">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.grid" title="Link to this definition"></a></dt>
+<dd><p>Function to handle grid types</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters</p>
+</dd>
+<dt>Returns:</dt><dd><p>dic (dict): Global dictionary with new added parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.map_z">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">map_z</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.map_z" title="Link to this definition"></a></dt>
+<dd><p>Function to return the z position of the parabola</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters
+j : cell id along the y axis</p>
+</dd>
+<dt>Returns:</dt><dd><p>z: Position</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.positions">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.positions" title="Link to this definition"></a></dt>
+<dd><p>Function to locate sand and well positions</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters</p>
+</dd>
+<dt>Returns:</dt><dd><p>dic (dict): Global dictionary with new added parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.refinement_z">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">refinement_z</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xci</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zci</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">znr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.refinement_z" title="Link to this definition"></a></dt>
+<dd><p>Refinment of the grid in the z-dir</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>xci (list): List of floats with the x-coordinates of the cell corners
+zci (list): List of floats with the z-coordinates of the cell corners
+ncx (int): number of cells in the x-dir
+ncz (int): number of cells in the z-dir
+znr (list): List of integers with the number of z-refinments per cell</p>
+</dd>
+<dt>Returns:</dt><dd><p>xcr (list): List of floats with the new x-coordinates of the cell corners
+zcr (list): List of floats with the new z-coordinates of the cell corners
+ncx (int): new number of cells in the x-dir
+ncz (int): new number of cells in the z-dir</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.structured_handling_spe11a">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">structured_handling_spe11a</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.structured_handling_spe11a" title="Link to this definition"></a></dt>
+<dd><p>Function to locate sand and well positions in the tensor/cartesian grid</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters</p>
+</dd>
+<dt>Returns:</dt><dd><p>dic (dict): Global dictionary with new added parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.structured_handling_spe11bc">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">structured_handling_spe11bc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.structured_handling_spe11bc" title="Link to this definition"></a></dt>
+<dd><p>Function to locate sand and well positions in the tensor/cartesian grid</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters</p>
+</dd>
+<dt>Returns:</dt><dd><p>dic (dict): Global dictionary with new added parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.wells">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">wells</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.wells" title="Link to this definition"></a></dt>
+<dd><p>Function to find the wells index</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters</p>
+</dd>
+<dt>Returns:</dt><dd><p>dic (dict): Global dictionary with new added parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyopmspe11.utils.inputvalues.html" class="btn btn-neutral float-left" title="pyopmspe11.utils.inputvalues module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyopmspe11.utils.runs.html" class="btn btn-neutral float-right" title="pyopmspe11.utils.runs module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, NORCE Norwegian Research Centre AS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

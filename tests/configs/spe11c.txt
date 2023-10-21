@@ -1,0 +1,54 @@
+"""Set the full path to the flow executable and flags"""
+flow --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations  --enable-well-operability-check=false --min-time-step-before-shutting-problematic-wells-in-days=1e-99
+
+"""Set the model parameters"""
+spe11c release    #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
+complete          #Name of the co2 model (immiscible or complete)
+tensor            #Type of grid (cartesian, tensor, or corner-point)
+8400. 5000. 1200. #Length, width, and depth [m]
+4,50,15,40,40,40,15,10,4  #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
+1,2,3,2,1             #If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for spe11c)
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1  #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
+70. 36.25         #Temperature bottom and top rig [C]            
+19620000.         #Pressure on the top [Pa]
+1e-9 2e-8         #CO2 diffusion (in liquid and gas) [m^2/s]
+8.5e-1 2500.      #Rock specific heat and density (for spe11b/c)
+5e4 1.            #Pore volume on lateral boundaries and width of buffer cell [m] (for spe11b/c)
+150. 10.          #Elevation of the parabola and back [m] (for spe11c) 
+
+"""Set the saturation functions"""
+(max(0, (s_w - swi) / (1 - swi))) ** 1.5                                                        #Wetting rel perm saturation function [-]
+(max(0, (1 - s_w - sni) / (1 - sni))) ** 1.5                                                    #Non-wetting rel perm saturation function [-]
+penmax * math.erf(pen * ((s_w-swi) / (1.-swi)) ** (-(1.0 / 1.5)) * math.pi**0.5 / (penmax * 2)) #Capillary pressure saturation function [Pa]
+(np.exp(np.flip(np.linspace(0, 5.0, npoints))) - 1) / (np.exp(5.0) - 1)                         #Points to evaluate the saturation functions (s_w) [-]
+
+"""Properties sat functions"""
+"""swi [-], sni [-], pen [Pa], penmax [Pa], npoints [-]"""
+SWI1 0.32 SNI1 0.1 PEN1 193531.39 PENMAX1 3e7 NPOINTS1 200000 
+SWI2 0.14 SNI2 0.1 PEN2   8654.99 PENMAX2 3e7 NPOINTS2 200000 
+SWI3 0.12 SNI3 0.1 PEN3   6120.00 PENMAX3 3e7 NPOINTS3 200000 
+SWI4 0.12 SNI4 0.1 PEN4   3870.63 PENMAX4 3e7 NPOINTS4 200000 
+SWI5 0.12 SNI5 0.1 PEN5   3060.00 PENMAX5 3e7 NPOINTS5 200000 
+SWI6 0.10 SNI6 0.1 PEN6   2560.18 PENMAX6 3e7 NPOINTS6 200000 
+SWI7    0 SNI7   0 PEN7         0 PENMAX7 3e7 NPOINTS7      2
+
+"""Properties rock"""
+"""K [mD], phi [-], thconr [W m-1 K-1]"""
+PERM1 0.10132 PORO1 0.10 THCONR1 1.90
+PERM2 101.324 PORO2 0.20 THCONR2 1.25
+PERM3 202.650 PORO3 0.20 THCONR3 1.25
+PERM4 506.625 PORO4 0.20 THCONR4 1.25
+PERM5 1013.25 PORO5 0.25 THCONR5 0.92
+PERM6 2026.50 PORO6 0.35 THCONR6 0.26
+PERM7       0 PORO7    0 THCONR7 2.00
+
+"""Wells radius and position"""
+"""radius, x, y, and z position [m] (final positions as well for spe11c)"""
+0.15 2700. 1000. 300. 2700. 4000. 300. #Well 1 
+0.15 5100. 1000. 700. 5100. 4000. 700. #Well 2 
+
+"""Define the injection values ([hours] for spe11a; [years] for spe11b/c)""" 
+"""injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
+15  5 1 0 0 10 0 0 10
+ 5  5 1 0 0 10 0 0 10
+25  5 1 1 50. 10 1 50. 10

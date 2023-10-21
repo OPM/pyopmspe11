@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
 
-name: Run the pyopmcsp11 executable
+name: Run the pyopmspe11 executable
 
 on:
  push:
@@ -44,7 +44,7 @@ jobs:
         pip install --upgrade pip setuptools wheel
         pip install -r dev-requirements.txt
         
-    - name: Install pyopmcsp11
+    - name: Install pyopmspe11
       run: |
         pip install .
         
@@ -56,7 +56,7 @@ jobs:
       
     - name: Run the tests
       run: |
-        pytest --cov=pyopmcsp11 --cov-report term-missing tests/
+        pytest --cov=pyopmspe11 --cov-report term-missing tests/
         
     - name: Build documentation
       run: |

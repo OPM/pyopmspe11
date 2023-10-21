@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'pyopmcsp11'
+project = 'pyopmspe11'
 copyright = '2023, NORCE Norwegian Research Centre AS'
 
 # -- General configuration ---------------------------------------------------
