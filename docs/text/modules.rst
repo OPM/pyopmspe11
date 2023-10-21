@@ -1,7 +1,7 @@
-pyopmcsp11
+pyopmspe11
 ==========
 
 .. toctree::
    :maxdepth: 4
 
-   pyopmcsp11
+   pyopmspe11

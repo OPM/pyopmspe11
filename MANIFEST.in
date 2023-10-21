@@ -1,8 +1,8 @@
 include README.md
 include LICENSE
-include src/pyopmcsp11/core/*
-include src/pyopmcsp11/templates/co2/*
-include src/pyopmcsp11/templates/common/*
-include src/pyopmcsp11/templates/reference_mesh/*
-include src/pyopmcsp11/utils/*
-include src/pyopmcsp11/visualization/*
+include src/pyopmspe11/core/*
+include src/pyopmspe11/templates/co2/*
+include src/pyopmspe11/templates/common/*
+include src/pyopmspe11/templates/reference_mesh/*
+include src/pyopmspe11/utils/*
+include src/pyopmspe11/visualization/*

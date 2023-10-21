@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Configuration file &mdash; pyopmcsp11  documentation</title>
+  <title>Configuration file &mdash; pyopmspe11  documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -13,9 +13,9 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b3ba4146"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -53,9 +53,9 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">pyopmcsp11 Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
-<li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmcsp11</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a></li>
 </ul>
 
         </div>
@@ -64,7 +64,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #aaaaaa" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">pyopmcsp11</a>
+          <a href="index.html">pyopmspe11</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -83,14 +83,14 @@
            <div itemprop="articleBody">
              
   <section id="configuration-file">
-<h1>Configuration file<a class="headerlink" href="#configuration-file" title="Permalink to this heading"></a></h1>
+<h1>Configuration file<a class="headerlink" href="#configuration-file" title="Link to this heading"></a></h1>
 <p>The first input parameter in the configuration file is:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="sd">&quot;&quot;&quot;Set the full path to the flow executable and flags&quot;&quot;&quot;</span>
-<span class="linenos">2</span><span class="n">flow</span> <span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="n">tuning</span><span class="o">=</span><span class="n">true</span> <span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="n">opm</span><span class="o">-</span><span class="n">rst</span><span class="o">-</span><span class="n">file</span><span class="o">=</span><span class="n">true</span>
+<span class="linenos">2</span><span class="n">flow</span> <span class="o">--</span><span class="n">linear</span><span class="o">-</span><span class="n">solver</span><span class="o">=</span><span class="n">cprw</span> <span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="n">tuning</span><span class="o">=</span><span class="n">true</span> <span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="n">opm</span><span class="o">-</span><span class="n">rst</span><span class="o">-</span><span class="n">file</span><span class="o">=</span><span class="n">true</span> <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">extra</span><span class="o">-</span><span class="n">convergence</span><span class="o">-</span><span class="n">info</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span><span class="n">iterations</span>  <span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="n">well</span><span class="o">-</span><span class="n">operability</span><span class="o">-</span><span class="n">check</span><span class="o">=</span><span class="n">false</span> <span class="o">--</span><span class="nb">min</span><span class="o">-</span><span class="n">time</span><span class="o">-</span><span class="n">step</span><span class="o">-</span><span class="n">before</span><span class="o">-</span><span class="n">shutting</span><span class="o">-</span><span class="n">problematic</span><span class="o">-</span><span class="n">wells</span><span class="o">-</span><span class="ow">in</span><span class="o">-</span><span class="n">days</span><span class="o">=</span><span class="mf">1e-99</span>
 </pre></div>
 </div>
 <p>If <strong>flow</strong> is not in your path, then write the full path to the executable
-(e.g., /Users/dmar/Github/opm/build/opm-simulators/bin/flow). We also add in the same
+(e.g., /Users/dmar/opm/build/opm-simulators/bin/flow). We also add in the same
 line as many flags as required (see the OPM Flow documentation <a class="reference external" href="https://opm-project.org/?page_id=955">here</a>).</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -98,22 +98,22 @@ line as many flags as required (see the OPM Flow documentation <a class="referen
 parallel by adding <strong>mpirun -np N flow …</strong> where N is the number of cpus.</p>
 </div>
 <section id="reservoir-related-parameters">
-<h2>Reservoir-related parameters<a class="headerlink" href="#reservoir-related-parameters" title="Permalink to this heading"></a></h2>
+<h2>Reservoir-related parameters<a class="headerlink" href="#reservoir-related-parameters" title="Link to this heading"></a></h2>
 <p>The following input lines in the configuration file are:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 4</span><span class="sd">&quot;&quot;&quot;Set the model parameters&quot;&quot;&quot;</span>
-<span class="linenos"> 5</span><span class="n">csp11c</span> <span class="n">master</span>     <span class="c1">#Name of the csp case (csp11a, csp11b, or csp11c) and OPM Flow version (master or release)</span>
+<span class="linenos"> 5</span><span class="n">spe11c</span> <span class="n">master</span>     <span class="c1">#Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)</span>
 <span class="linenos"> 6</span><span class="n">complete</span>          <span class="c1">#Name of the co2 model (immiscible or complete)</span>
 <span class="linenos"> 7</span><span class="n">cartesian</span>         <span class="c1">#Type of grid (cartesian, tensor, or corner-point)</span>
 <span class="linenos"> 8</span><span class="mf">8400.</span> <span class="mf">5000.</span> <span class="mf">1200.</span> <span class="c1">#Length, width, and depth [m]</span>
 <span class="linenos"> 9</span><span class="mi">84</span>                <span class="c1">#If cartesian, number of x cells [-]; otherwise, variable array of x-refinment</span>
-<span class="linenos">10</span><span class="mi">50</span>                <span class="c1">#If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for csp11c)</span>
+<span class="linenos">10</span><span class="mi">50</span>                <span class="c1">#If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for spe11c)</span>
 <span class="linenos">11</span><span class="mi">12</span>                <span class="c1">#If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (17 entries)</span>
 <span class="linenos">12</span><span class="mf">70.</span> <span class="mf">36.25</span>         <span class="c1">#Temperature bottom and top rig [C]</span>
 <span class="linenos">13</span><span class="mf">19620000.</span>         <span class="c1">#Pressure on the top [Pa]</span>
 <span class="linenos">14</span><span class="mf">1e-9</span> <span class="mf">2e-8</span>         <span class="c1">#CO2 diffusion (in liquid and gas) [m^2/s]</span>
-<span class="linenos">15</span><span class="mf">8.5e-1</span> <span class="mf">2500.</span>      <span class="c1">#Rock specific heat and density (for csp11b/c)</span>
-<span class="linenos">16</span><span class="mf">5e4</span> <span class="mf">1.</span>            <span class="c1">#Pore volume on lateral boundaries and width of buffer cell [m] (for csp11b/c)</span>
-<span class="linenos">17</span><span class="mf">150.</span> <span class="mf">10.</span>          <span class="c1">#Elevation of the parabola and back [m] (for csp11c)</span>
+<span class="linenos">15</span><span class="mf">8.5e-1</span> <span class="mf">2500.</span>      <span class="c1">#Rock specific heat and density (for spe11b/c)</span>
+<span class="linenos">16</span><span class="mf">5e4</span> <span class="mf">1.</span>            <span class="c1">#Pore volume on lateral boundaries and width of buffer cell [m] (for spe11b/c)</span>
+<span class="linenos">17</span><span class="mf">150.</span> <span class="mf">10.</span>          <span class="c1">#Elevation of the parabola and back [m] (for spe11c)</span>
 </pre></div>
 </div>
 <p>In line 5 you specify if you are using OPM Flow from the master branch or from the latest stable release (OPM-flow 2023.4 release).
@@ -124,9 +124,9 @@ gas and liquid phases, in addition to thermal effects. Regarding the grid type, 
 with the defined number of elements in lines 9 to 11. The tensor grid allows to define arrays in each direction where the grid
 is first divided with the number of entries in the array, and after it divides each of these elements by the assigned number in
 the array entry. The corner-point mode generates a grid where the x and y direction are defined as in the array mode, but the
-cell faces in the z-direction follows the lines as defined in the <a class="reference external" href="https://github.com/daavid00/pyopmcsp11/blob/main/src/pyopmcsp11/reference_mesh/lines_coordinates.geo">lines_coordinates.geo</a> script,
-resulting in 17 levels. Then, the z-refinment in each of these levels is set. See the configuration files in the <a class="reference external" href="https://github.com/daavid00/pyopmcsp11/blob/main/tests">tests</a> and
-<a class="reference external" href="https://github.com/daavid00/pyopmcsp11/blob/main/examples">examples</a> folder for the setting of these grids.</p>
+cell faces in the z-direction follows the lines as defined in the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/src/pyopmspe11/reference_mesh/lines_coordinates.geo">lines_coordinates.geo</a> script,
+resulting in 17 levels. Then, the z-refinment in each of these levels is set. See the configuration files in the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/tests">tests</a> and
+<a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples">examples</a> folder for the setting of these grids.</p>
 <figure class="align-default">
 <img alt="_images/cartesian.png" src="_images/cartesian.png" />
 </figure>
@@ -138,12 +138,12 @@ resulting in 17 levels. Then, the z-refinment in each of these levels is set. Se
 <figcaption>
 <p><span class="caption-text">Examples of a cartesian (top), tensor (middle), and corner-point (bottom) grids. The cartesian is generated using 170, 100, and 120
 elements, the tensor grid by setting the x-array to 50,100,20; the y-array to 5,10,70,10,5; and the z-array to 5,10,20,20,20,20,20,5; and
-the corner-point grid using the same xy-arrays as in the tensor grid and for the z-refinment 4,4,3,3,5,3,7,5,13,5,7,5,3,9,21,21,2.</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+the corner-point grid using the same xy-arrays as in the tensor grid and for the z-refinment 4,4,3,3,5,3,7,5,13,5,7,5,3,9,21,21,2.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 </section>
 <section id="soil-related-parameters">
-<h2>Soil-related parameters<a class="headerlink" href="#soil-related-parameters" title="Permalink to this heading"></a></h2>
+<h2>Soil-related parameters<a class="headerlink" href="#soil-related-parameters" title="Link to this heading"></a></h2>
 <p>The following entries define the properties of the different facies:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">19</span><span class="sd">&quot;&quot;&quot;Set the saturation functions&quot;&quot;&quot;</span>
 <span class="linenos">20</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">s_w</span> <span class="o">-</span> <span class="n">swi</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">swi</span><span class="p">)))</span> <span class="o">**</span> <span class="mf">1.5</span>                                                        <span class="c1">#Wetting rel perm saturation function [-]</span>
@@ -178,24 +178,25 @@ the corner-point grid using the same xy-arrays as in the tensor grid and for the
 <figure class="align-default" id="id2">
 <img alt="_images/cap.png" src="_images/cap.png" />
 <figcaption>
-<p><span class="caption-text">Visualization in ResInsight of the relative permeability and capillary pressure functions in the facie 1.</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Visualization in ResInsight of the relative permeability and capillary pressure functions in the facie 1.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 </section>
 <section id="well-related-parameters">
-<h2>Well-related parameters<a class="headerlink" href="#well-related-parameters" title="Permalink to this heading"></a></h2>
+<h2>Well-related parameters<a class="headerlink" href="#well-related-parameters" title="Link to this heading"></a></h2>
 <p>The last part of the configuration file sets the wells radius, location, and the injection schedule.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">45</span><span class="sd">&quot;&quot;&quot;Wells radius and position&quot;&quot;&quot;</span>
-<span class="linenos">46</span><span class="sd">&quot;&quot;&quot;radius, x, y, and z position [m] (final positions as well for csp11c)&quot;&quot;&quot;</span>
+<span class="linenos">46</span><span class="sd">&quot;&quot;&quot;radius, x, y, and z position [m] (final positions as well for spe11c)&quot;&quot;&quot;</span>
 <span class="linenos">47</span><span class="mf">0.15</span> <span class="mf">2700.</span> <span class="mf">1000.</span> <span class="mf">300.</span> <span class="mf">2700.</span> <span class="mf">4000.</span> <span class="mf">300.</span> <span class="c1">#Well 1</span>
 <span class="linenos">48</span><span class="mf">0.15</span> <span class="mf">5100.</span> <span class="mf">1000.</span> <span class="mf">700.</span> <span class="mf">5100.</span> <span class="mf">4000.</span> <span class="mf">700.</span> <span class="c1">#Well 2</span>
 <span class="linenos">49</span>
-<span class="linenos">50</span><span class="sd">&quot;&quot;&quot;Define the injection values &#39;inj[]&#39;&quot;&quot;&quot;</span>
-<span class="linenos">51</span><span class="sd">&quot;&quot;&quot;injection time [s], time step size to write results [s], maximum solver time step [s], injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ...&quot;&quot;&quot;</span>
-<span class="linenos">52</span><span class="mi">31536000000</span> <span class="mi">31536000000</span> <span class="mi">315360000</span> <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">10</span> <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">10</span>
-<span class="linenos">53</span><span class="mi">788400000</span>   <span class="mi">788400000</span>  <span class="mi">31536000</span> <span class="mi">1</span> <span class="mi">50</span> <span class="mi">10</span> <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">10</span>
-<span class="linenos">54</span><span class="mi">788400000</span>   <span class="mi">788400000</span>  <span class="mi">31536000</span> <span class="mi">1</span> <span class="mi">50</span> <span class="mi">10</span> <span class="mi">1</span> <span class="mi">50</span> <span class="mi">10</span>
-<span class="linenos">55</span><span class="mi">29959200000</span> <span class="mi">29959200000</span> <span class="mi">315360000</span> <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">10</span> <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">10</span>
+<span class="linenos">50</span><span class="sd">&quot;&quot;&quot;Define the injection values ([hours] for spe11a; [years] for spe11b/c)&quot;&quot;&quot;</span>
+<span class="linenos">51</span><span class="sd">&quot;&quot;&quot;injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ...&quot;&quot;&quot;</span>
+<span class="linenos">52</span><span class="mi">995</span> <span class="mi">995</span> <span class="mi">1</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span>
+<span class="linenos">53</span>  <span class="mi">5</span>   <span class="mi">5</span> <span class="mi">1</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span>
+<span class="linenos">54</span> <span class="mi">25</span>   <span class="mi">5</span> <span class="mi">1</span> <span class="mi">1</span>    <span class="mi">50</span> <span class="mi">10</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span>
+<span class="linenos">55</span> <span class="mi">25</span>   <span class="mi">5</span> <span class="mi">1</span> <span class="mi">1</span>    <span class="mi">50</span> <span class="mi">10</span> <span class="mi">1</span>    <span class="mi">50</span> <span class="mi">10</span>
+<span class="linenos">56</span><span class="mi">950</span>   <span class="mi">5</span> <span class="mi">1</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span>
 </pre></div>
 </div>
 <div class="admonition warning">

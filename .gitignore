@@ -163,9 +163,14 @@ cython_debug/
 .DS_Store
 
 # Environment
-vpyopmcsp11
+vpyopmspe11
 
 # Examples outputs
-examples/csp11a
-examples/csp11b
-examples/csp11c
+tests/configs/test_compare
+tests/configs/output
+tests/configs/spe11a
+tests/configs/spe11c
+examples/spe11a
+examples/spe11b
+examples/spe11c
+developing

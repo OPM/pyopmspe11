@@ -8,10 +8,10 @@ The first input parameter in the configuration file is:
     :linenos:
 
     """Set the full path to the flow executable and flags"""
-    flow --enable-tuning=true --enable-opm-rst-file=true 
+    flow --linear-solver=cprw --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations  --enable-well-operability-check=false --min-time-step-before-shutting-problematic-wells-in-days=1e-99 
 
 If **flow** is not in your path, then write the full path to the executable
-(e.g., /Users/dmar/Github/opm/build/opm-simulators/bin/flow). We also add in the same 
+(e.g., /Users/dmar/opm/build/opm-simulators/bin/flow). We also add in the same 
 line as many flags as required (see the OPM Flow documentation `here <https://opm-project.org/?page_id=955>`_).
 
 .. note::
@@ -29,19 +29,19 @@ The following input lines in the configuration file are:
     :lineno-start: 4
 
     """Set the model parameters"""
-    csp11c master     #Name of the csp case (csp11a, csp11b, or csp11c) and OPM Flow version (master or release)
+    spe11c master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
     complete          #Name of the co2 model (immiscible or complete)
     cartesian         #Type of grid (cartesian, tensor, or corner-point)
     8400. 5000. 1200. #Length, width, and depth [m]
     84                #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
-    50                #If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for csp11c)
+    50                #If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for spe11c)
     12                #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (17 entries)
     70. 36.25         #Temperature bottom and top rig [C]            
     19620000.         #Pressure on the top [Pa]
     1e-9 2e-8         #CO2 diffusion (in liquid and gas) [m^2/s]
-    8.5e-1 2500.      #Rock specific heat and density (for csp11b/c)
-    5e4 1.            #Pore volume on lateral boundaries and width of buffer cell [m] (for csp11b/c)
-    150. 10.          #Elevation of the parabola and back [m] (for csp11c) 
+    8.5e-1 2500.      #Rock specific heat and density (for spe11b/c)
+    5e4 1.            #Pore volume on lateral boundaries and width of buffer cell [m] (for spe11b/c)
+    150. 10.          #Elevation of the parabola and back [m] (for spe11c) 
 
 In line 5 you specify if you are using OPM Flow from the master branch or from the latest stable release (OPM-flow 2023.4 release).
 This since there are continuous changues in the OPM master branch (e.g., the format of the boundary condition keyword BC). Then we 
@@ -51,9 +51,9 @@ gas and liquid phases, in addition to thermal effects. Regarding the grid type, 
 with the defined number of elements in lines 9 to 11. The tensor grid allows to define arrays in each direction where the grid
 is first divided with the number of entries in the array, and after it divides each of these elements by the assigned number in 
 the array entry. The corner-point mode generates a grid where the x and y direction are defined as in the array mode, but the 
-cell faces in the z-direction follows the lines as defined in the `lines_coordinates.geo <https://github.com/daavid00/pyopmcsp11/blob/main/src/pyopmcsp11/reference_mesh/lines_coordinates.geo>`_ script,
-resulting in 17 levels. Then, the z-refinment in each of these levels is set. See the configuration files in the `tests <https://github.com/daavid00/pyopmcsp11/blob/main/tests>`_ and 
-`examples <https://github.com/daavid00/pyopmcsp11/blob/main/examples>`_ folder for the setting of these grids.
+cell faces in the z-direction follows the lines as defined in the `lines_coordinates.geo <https://github.com/OPM/pyopmspe11/blob/main/src/pyopmspe11/reference_mesh/lines_coordinates.geo>`_ script,
+resulting in 17 levels. Then, the z-refinment in each of these levels is set. See the configuration files in the `tests <https://github.com/OPM/pyopmspe11/blob/main/tests>`_ and 
+`examples <https://github.com/OPM/pyopmspe11/blob/main/examples>`_ folder for the setting of these grids.
 
 .. figure:: figs/cartesian.png
 .. figure:: figs/tensor.png
@@ -113,16 +113,17 @@ The last part of the configuration file sets the wells radius, location, and the
     :lineno-start: 45
 
     """Wells radius and position"""
-    """radius, x, y, and z position [m] (final positions as well for csp11c)"""
+    """radius, x, y, and z position [m] (final positions as well for spe11c)"""
     0.15 2700. 1000. 300. 2700. 4000. 300. #Well 1 
     0.15 5100. 1000. 700. 5100. 4000. 700. #Well 2 
 
-    """Define the injection values 'inj[]'""" 
-    """injection time [s], time step size to write results [s], maximum solver time step [s], injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
-    31536000000 31536000000 315360000 0  0 10 0  0 10
-    788400000   788400000  31536000 1 50 10 0  0 10
-    788400000   788400000  31536000 1 50 10 1 50 10
-    29959200000 29959200000 315360000 0  0 10 0  0 10
+    """Define the injection values ([hours] for spe11a; [years] for spe11b/c)""" 
+    """injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
+    995 995 1 0     0 10 0     0 10
+      5   5 1 0     0 10 0     0 10
+     25   5 1 1    50 10 0     0 10
+     25   5 1 1    50 10 1    50 10
+    950   5 1 0     0 10 0     0 10
     
 .. warning::
     Keep the linebreak between the sections (in the current implementation this is used for the reading of the parameters).
