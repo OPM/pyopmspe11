@@ -38,6 +38,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install mpi-default-bin
         sudo apt-get install libopm-simulators-bin
+        sudo apt-get install texlive-fonts-recommended texlive-fonts-extra dvipng cm-super
         
     - name: Install test dependecies
       run: |
