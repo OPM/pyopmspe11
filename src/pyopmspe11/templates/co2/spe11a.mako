@@ -53,7 +53,7 @@ DY
 DZ 
   ${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*${dic['dsize'][2]} /
 TOPS
-  ${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*0.0 /
+  ${dic['noCells'][0]}*0.0 /
 %endif
 
 INCLUDE
@@ -67,10 +67,13 @@ PERMX PERMZ /
 INCLUDE
 'PORO.INC' /
 
-% if dic["version"] == "master":
 BCCON 
 1 1 ${dic['noCells'][0]} 1 1 1 1 Z-/
 /
+
+% if dic["version"] == "master" and dic["dispersion"] > 0:
+DISPERC 
+${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*${dic["dispersion"]} /
 % endif
 ----------------------------------------------------------------------------
 PROPS
@@ -80,7 +83,7 @@ INCLUDE
 
 % if dic['model'] == 'complete':
 DIFFC
-18.01528 44.01 ${dic["diffusion"][1]} 1* ${dic["diffusion"][0]}  /
+1 1 ${dic["diffusion"][1]} ${dic["diffusion"][1]} ${dic["diffusion"][0]} ${dic["diffusion"][0]} / --The molecular weights are set to 1 since the diffusion coefficients are given for mass fractions 
 % endif
 ----------------------------------------------------------------------------
 REGIONS
@@ -115,12 +118,6 @@ RTEMPVD
 0   ${dic["temperature"][1]}
 ${dic['dims'][2]} ${dic["temperature"][0]} /
 % endif
-
-% if dic["version"] == "release":
-BC 
-1 ${dic['noCells'][0]} 1 1 1 1 Z- FREE /
-/
-% endif
 ----------------------------------------------------------------------------
 SUMMARY
 ----------------------------------------------------------------------------
@@ -154,11 +151,9 @@ COMPDAT
 	'INJ${i}'	${dic['wellijk'][i][0]}	${dic['wellijk'][i][1]}	${dic['wellijk'][i][2]}	${dic['wellijk'][i][2]}	'OPEN'	1*	1*	${2.*dic['radius'][i]} /
 % endfor
 /
-% if dic["version"] == "master":
 BCPROP
  1 'FREE' /
 /
-% endif
 
 % for j in range(len(dic['inj'])):
 TUNING

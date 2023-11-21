@@ -1,5 +1,5 @@
 [![Build Status](https://github.com/OPM/pyopmspe11/actions/workflows/CI.yml/badge.svg)](https://github.com/OPM/pyopmspe11/actions/workflows/CI.yml)
-<a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.8%20|%203.9%20|%203.10-blue.svg"></a>
+<a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.8%20|%203.9%20|%203.10%20|%203.11-blue.svg"></a>
 [![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/license/mit/)
 
@@ -12,7 +12,7 @@ Here we use the [_OPM-Flow_](https://opm-project.org/?page_id=19) simulator.
 
 ## Installation
 You will first need to install
-* Flow (https://opm-project.org)
+* Flow (https://opm-project.org, Release 2023.10 or current master branches)
 
 To build dune and the corresponding OPM master branches from source (e.g., you are a macOS user), you can run the script
 `./build_dune_and_opm-flow.bash`, which in turn should build flow in the folder 

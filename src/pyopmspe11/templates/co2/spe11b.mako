@@ -56,7 +56,7 @@ DY
 DZ 
   ${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*${dic['dsize'][2]} /
 TOPS
-  ${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*0.0 /
+  ${dic['noCells'][0]}*0.0 /
 %endif
 
 INCLUDE
@@ -78,6 +78,11 @@ INCLUDE
 INCLUDE
 'THCONR.INC' /
 % endif
+
+% if dic["version"] == "master" and dic["dispersion"] > 0:
+DISPERC 
+${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*${dic["dispersion"]} /
+% endif
 ----------------------------------------------------------------------------
 PROPS
 ----------------------------------------------------------------------------
@@ -86,7 +91,7 @@ INCLUDE
 
 % if dic['model'] == 'complete':
 DIFFC
-18.01528 44.01 ${dic["diffusion"][1]} 1* ${dic["diffusion"][0]}  /
+1 1 ${dic["diffusion"][1]} ${dic["diffusion"][1]} ${dic["diffusion"][0]} ${dic["diffusion"][0]} / --The molecular weights are set to 1 since the diffusion coefficients are given for mass fractions
 
 SPECROCK
 % for i in range(dic['noSands']): 

@@ -11,7 +11,7 @@ cartesian         #Type of grid (cartesian or corner-point)
 25                #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
 20. 20.           #Temperature bottom and top rig [C]
 110000.           #Pressure on the top [Pa] 
-1e-9 1.6e-5       #CO2 diffusion (in liquid and gas) [m^2/s]
+1e-9 1.6e-5 1e-2  #Diffusion (in liquid and gas) [m^2/s] and dispersion [m] (disperison only available in Flow master)
 0 0               #Rock specific heat and density (for spe11b/c)
 0 0               #Pore volume on lateral boundaries and width of buffer cell [m] (for spe11b/c)
 0 0               #Elevation of the parabola [m] (for spe11c) 

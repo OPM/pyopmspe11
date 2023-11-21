@@ -16,7 +16,7 @@ with open("dev-requirements.txt", "r", encoding="utf8") as file:
 
 setup(
     name="pyopmspe11",
-    version="2023.10-pre",
+    version="2023.10",
     install_requires=install_requires,
     extras_require={"dev": dev_requires},
     setup_requires=["setuptools_scm"],

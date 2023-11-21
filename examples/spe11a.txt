@@ -6,12 +6,12 @@ spe11a master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow
 complete          #Name of the co2 model (immiscible or complete)
 tensor            #Type of grid (cartesian, tensor, or corner-point)
 2.8 0.01 1.2      #Length, width, and depth [m]
-6,10,20,20,10,10,10,4 #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
+8,15,20,20,15,15,15,6 #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
 1                 #If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for spe11c)
-2,6,6,6,6,6,6,6,6,6,6,6,6,6,6,3  #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
+4,6,6,6,6,6,6,6,6,6,6,6,6,6,6,5  #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
 20. 20.           #Temperature bottom and top rig [C]
 110000.           #Pressure on the top [Pa] 
-1e-9 1.6e-5       #CO2 diffusion (in liquid and gas) [m^2/s]
+1e-9 1.6e-5 1e-2  #Diffusion (in liquid and gas) [m^2/s] and dispersion [m] (disperison only available in Flow master)
 0 0               #Rock specific heat and density (for spe11b/c)
 0 0               #Pore volume on lateral boundaries and width of buffer cell [m] (for spe11b/c)
 0 0               #Elevation of the parabola [m] (for spe11c) 

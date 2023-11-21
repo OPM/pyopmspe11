@@ -11,8 +11,7 @@ The numerical simulations for the CO2 are performed using the
 Concept
 -------
 Simplified and flexible testing framework for the three cases in the SPE Comparative Solution Project
-using the open-source simulator OPM Flow. This is work in progress and current efforts focus on the
-implementation of dispersion. 
+using the open-source simulator OPM Flow. 
 
 Overview
 --------
