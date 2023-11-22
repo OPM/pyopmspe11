@@ -40,7 +40,7 @@ PERM3 202.650 PORO3 0.20 THCONR3 1.25
 PERM4 506.625 PORO4 0.20 THCONR4 1.25
 PERM5 1013.25 PORO5 0.25 THCONR5 0.92
 PERM6 2026.50 PORO6 0.35 THCONR6 0.26
-PERM7       0 PORO7 1E-6 THCONR7 2.00
+PERM7       0 PORO7    0 THCONR7 2.00
 
 """Wells radius and position"""
 """radius, x, y, and z position [m] (final positions as well for spe11c)"""
@@ -51,6 +51,6 @@ PERM7       0 PORO7 1E-6 THCONR7 2.00
 """injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
 995 995 199 0     0 10 0     0 10
   5   5   5 0     0 10 0     0 10
- 25   5   1 1    50 10 0     0 10
- 25   5   1 1    50 10 1    50 10
+ 25   5  .1 1    50 10 0     0 10
+ 25   5  .1 1    50 10 1    50 10
 950   5   1 0     0 10 0     0 10

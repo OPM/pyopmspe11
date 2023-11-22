@@ -1,4 +1,4 @@
-ecl
 mako
 matplotlib
+resdata
 shapely

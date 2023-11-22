@@ -10,7 +10,7 @@ on:
  pull_request:
    
 jobs:
-  run-pyff-local:
+  run-pyopmspe11-local:
     timeout-minutes: 30
     strategy:
       fail-fast: false
