@@ -88,8 +88,9 @@ def readthefirstpart(lol, dic):
     ]
     dic["pressure"] = float(lol[12][0])  # Pressure at the top [Pa]
     row = list((lol[13][0].strip()).split())
-    # CO2 diffusion (in liquid and gas) [m^2/s]
+    # Diffusion (in liquid and gas) [m^2/s]
     dic["diffusion"] = [float(row[0]), float(row[1])]
+    dic["dispersion"] = float(row[2])  # Dispersion [m]
     row = list((lol[14][0].strip()).split())
     # Rock specific heat and density (for spe11b/c)
     dic["rockExtra"] = [float(row[0]), float(row[1])]

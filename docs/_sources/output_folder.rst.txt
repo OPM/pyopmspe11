@@ -14,4 +14,8 @@ The simulation results are saved in the **flow** folder, and
 In addition, some figures are plotted in png format in the **figures** folder.
 Then after running **pyopmspe11**, one could modify the generated OPM related files and 
 run directly the simulations calling the Flow solvers, e.g., to add tracers 
-(see the OPM Flow documentation `here <https://opm-project.org/?page_id=955>`_). 
+(see the OPM Flow documentation `here <https://opm-project.org/?page_id=955>`_).
+
+.. tip::
+    If you install the dev-requirements.txt, executing **pytest --cov=pyopmspe11 --cov-report term-missing tests/** runs the
+    configuration files in the tests with different argument options for **pyopmspe11**, then one can see the different outputs.

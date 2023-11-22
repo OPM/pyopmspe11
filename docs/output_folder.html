@@ -93,6 +93,11 @@ In addition, some figures are plotted in png format in the <strong>figures</stro
 Then after running <strong>pyopmspe11</strong>, one could modify the generated OPM related files and
 run directly the simulations calling the Flow solvers, e.g., to add tracers
 (see the OPM Flow documentation <a class="reference external" href="https://opm-project.org/?page_id=955">here</a>).</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If you install the dev-requirements.txt, executing <strong>pytest –cov=pyopmspe11 –cov-report term-missing tests/</strong> runs the
+configuration files in the tests with different argument options for <strong>pyopmspe11</strong>, then one can see the different outputs.</p>
+</div>
 </section>
 
 

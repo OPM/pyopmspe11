@@ -38,14 +38,14 @@ The following input lines in the configuration file are:
     12                #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (17 entries)
     70. 36.25         #Temperature bottom and top rig [C]            
     19620000.         #Pressure on the top [Pa]
-    1e-9 2e-8         #CO2 diffusion (in liquid and gas) [m^2/s]
+    1e-9 2e-8 0       #Diffusion (in liquid and gas) [m^2/s] and dispersion [m] (disperison only available in Flow master)
     8.5e-1 2500.      #Rock specific heat and density (for spe11b/c)
     5e4 1.            #Pore volume on lateral boundaries and width of buffer cell [m] (for spe11b/c)
     150. 10.          #Elevation of the parabola and back [m] (for spe11c) 
 
-In line 5 you specify if you are using OPM Flow from the master branch or from the latest stable release (OPM-flow 2023.4 release).
-This since there are continuous changues in the OPM master branch (e.g., the format of the boundary condition keyword BC). Then we 
-will keep updating the decks for using Flow from master and also we will keep the framework to produce decks compatible for the latest OPM stable release .
+In line 5 you specify if you are using OPM Flow from the master branch or from the latest stable release (OPM-flow 2023.10 release).
+This since there are continuous changues in the OPM master branch (e.g., implementation of mechanical dispersion). Then we 
+will keep updating the decks for using Flow from master and also we will keep the framework to produce decks compatible for the latest OPM stable release.
 The immiscible model allows for faster prototyping while the complete model includes dissolution of the components in the
 gas and liquid phases, in addition to thermal effects. Regarding the grid type, the cartesian mode generates an uniform grid
 with the defined number of elements in lines 9 to 11. The tensor grid allows to define arrays in each direction where the grid
@@ -62,6 +62,10 @@ resulting in 17 levels. Then, the z-refinment in each of these levels is set. Se
     Examples of a cartesian (top), tensor (middle), and corner-point (bottom) grids. The cartesian is generated using 170, 100, and 120
     elements, the tensor grid by setting the x-array to 50,100,20; the y-array to 5,10,70,10,5; and the z-array to 5,10,20,20,20,20,20,5; and 
     the corner-point grid using the same xy-arrays as in the tensor grid and for the z-refinment 4,4,3,3,5,3,7,5,13,5,7,5,3,9,21,21,2. 
+
+.. warning::
+    Dispersion seems to work fine for the spe11a case where there are no thermal effects nor water evaporation. However, for spe11b/c there are
+    issues with the current implementation (we are working in this, then for now disperison should be set to 0 for spe11b/c).  
 
 ***********************
 Soil-related parameters
@@ -96,12 +100,16 @@ The following entries define the properties of the different facies:
     PERM4 506.625 PORO4 0.20 THCONR4 1.25
     PERM5 1013.25 PORO5 0.25 THCONR5 0.92
     PERM6 2026.50 PORO6 0.35 THCONR6 0.26
-    PERM7       0 PORO7    0 THCONR7 2.00
+    PERM7       0 PORO7 1E-6 THCONR7 2.00
 
 .. figure:: figs/kr.png
 .. figure:: figs/cap.png
 
     Visualization in ResInsight of the relative permeability and capillary pressure functions in the facie 1.
+
+.. note::
+    For spe11b/c, adding a small value of porosity in facie 7 (i.e., 1E-6 in this example), allows to include the termal effects
+    from the caprock (facie 7).
 
 ***********************
 Well-related parameters
