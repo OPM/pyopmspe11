@@ -8,7 +8,7 @@ Utiliy function for the grid and finding the wells i,j, and k ids.
 import csv
 import numpy as np
 import pandas as pd
-from ecl.grid import EclGrid
+from resdata.grid import Grid
 from shapely.geometry import Polygon
 
 
@@ -182,7 +182,7 @@ def corner_point_handling_spe11a(dic):
 
     """
     well1, well2, sensor1, sensor2 = [], [], [], []
-    gridf = EclGrid(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.EGRID")
+    gridf = Grid(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.EGRID")
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
     for cell in gridf.cells():
         fgl = pd.Series(
@@ -230,7 +230,7 @@ def corner_point_handling_spe11bc(dic):
 
     """
     well1, well2, sensor1, sensor2, xtemp = [], [], [], [], []
-    gridf = EclGrid(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.EGRID")
+    gridf = Grid(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.EGRID")
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
     for cell in gridf.cells():
         xtemp.append(cell.coordinate[0])

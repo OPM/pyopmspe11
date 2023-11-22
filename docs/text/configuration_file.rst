@@ -100,16 +100,12 @@ The following entries define the properties of the different facies:
     PERM4 506.625 PORO4 0.20 THCONR4 1.25
     PERM5 1013.25 PORO5 0.25 THCONR5 0.92
     PERM6 2026.50 PORO6 0.35 THCONR6 0.26
-    PERM7       0 PORO7 1E-6 THCONR7 2.00
+    PERM7       0 PORO7    0 THCONR7 2.00
 
 .. figure:: figs/kr.png
 .. figure:: figs/cap.png
 
     Visualization in ResInsight of the relative permeability and capillary pressure functions in the facie 1.
-
-.. note::
-    For spe11b/c, adding a small value of porosity in facie 7 (i.e., 1E-6 in this example), allows to include the termal effects
-    from the caprock (facie 7).
 
 ***********************
 Well-related parameters
@@ -127,11 +123,11 @@ The last part of the configuration file sets the wells radius, location, and the
 
     """Define the injection values ([hours] for spe11a; [years] for spe11b/c)""" 
     """injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
-    995 995 1 0     0 10 0     0 10
-      5   5 1 0     0 10 0     0 10
-     25   5 1 1    50 10 0     0 10
-     25   5 1 1    50 10 1    50 10
-    950   5 1 0     0 10 0     0 10
+    995 995  1 0     0 10 0     0 10
+      5   5  1 0     0 10 0     0 10
+     25   5 .1 1    50 10 0     0 10
+     25   5 .1 1    50 10 1    50 10
+    950   5  1 0     0 10 0     0 10
     
 .. warning::
     Keep the linebreak between the sections (in the current implementation this is used for the reading of the parameters).

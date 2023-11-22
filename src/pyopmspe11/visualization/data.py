@@ -11,9 +11,9 @@ import csv
 from io import StringIO
 import numpy as np
 import pandas as pd
-from ecl.grid import EclGrid
-from ecl.eclfile import EclFile
-from ecl.summary import EclSum
+from resdata.grid import Grid
+from resdata.resfile import ResdataFile
+from resdata.summary import Summary
 
 GAS_DEN_REF = 1.86843
 WAT_DEN_REF = 998.108
@@ -82,7 +82,8 @@ def main():
     dic["nocellsr"] = dic["nxyz"][0] * dic["nxyz"][1] * dic["nxyz"][2]
     case = "./" + dic["path"] + "/flow/" + f"{dic['path'].upper()}"
     for name in ["unrst", "init"]:
-        dic[f"{name}"] = EclFile(case + f".{name.upper()}")
+        dic[f"{name}"] = ResdataFile(case + f".{name.upper()}")
+    dic["egrid"], dic["smspec"] = Grid(case + ".EGRID"), Summary(case + ".SMSPEC")
     names = ["sgas", "rs", "pressure", "gas_den", "oil_den", "gaskr"]
     if dic["case"] != "spe11a":
         names += ["rv", "temp"]
@@ -90,7 +91,6 @@ def main():
         dic[f"{name}"] = list(dic["unrst"].iget_kw(name.upper()))
     for name in ["porv", "satnum", "fipnum", "dx", "dy", "dz"]:
         dic[f"{name}"] = list(dic["init"].iget_kw(name.upper())[0])
-    dic["smspec"], dic["egrid"] = EclSum(case + ".SMSPEC"), EclGrid(case + ".EGRID")
     dic["actnum"] = list(dic["egrid"].export_actnum())
     dic["actind"] = list(i for i, act in enumerate(dic["actnum"]) if act == 1)
     dic["porva"] = [porv for (porv, act) in zip(dic["porv"], dic["actnum"]) if act == 1]
@@ -364,7 +364,10 @@ def dense_data(dic):
         ]
         dic["pressure_array"][dic["actind"]] = dic["pressure"][t_n] * 1e5  # Pa
         dic["sgas_array"][dic["actind"]] = dic["sgas"][t_n]
-        dic["gden_array"][dic["actind"]] = dic["gas_den"][t_n]
+        dic["gden_array"][dic["actind"]] = [
+            den if gas > 0 else 0
+            for den, gas in zip(dic["gas_den"][t_n], dic["sgas"][t_n])
+        ]
         dic["wden_array"][dic["actind"]] = dic["oil_den"][t_n]
         dic["xco2_array"][dic["actind"]] = [
             co2 / (co2 + h2o) for (co2, h2o) in zip(co2_d, h2o_l)

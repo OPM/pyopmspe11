@@ -174,7 +174,7 @@ issues with the current implementation (we are working in this, then for now dis
 <span class="linenos">40</span><span class="n">PERM4</span> <span class="mf">506.625</span> <span class="n">PORO4</span> <span class="mf">0.20</span> <span class="n">THCONR4</span> <span class="mf">1.25</span>
 <span class="linenos">41</span><span class="n">PERM5</span> <span class="mf">1013.25</span> <span class="n">PORO5</span> <span class="mf">0.25</span> <span class="n">THCONR5</span> <span class="mf">0.92</span>
 <span class="linenos">42</span><span class="n">PERM6</span> <span class="mf">2026.50</span> <span class="n">PORO6</span> <span class="mf">0.35</span> <span class="n">THCONR6</span> <span class="mf">0.26</span>
-<span class="linenos">43</span><span class="n">PERM7</span>       <span class="mi">0</span> <span class="n">PORO7</span> <span class="mf">1E-6</span> <span class="n">THCONR7</span> <span class="mf">2.00</span>
+<span class="linenos">43</span><span class="n">PERM7</span>       <span class="mi">0</span> <span class="n">PORO7</span>    <span class="mi">0</span> <span class="n">THCONR7</span> <span class="mf">2.00</span>
 </pre></div>
 </div>
 <figure class="align-default">
@@ -186,11 +186,6 @@ issues with the current implementation (we are working in this, then for now dis
 <p><span class="caption-text">Visualization in ResInsight of the relative permeability and capillary pressure functions in the facie 1.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>For spe11b/c, adding a small value of porosity in facie 7 (i.e., 1E-6 in this example), allows to include the termal effects
-from the caprock (facie 7).</p>
-</div>
 </section>
 <section id="well-related-parameters">
 <h2>Well-related parameters<a class="headerlink" href="#well-related-parameters" title="Link to this heading"></a></h2>
@@ -202,11 +197,11 @@ from the caprock (facie 7).</p>
 <span class="linenos">49</span>
 <span class="linenos">50</span><span class="sd">&quot;&quot;&quot;Define the injection values ([hours] for spe11a; [years] for spe11b/c)&quot;&quot;&quot;</span>
 <span class="linenos">51</span><span class="sd">&quot;&quot;&quot;injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ...&quot;&quot;&quot;</span>
-<span class="linenos">52</span><span class="mi">995</span> <span class="mi">995</span> <span class="mi">1</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span>
-<span class="linenos">53</span>  <span class="mi">5</span>   <span class="mi">5</span> <span class="mi">1</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span>
-<span class="linenos">54</span> <span class="mi">25</span>   <span class="mi">5</span> <span class="mi">1</span> <span class="mi">1</span>    <span class="mi">50</span> <span class="mi">10</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span>
-<span class="linenos">55</span> <span class="mi">25</span>   <span class="mi">5</span> <span class="mi">1</span> <span class="mi">1</span>    <span class="mi">50</span> <span class="mi">10</span> <span class="mi">1</span>    <span class="mi">50</span> <span class="mi">10</span>
-<span class="linenos">56</span><span class="mi">950</span>   <span class="mi">5</span> <span class="mi">1</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span>
+<span class="linenos">52</span><span class="mi">995</span> <span class="mi">995</span>  <span class="mi">1</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span>
+<span class="linenos">53</span>  <span class="mi">5</span>   <span class="mi">5</span>  <span class="mi">1</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span>
+<span class="linenos">54</span> <span class="mi">25</span>   <span class="mi">5</span> <span class="mf">.1</span> <span class="mi">1</span>    <span class="mi">50</span> <span class="mi">10</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span>
+<span class="linenos">55</span> <span class="mi">25</span>   <span class="mi">5</span> <span class="mf">.1</span> <span class="mi">1</span>    <span class="mi">50</span> <span class="mi">10</span> <span class="mi">1</span>    <span class="mi">50</span> <span class="mi">10</span>
+<span class="linenos">56</span><span class="mi">950</span>   <span class="mi">5</span>  <span class="mi">1</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span> <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">10</span>
 </pre></div>
 </div>
 <div class="admonition warning">

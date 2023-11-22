@@ -39,6 +39,7 @@ def plotting(dic):
         "-p " + f"{dic['fol']}",
         "-d " + f"{dic['spe11']}",
         "-g " + f"{dic['generate']}",
+        "-r " + f"{dic['resolution']}",
         "-t " + f"{dic['time_data']}",
     ]
     print(" ".join(plot_exe))

@@ -106,7 +106,7 @@ def pyopmspe11():
             initial(dic)
             os.chdir(f"{dic['exe']}/{dic['fol']}/deck")
             simulations(dic, "INITIAL", "flow")
-
+            print("Files used to generate the corner-point grid (INITIAL.* files)")
         # Get the sand and well positions
         dic = positions(dic)
 
