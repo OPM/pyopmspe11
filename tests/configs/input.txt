@@ -3,17 +3,17 @@ flow --linear-solver=cprw --enable-tuning=true --enable-opm-rst-file=true --outp
 
 """Set the model parameters"""
 spe11b release    #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
-complete          #Name of the co2 model (immiscible or complete)
+complete gasoil   #Name of the co2 model (immiscible or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
 corner-point      #Type of grid (cartesian, tensor, or corner-point) 
-8400. 1. 1200.    #Length, width, and depth [m]
+8400 1 1200       #Length, width, and depth [m]
 10,50,10          #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
 1                 #If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for spe11c)
 1,2,2,2,2,3,5,4,3,2,2,2,22,,2,10,5,1 #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
-70. 40.           #Temperature bottom and top rig [C]            
-19620000.         #Pressure on the top [Pa] 
+70 40             #Temperature bottom and top rig [C]            
+19620000 0.1      #Pressure on the top [Pa] and multiplier for the permeability in the z direction [-] 
 1e-9 2e-8 0       #Diffusion (in liquid and gas) [m^2/s] and dispersion [m] (disperison only available in Flow master)
-8.5e-1 2500.      #Rock specific heat and density (for spe11b/c)
-5e4 1.            #Pore volume on lateral boundaries and width of buffer cell [m] (for spe11b/c)
+8.5e-1 2500       #Rock specific heat and density (for spe11b/c)
+0 5e4 1           #Added pore volume on top boundary (for spe11a [if 0, free flow bc]), pore volume on lateral boundaries, and width of buffer cell [m] (for spe11b/c)
 0 0               #Elevation of the parabola and back [m] (for spe11c)  
 
 """Set the saturation functions"""

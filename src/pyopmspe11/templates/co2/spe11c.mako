@@ -12,14 +12,23 @@ EQLDIMS
 TABDIMS
 ${dic['noSands']} 1* ${dic['tabdims']} ${dic['tabdims']} /
 
+% if dic["co2store"] == "gaswater":
+WATER
+% else:
 OIL
+% endif
 GAS
 CO2STORE
 % if dic['model'] == 'complete':
+% if dic["co2store"] == "gaswater":
+DISGASW
+VAPWAT
+% else:
 DISGAS
+VAPOIL
+% endif
 DIFFUSE
 THERMAL
-VAPOIL 
 % endif
 
 METRIC
@@ -48,9 +57,11 @@ PERMX PERMY /
 PERMX PERMZ /
 /
 
+% if dic["kzMult"] > 0:
 OPERATE
-PERMZ 1* 1* 1* 1* 1* 1* 'MULTX' PERMZ 0.1 /
+PERMZ 1* 1* 1* 1* 1* 1* 'MULTX' PERMZ ${dic["kzMult"]} /
 /
+% endif
 
 INCLUDE
 'PORO.INC' /
@@ -71,8 +82,16 @@ INCLUDE
 'TABLES.INC' /
 
 % if dic['model'] == 'complete':
+% if dic["co2store"] == "gaswater":
+DIFFCWAT
+${dic["diffusion"][0]} ${dic["diffusion"][0]} /
+
+DIFFCGAS
+${dic["diffusion"][1]} ${dic["diffusion"][1]} /
+% else:
 DIFFC
 1 1 ${dic["diffusion"][1]} ${dic["diffusion"][1]} ${dic["diffusion"][0]} ${dic["diffusion"][0]} / --The molecular weights are set to 1 since the diffusion coefficients are given for mass fractions
+%endif
 
 SPECROCK
 % for i in range(dic['noSands']): 
@@ -91,23 +110,25 @@ INCLUDE
 SOLUTION
 ---------------------------------------------------------------------------
 EQUIL
- 0 ${dic['pressure']/1.E5} ${dic['dims'][2] + dic['elevation']} 0 0 0 1 1 0 /
+0 ${dic['pressure']/1.E5} ${0 if dic["co2store"] == "gaswater" else dic['dims'][2]} 0 0 0 1 1 0 /
 
 RPTRST
 % if dic['model'] == 'immiscible': 
- 'BASIC=2' FLOWS FLORES DEN/
+'BASIC=2' FLOWS FLORES DEN/
 % else:
- 'BASIC=2' DEN KRG/
+'BASIC=2' DEN KRG/
 %endif
 
 % if dic['model'] == 'complete':
+% if dic["co2store"] == "gasoil":
 RSVD
 0   0.0
-${dic['dims'][2] + dic['elevation']} 0.0 /
+${dic['dims'][2]} 0.0 /
 
 RVVD
 0   0.0
-${dic['dims'][2] + dic['elevation']} 0.0 /
+${dic['dims'][2]} 0.0 /
+% endif
 
 RTEMPVD
 0   ${dic["temperature"][1]}
@@ -131,23 +152,23 @@ SCHEDULE
 ----------------------------------------------------------------------------
 RPTRST
 % if dic['model'] == 'immiscible': 
- 'BASIC=2' FLOWS FLORES DEN/
+'BASIC=2' FLOWS FLORES DEN/
 % else:
- 'BASIC=2' DEN KRG/
+'BASIC=2' DEN KRG/
 %endif
 
 WELSPECS
 % for i in range(len(dic['wellijk'])):
-'INJ${i}'	'G1'	${dic['wellijk'][i][0]}	${dic['wellijk'][i][1]}	1*	'GAS' ${dic['radius'][i]}/
+'INJ${i}' 'G1' ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]} 1* 'GAS' ${dic['radius'][i]}/
 % endfor
 /
 COMPDAT
 % for i in range(len(dic['wellijk'])):
 % for j in range(1+dic['wellijkf'][i][1]-dic['wellijk'][i][1]):
 % if i==0:
-'INJ${i}'	${dic['wellijk'][i][0]}	${dic['wellijk'][i][1]+j} ${dic['wellijk'][i][2]}	${dic['wellijk'][i][2]}	'OPEN'	1*	1*	${2.*dic['radius'][i]} /
+'INJ${i}' ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]+j} ${dic['wellijk'][i][2]}	${dic['wellijk'][i][2]}	'OPEN' 1* 1* ${2.*dic['radius'][i]} /
 % else:
-'INJ${i}'	${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]+j}	${dic['wellkh'][j]} ${dic['wellkh'][j]}	'OPEN'	1*	1*	${2.*dic['radius'][i]} /
+'INJ${i}' ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]+j}	${dic['wellkh'][j]} ${dic['wellkh'][j]} 'OPEN' 1* 1* ${2.*dic['radius'][i]} /
 %endif
 % endfor
 % endfor
@@ -164,7 +185,7 @@ WCONINJE
 'INJ${i}' 'GAS' ${'OPEN' if dic['inj'][j][4+3*i] > 0 else 'SHUT'}
 'RATE' ${f"{dic['inj'][j][4+3*i] * 86400 / 1.86843 : E}"}  1* 400/
 % else:
-'INJ${i}' 'OIL' ${'OPEN' if dic['inj'][j][4+3*i] > 0 else 'SHUT'}
+'INJ${i}' ${'WATER' if dic['co2store'] == 'gaswater' else 'OIL'} ${'OPEN' if dic['inj'][j][4+3*i] > 0 else 'SHUT'}
 'RATE' ${f"{dic['inj'][j][4+3*i] * 86400 / 998.108 : E}"}  1* 400/
 %endif
 % endfor
@@ -172,7 +193,7 @@ WCONINJE
 % if dic['model'] == 'complete':
 WTEMP
 % for i in range(len(dic['wellijk'])):
- 'INJ${i}' ${dic['inj'][j][5+3*i]} /
+'INJ${i}' ${dic['inj'][j][5+3*i]} /
 % endfor
 /
 %endif

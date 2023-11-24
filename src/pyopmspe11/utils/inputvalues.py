@@ -60,13 +60,12 @@ def readthefirstpart(lol, dic):
         dic (dict): Global dictionary with new added parameters
     """
     dic["flow"] = str(lol[1])[2:-2]  # Path to the flow executable
-    dic["spe11"] = (str(lol[4][0]).strip()).split()[
-        0
-    ]  # Name of the spe case (spe11a, spe11b, or spe11c)
-    dic["version"] = (str(lol[4][0]).strip()).split()[
-        1
-    ]  # OPM Flow version (release or master)
-    dic["model"] = str(lol[5][0]).strip()  # Model to run (immiscible or complete)
+    row = (lol[4][0].strip()).split()
+    dic["spe11"] = row[0]  # Name of the spe case (spe11a, spe11b, or spe11c)
+    dic["version"] = row[1]  # OPM Flow version (release or master)
+    row = (lol[5][0].strip()).split()
+    dic["model"] = row[0]  # Model to run (immiscible or complete)
+    dic["co2store"] = row[1]  # co2store implementation (gaswater or gasoil)
     dic["grid"] = str(lol[6][0]).strip()  # Type of grid (cartesian or corner-point)
     dic["dims"] = [float((lol[7][0].strip()).split()[j]) for j in range(3)]
     if dic["grid"] == "cartesian":
@@ -86,7 +85,9 @@ def readthefirstpart(lol, dic):
         float(row[0]),
         float(row[1]),
     ]
-    dic["pressure"] = float(lol[12][0])  # Pressure at the top [Pa]
+    row = list((lol[12][0].strip()).split())
+    dic["pressure"] = float(row[0])  # Pressure at the top [Pa]
+    dic["kzMult"] = float(row[1])  # Permeability multiplier in the z dir [-]
     row = list((lol[13][0].strip()).split())
     # Diffusion (in liquid and gas) [m^2/s]
     dic["diffusion"] = [float(row[0]), float(row[1])]
@@ -95,8 +96,9 @@ def readthefirstpart(lol, dic):
     # Rock specific heat and density (for spe11b/c)
     dic["rockExtra"] = [float(row[0]), float(row[1])]
     row = list((lol[15][0].strip()).split())
-    dic["pvAdded"] = float(row[0])  # Pore volume on lateral boundaries
-    dic["widthBuffer"] = float(row[1])  # Width of the buffer cells [m]
+    dic["spe11aBC"] = float(row[0])  # Boundary on top (spe11a [free or added pv])
+    dic["pvAdded"] = float(row[1])  # Pore volume on lateral boundaries
+    dic["widthBuffer"] = float(row[2])  # Width of the buffer cells [m]
     row = list((lol[16][0].strip()).split())
     dic["elevation"] = float(row[0])  # Elevation of the caprock [m]
     dic["backElevation"] = float(row[1])  # Elevation of back boundary [m]
