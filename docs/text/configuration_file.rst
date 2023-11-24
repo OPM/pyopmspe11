@@ -30,18 +30,18 @@ The following input lines in the configuration file are:
 
     """Set the model parameters"""
     spe11c master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
-    complete          #Name of the co2 model (immiscible or complete)
+    complete gaswater #Name of the co2 model (immiscible or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
     cartesian         #Type of grid (cartesian, tensor, or corner-point)
-    8400. 5000. 1200. #Length, width, and depth [m]
+    8400 5000 1200    #Length, width, and depth [m]
     84                #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
     50                #If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for spe11c)
-    12                #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (17 entries)
-    70. 36.25         #Temperature bottom and top rig [C]            
-    19620000.         #Pressure on the top [Pa]
+    12                #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
+    70 36.25          #Temperature bottom and top rig [C]            
+    19620000 0.1      #Pressure on the top [Pa] and multiplier for the permeability in the z direction [-]
     1e-9 2e-8 0       #Diffusion (in liquid and gas) [m^2/s] and dispersion [m] (disperison only available in Flow master)
-    8.5e-1 2500.      #Rock specific heat and density (for spe11b/c)
-    5e4 1.            #Pore volume on lateral boundaries and width of buffer cell [m] (for spe11b/c)
-    150. 10.          #Elevation of the parabola and back [m] (for spe11c) 
+    8.5e-1 2500       #Rock specific heat and density (for spe11b/c)
+    0 5e4 1           #Added pore volume on top boundary (for spe11a [if 0, free flow bc]), pore volume on lateral boundaries, and width of buffer cell [m] (for spe11b/c)
+    150 10            #Elevation of the parabola and back [m] (for spe11c) 
 
 In line 5 you specify if you are using OPM Flow from the master branch or from the latest stable release (OPM-flow 2023.10 release).
 This since there are continuous changues in the OPM master branch (e.g., implementation of mechanical dispersion). Then we 
@@ -52,7 +52,7 @@ with the defined number of elements in lines 9 to 11. The tensor grid allows to 
 is first divided with the number of entries in the array, and after it divides each of these elements by the assigned number in 
 the array entry. The corner-point mode generates a grid where the x and y direction are defined as in the array mode, but the 
 cell faces in the z-direction follows the lines as defined in the `lines_coordinates.geo <https://github.com/OPM/pyopmspe11/blob/main/src/pyopmspe11/reference_mesh/lines_coordinates.geo>`_ script,
-resulting in 17 levels. Then, the z-refinment in each of these levels is set. See the configuration files in the `tests <https://github.com/OPM/pyopmspe11/blob/main/tests>`_ and 
+resulting in 18 levels. Then, the z-refinment in each of these levels is set. See the configuration files in the `tests <https://github.com/OPM/pyopmspe11/blob/main/tests>`_ and 
 `examples <https://github.com/OPM/pyopmspe11/blob/main/examples>`_ folder for the setting of these grids.
 
 .. figure:: figs/cartesian.png
@@ -61,7 +61,7 @@ resulting in 17 levels. Then, the z-refinment in each of these levels is set. Se
 
     Examples of a cartesian (top), tensor (middle), and corner-point (bottom) grids. The cartesian is generated using 170, 100, and 120
     elements, the tensor grid by setting the x-array to 50,100,20; the y-array to 5,10,70,10,5; and the z-array to 5,10,20,20,20,20,20,5; and 
-    the corner-point grid using the same xy-arrays as in the tensor grid and for the z-refinment 4,4,3,3,5,3,7,5,13,5,7,5,3,9,21,21,2. 
+    the corner-point grid using the same xy-arrays as in the tensor grid and for the z-refinment 4,4,3,3,5,3,7,5,13,5,4,3,5,3,9,21,21,2. 
 
 .. warning::
     Dispersion seems to work fine for the spe11a case where there are no thermal effects nor water evaporation. However, for spe11b/c there are

@@ -61,7 +61,11 @@ def safu_evaluation():
         "w",
         encoding="utf8",
     ) as file:
+        % if dic["co2store"] == "gaswater":
+        file.write("SGWFN\n")
+        % else:
         file.write("SGOF\n")
+        % endif
         for _, para in enumerate(safu):
             s_n = 1.0 - s_w_points(para[4])
             for value in s_n:

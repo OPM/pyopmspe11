@@ -66,27 +66,25 @@ def main():
     if dic["case"] == "spe11a":
         dic["spatial_t"] = float(cmdargs["time"].strip()) * 3600
         dic["dims"] = [2.8, 1.0, 1.2]
-        dic["dof"] = 2
-        dic["t0_rst"] = 0
-        dic["t1_rst"] = 0
-        dic["nxyz"][1] = 1
+        dic["dof"], dic["t0_rst"], dic["t1_rst"], dic["nxyz"][1] = 2, 0, 0, 1
     else:
         dic["spatial_t"] = float(cmdargs["time"].strip()) * SECONDS_IN_YEAR
         dic["dims"] = [8400.0, 1.0, 1200.0]
-        dic["dof"] = 3
-        dic["t0_rst"] = 1
-        dic["t1_rst"] = 2
-        dic["nxyz"][1] = 1
+        dic["dof"], dic["t0_rst"], dic["t1_rst"], dic["nxyz"][1] = 3, 1, 2, 1
     if dic["case"] == "spe11c":
         dic["dims"][1] = 5000.0
     dic["nocellsr"] = dic["nxyz"][0] * dic["nxyz"][1] * dic["nxyz"][2]
     case = "./" + dic["path"] + "/flow/" + f"{dic['path'].upper()}"
     for name in ["unrst", "init"]:
         dic[f"{name}"] = ResdataFile(case + f".{name.upper()}")
+    if dic["unrst"].has_kw("WAT_DEN"):
+        dic["watDen"], dic["r_s"], dic["r_v"] = "wat_den", "rsw", "rvw"
+    else:
+        dic["watDen"], dic["r_s"], dic["r_v"] = "oil_den", "rs", "rv"
     dic["egrid"], dic["smspec"] = Grid(case + ".EGRID"), Summary(case + ".SMSPEC")
-    names = ["sgas", "rs", "pressure", "gas_den", "oil_den", "gaskr"]
+    names = ["sgas", dic["r_s"], "pressure", "gas_den", dic["watDen"], "gaskr"]
     if dic["case"] != "spe11a":
-        names += ["rv", "temp"]
+        names += [dic["r_v"], "temp"]
     for name in names:
         dic[f"{name}"] = list(dic["unrst"].iget_kw(name.upper()))
     for name in ["porv", "satnum", "fipnum", "dx", "dy", "dz"]:
@@ -246,8 +244,8 @@ def write_sparse_data(dic):
         sgas = list(dic["sgas"][j])
         rhog = list(dic["gas_den"][j])
         k_r = list(dic["gaskr"][j])
-        rhow = list(dic["oil_den"][j])
-        r_s = list(dic["rs"][j])
+        rhow = list(dic[f"{dic['watDen']}"][j])
+        r_s = list(dic[f"{dic['r_s']}"][j])
         krp = [k_rr > 0 for k_rr in k_r]
         krm = [k_rr <= 0 for k_rr in k_r]
         co2_g = [sga * rho * por for (sga, rho, por) in zip(sgas, rhog, dic["porva"])]
@@ -353,13 +351,16 @@ def dense_data(dic):
         co2_d = [
             rss * rho * (1.0 - sga) * por * GAS_DEN_REF / WAT_DEN_REF
             for (rss, rho, sga, por) in zip(
-                dic["rs"][t_n], dic["oil_den"][t_n], dic["sgas"][t_n], dic["porva"]
+                dic[f"{dic['r_s']}"][t_n],
+                dic[f"{dic['watDen']}"][t_n],
+                dic["sgas"][t_n],
+                dic["porva"],
             )
         ]
         h2o_l = [
             (1 - sga) * rho * por
             for (sga, rho, por) in zip(
-                dic["sgas"][t_n], dic["oil_den"][t_n], dic["porva"]
+                dic["sgas"][t_n], dic[f"{dic['watDen']}"][t_n], dic["porva"]
             )
         ]
         dic["pressure_array"][dic["actind"]] = dic["pressure"][t_n] * 1e5  # Pa
@@ -368,7 +369,7 @@ def dense_data(dic):
             den if gas > 0 else 0
             for den, gas in zip(dic["gas_den"][t_n], dic["sgas"][t_n])
         ]
-        dic["wden_array"][dic["actind"]] = dic["oil_den"][t_n]
+        dic["wden_array"][dic["actind"]] = dic[f"{dic['watDen']}"][t_n]
         dic["xco2_array"][dic["actind"]] = [
             co2 / (co2 + h2o) for (co2, h2o) in zip(co2_d, h2o_l)
         ]
@@ -381,7 +382,10 @@ def dense_data(dic):
             h2o_v = [
                 rvv * rho * sga * por * WAT_DEN_REF / GAS_DEN_REF
                 for (rvv, rho, sga, por) in zip(
-                    dic["rv"][t_n], dic["gas_den"][t_n], dic["sgas"][t_n], dic["porva"]
+                    dic[f"{dic['r_v']}"][t_n],
+                    dic["gas_den"][t_n],
+                    dic["sgas"][t_n],
+                    dic["porva"],
                 )
             ]
             dic["xh20_array"][dic["actind"]] = [
