@@ -14,11 +14,7 @@ Here we use the [_OPM-Flow_](https://opm-project.org/?page_id=19) simulator.
 You will first need to install
 * Flow (https://opm-project.org, Release 2023.10 or current master branches)
 
-To build dune and the corresponding OPM master branches from source (e.g., you are a macOS user), you can run the script
-`./build_dune_and_opm-flow.bash`, which in turn should build flow in the folder 
-./build/opm-simulators/bin/flow (for macOS users the dependecies such as boost can be installed using brew or macports).
-
-You can install the requirements in a virtual environment with the following commands:
+You can install the Python requirements in a virtual environment with the following commands:
 
 ```bash
 # Clone the repo
@@ -37,8 +33,10 @@ pip install -e .
 pip install -r dev-requirements.txt
 ``` 
 
-See the [_CI.yml_](https://github.com/OPM/pyopmspe11/blob/main/.github/workflows/CI.yml) script
-for installation of OPM Flow and the pyopmspe11 package in Linux.
+See the [_CI.yml_](https://github.com/OPM/pyopmspe11/blob/main/.github/workflows/CI.yml) script 
+for installation of OPM Flow (binary packages) and the pyopmspe11 package. If you are a Linux user (including the windows subsystem for Linux), then you could try to build Flow from the master branches with mpi support, by running the script `./build_opm-flow_mpi.bash`, which in turn should build flow in the folder ./build/opm-simulators/bin/flow. 
+
+For macOS users with the latest chips (M1/M2, guessing also M3?), the resdata Python package is not available via pip install. Then before installation, remove resdata from the `requierements.txt`, then proceed with the Python requirements installation, install the OPM Flow dependencies (using macports or brew), and once inside the vpyopmspe11 Python environment, run the `./build_dune_and_opm-flow.bash`, and deactivate and activate the virtual environment (this script builds OPM Flow as well as the opm Python package, and it exports the required PYTHONPATH).
 
 ## Running pyopmspe11
 You can run _pyopmspe11_ as a single command line:
@@ -48,7 +46,7 @@ pyopmspe11 -i some_input.txt -o some_output_folder
 Run `pyopmspe11 --help` to see all possible command line 
 argument options. Inside the `some_input.txt` file you provide the path to the
 flow executable and simulation parameters. See the .txt files in the examples
-folders.
+folders. For macOS users, then always add the flag `-u opm` (resdata is the default one).
 
 ## Getting started
 See the [_documentation_](https://OPM.github.io/pyopmspe11/introduction.html).

@@ -8,8 +8,18 @@ Utiliy function for the grid and finding the wells i,j, and k ids.
 import csv
 import numpy as np
 import pandas as pd
-from resdata.grid import Grid
 from shapely.geometry import Polygon
+
+try:
+    from opm.io.ecl import EGrid as OpmGrid
+    from opm.io.ecl import EclFile as OpmFile
+except ImportError:
+    print("The opm Python package was not found, using resdata")
+try:
+    from resdata.resfile import ResdataFile
+    from resdata.grid import Grid
+except ImportError:
+    print("The resdata Python package was not found, using opm")
 
 
 def grid(dic):
@@ -68,7 +78,7 @@ def structured_handling_spe11a(dic):
         dic (dict): Global dictionary with new added parameters
 
     """
-    sensor1, sensor2 = [], []
+    sensor1, sensor2, centers = [], [], []
     for k in range(dic["noCells"][2]):
         for i in range(dic["noCells"][0]):
             fgl = pd.Series(
@@ -89,9 +99,20 @@ def structured_handling_spe11a(dic):
             dic["satnum"].append(dic["ids_gmsh"][fgl][0])
             dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
             dic["poro"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1])
+            centers.append(
+                str([dic["xmx_center"][i], dic["ymy_center"][0], dic["zmz_center"][k]])[
+                    1:-1
+                ]
+            )
     dic["fipnum"][pd.Series(sensor1).argmin()] = "5"
     dic["fipnum"][pd.Series(sensor2).argmin()] = "6"
     dic = wells(dic)
+    with open(
+        f"{dic['exe']}/{dic['fol']}/deck/centers.txt",
+        "w",
+        encoding="utf8",
+    ) as file:
+        file.write("\n".join(centers))
     return dic
 
 
@@ -106,7 +127,7 @@ def structured_handling_spe11bc(dic):
         dic (dict): Global dictionary with new added parameters
 
     """
-    sensor1, sensor2 = [], []
+    sensor1, sensor2, centers = [], [], []
     for k in range(dic["noCells"][2]):
         for i in range(dic["noCells"][0]):
             fgl = pd.Series(
@@ -144,19 +165,20 @@ def structured_handling_spe11bc(dic):
                 dic["poro"].append(f"{dic['pvAdded']*dic['ymy'][1]*dic['dz'][k] :E}")
             else:
                 dic["poro"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1])
+            centers.append(str([dic["xmx_center"][i], dic["ymy_center"][0], z_c])[1:-1])
         for j in range(dic["noCells"][1] - 1):
             for names in ["satnum", "poro", "permx", "thconr"]:
                 dic[f"{names}"].extend(dic[f"{names}"][-dic["noCells"][0] :])
             for i_i in range(dic["noCells"][0]):
                 sensor1.append(
                     (dic["xmx_center"][i_i] - dic["sensors"][0][0]) ** 2
-                    + (dic["ymy_center"][j] - dic["sensors"][0][1]) ** 2
+                    + (dic["ymy_center"][j + 1] - dic["sensors"][0][1]) ** 2
                     + (dic["zmz_center"][k] + dic["sensors"][0][2] - dic["dims"][2])
                     ** 2
                 )
                 sensor2.append(
                     (dic["xmx_center"][i_i] - dic["sensors"][1][0]) ** 2
-                    + (dic["ymy_center"][j] - dic["sensors"][1][1]) ** 2
+                    + (dic["ymy_center"][j + 1] - dic["sensors"][1][1]) ** 2
                     + (dic["zmz_center"][k] + dic["sensors"][1][2] - dic["dims"][2])
                     ** 2
                 )
@@ -164,9 +186,18 @@ def structured_handling_spe11bc(dic):
                 if dic["spe11"] == "spe11c":
                     z_c += map_z(dic, j + 1)
                 dic = boxes(dic, dic["xmx_center"][i_i], z_c, i_i)
+                centers.append(
+                    str([dic["xmx_center"][i_i], dic["ymy_center"][j + 1], z_c])[1:-1]
+                )
     dic["fipnum"][pd.Series(sensor1).argmin()] = "5"
     dic["fipnum"][pd.Series(sensor2).argmin()] = "6"
     dic = wells(dic)
+    with open(
+        f"{dic['exe']}/{dic['fol']}/deck/centers.txt",
+        "w",
+        encoding="utf8",
+    ) as file:
+        file.write("\n".join(centers))
     return dic
 
 
@@ -181,40 +212,84 @@ def corner_point_handling_spe11a(dic):
         dic (dict): Global dictionary with new added parameters
 
     """
-    well1, well2, sensor1, sensor2 = [], [], [], []
-    gridf = Grid(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.EGRID")
+    well1, well2, sensor1, sensor2, centers = [], [], [], [], []
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
-    for cell in gridf.cells():
+    for i in range(dic["no_cells"]):
+        dic = get_cell_info(dic, i)
         fgl = pd.Series(
-            (
-                (dic["cxc1"] - cell.coordinate[0]) ** 2
-                + (dic["czc1"] - cell.coordinate[2]) ** 2
-            )
+            ((dic["cxc1"] - dic["xyz"][0]) ** 2 + (dic["czc1"] - dic["xyz"][2]) ** 2)
         ).argmin()
         well1.append(
-            (dic["wellCoord"][0][0] - cell.coordinate[0]) ** 2
-            + (dic["wellCoord"][0][2] - cell.coordinate[2]) ** 2
+            (dic["wellCoord"][0][0] - dic["xyz"][0]) ** 2
+            + (dic["wellCoord"][0][2] - dic["xyz"][2]) ** 2
         )
         well2.append(
-            (dic["wellCoord"][1][0] - cell.coordinate[0]) ** 2
-            + (dic["wellCoord"][1][2] - cell.coordinate[2]) ** 2
+            (dic["wellCoord"][1][0] - dic["xyz"][0]) ** 2
+            + (dic["wellCoord"][1][2] - dic["xyz"][2]) ** 2
         )
         sensor1.append(
-            (cell.coordinate[0] - dic["sensors"][0][0]) ** 2
-            + (cell.coordinate[2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
+            (dic["xyz"][0] - dic["sensors"][0][0]) ** 2
+            + (dic["xyz"][2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
         )
         sensor2.append(
-            (cell.coordinate[0] - dic["sensors"][1][0]) ** 2
-            + (cell.coordinate[2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
+            (dic["xyz"][0] - dic["sensors"][1][0]) ** 2
+            + (dic["xyz"][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
         )
-        dic = boxes(dic, cell.coordinate[0], cell.coordinate[2], cell.i)
+        dic = boxes(dic, dic["xyz"][0], dic["xyz"][2], dic["ijk"][0])
         dic["satnum"].append(dic["ids_gmsh"][fgl][0])
         dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
         dic["poro"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1])
+        centers.append(str([dic["xyz"][0], dic["ymy_center"][0], dic["xyz"][2]])[1:-1])
     idwell1 = pd.Series(well1).argmin()
     idwell2 = pd.Series(well2).argmin()
-    dic["wellijk"][0] = [gridf.cell(idwell1).i + 1, 1, gridf.cell(idwell1).k + 1]
-    dic["wellijk"][1] = [gridf.cell(idwell2).i + 1, 1, gridf.cell(idwell2).k + 1]
+    if dic["use"] == "opm":
+        well1ijk = dic["gridf"].ijk_from_global_index(idwell1)
+        well2ijk = dic["gridf"].ijk_from_global_index(idwell2)
+    else:
+        well1ijk = dic["gridf"].get_ijk(global_index=idwell1)
+        well2ijk = dic["gridf"].get_ijk(global_index=idwell2)
+    dic["fipnum"][pd.Series(sensor1).argmin()] = "5"
+    dic["fipnum"][pd.Series(sensor2).argmin()] = "6"
+    dic["wellijk"][0] = [well1ijk[0] + 1, 1, well1ijk[2] + 1]
+    dic["wellijk"][1] = [well2ijk[0] + 1, 1, well2ijk[2] + 1]
+    with open(
+        f"{dic['exe']}/{dic['fol']}/deck/centers.txt",
+        "w",
+        encoding="utf8",
+    ) as file:
+        file.write("\n".join(centers))
+    return dic
+
+
+def get_cell_info(dic, i):
+    """
+    Function to get the cell center and ijk
+
+    Args:
+        dic (dict): Global dictionary with required parameters
+        i (int): Global index
+
+    Returns:
+        dic (dict): Global dictionary with new added parameters
+
+    """
+    if dic["use"] == "opm":
+        dic["ijk"] = dic["gridf"].ijk_from_global_index(i)
+        vxyz = dic["gridf"].xyz_from_ijk(dic["ijk"][0], dic["ijk"][1], dic["ijk"][2])
+        pxyz = Polygon(
+            [
+                [vxyz[0][0], vxyz[2][0]],
+                [vxyz[0][1], vxyz[2][1]],
+                [vxyz[0][5], vxyz[2][5]],
+                [vxyz[0][4], vxyz[2][4]],
+                [vxyz[0][0], vxyz[2][0]],
+            ]
+        ).centroid.wkt
+        dic["xyz"] = list(float(j) for j in pxyz[7:-1].split(" "))
+        dic["xyz"].insert(1, 0.0)
+    else:
+        dic["xyz"] = dic["gridf"].get_xyz(global_index=i)
+        dic["ijk"] = dic["gridf"].get_ijk(global_index=i)
     return dic
 
 
@@ -229,57 +304,51 @@ def corner_point_handling_spe11bc(dic):
         dic (dict): Global dictionary with new added parameters
 
     """
-    well1, well2, sensor1, sensor2, xtemp = [], [], [], [], []
-    gridf = Grid(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.EGRID")
+    well1, well2, sensor1, sensor2, xtemp, centers = [], [], [], [], [], []
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
-    for cell in gridf.cells():
-        xtemp.append(cell.coordinate[0])
+    for i in range(dic["no_cells"]):
+        dic = get_cell_info(dic, i)
+        xtemp.append(dic["xyz"][0])
         fgl = pd.Series(
-            (
-                (dic["cxc1"] - cell.coordinate[0]) ** 2
-                + (dic["czc1"] - cell.coordinate[2]) ** 2
-            )
+            ((dic["cxc1"] - dic["xyz"][0]) ** 2 + (dic["czc1"] - dic["xyz"][2]) ** 2)
         ).argmin()
         well1.append(
-            (dic["wellCoord"][0][0] - cell.coordinate[0]) ** 2
-            + (dic["wellCoord"][0][2] - cell.coordinate[2]) ** 2
+            (dic["wellCoord"][0][0] - dic["xyz"][0]) ** 2
+            + (dic["wellCoord"][0][2] - dic["xyz"][2]) ** 2
         )
         well2.append(
-            (dic["wellCoord"][1][0] - cell.coordinate[0]) ** 2
-            + (dic["wellCoord"][1][2] - cell.coordinate[2]) ** 2
+            (dic["wellCoord"][1][0] - dic["xyz"][0]) ** 2
+            + (dic["wellCoord"][1][2] - dic["xyz"][2]) ** 2
         )
         sensor1.append(
-            (cell.coordinate[0] - dic["sensors"][0][0]) ** 2
+            (dic["xyz"][0] - dic["sensors"][0][0]) ** 2
             + (dic["ymy_center"][0] - dic["sensors"][0][1]) ** 2
-            + (cell.coordinate[2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
+            + (dic["xyz"][2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
         )
         sensor2.append(
-            (cell.coordinate[0] - dic["sensors"][1][0]) ** 2
+            (dic["xyz"][0] - dic["sensors"][1][0]) ** 2
             + (dic["ymy_center"][0] - dic["sensors"][1][1]) ** 2
-            + (cell.coordinate[2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
+            + (dic["xyz"][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
         )
-        z_c = cell.coordinate[2]
+        z_c = dic["xyz"][2]
         if dic["spe11"] == "spe11c":
-            z_c += map_z(dic, cell.j)
-        dic = boxes(dic, cell.coordinate[0], z_c, cell.i)
+            z_c += map_z(dic, dic["ijk"][1])
+        dic = boxes(dic, dic["xyz"][0], z_c, dic["ijk"][0])
         dic["satnum"].append(dic["ids_gmsh"][fgl][0])
         dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
         dic["thconr"].append(f"{dic['rockCond'][int(dic['ids_gmsh'][fgl][0])-1][0]}")
-        if cell.i == 0 and (
+        if dic["ijk"][0] == 0 and (
             int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
         ):
-            dic["poro"].append(
-                f"{dic['pvAdded']*cell.dimension[1]*cell.dimension[2] :E}"
-            )
-        elif cell.i == dic["noCells"][0] - 1 and (
+            dic["poro"].append(f"{dic['pvAdded']*dic['d_y'][i]*dic['d_z'][i] :E}")
+        elif dic["ijk"][0] == dic["noCells"][0] - 1 and (
             int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
         ):
-            dic["poro"].append(
-                f"{dic['pvAdded']*cell.dimension[1]*cell.dimension[2] :E}"
-            )
+            dic["poro"].append(f"{dic['pvAdded']*dic['d_y'][i]*dic['d_z'][i] :E}")
         else:
             dic["poro"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1])
-        if cell.i > 0 and cell.i == dic["noCells"][0] - 1:
+        centers.append(str([dic["xyz"][0], dic["ymy_center"][0], z_c])[1:-1])
+        if dic["ijk"][0] > 0 and dic["ijk"][0] == dic["noCells"][0] - 1:
             for j in range(dic["noCells"][1] - 1):
                 for names in ["satnum", "poro", "permx", "thconr"]:
                     dic[f"{names}"].extend(dic[f"{names}"][-dic["noCells"][0] :])
@@ -287,26 +356,45 @@ def corner_point_handling_spe11bc(dic):
                     sensor1.append(
                         (xtemp[i_i] - dic["sensors"][0][0]) ** 2
                         + (dic["ymy_center"][j + 1] - dic["sensors"][0][1]) ** 2
-                        + (cell.coordinate[2] + dic["sensors"][0][2] - dic["dims"][2])
-                        ** 2
+                        + (dic["xyz"][2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
                     )
                     sensor2.append(
                         (xtemp[i_i] - dic["sensors"][1][0]) ** 2
                         + (dic["ymy_center"][j + 1] - dic["sensors"][1][1]) ** 2
-                        + (cell.coordinate[2] + dic["sensors"][1][2] - dic["dims"][2])
-                        ** 2
+                        + (dic["xyz"][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
                     )
-                    z_c = cell.coordinate[2]
+                    z_c = dic["xyz"][2]
                     if dic["spe11"] == "spe11c":
                         z_c += map_z(dic, j + 1)
                     dic = boxes(dic, xtemp[i_i], z_c, i_i)
+                    centers.append(
+                        str([xtemp[i_i], dic["ymy_center"][j + 1], z_c])[1:-1]
+                    )
             xtemp = []
-    well1 = pd.Series(well1).argmin()
-    well2 = pd.Series(well2).argmin()
     dic["fipnum"][pd.Series(sensor1).argmin()] = "5"
     dic["fipnum"][pd.Series(sensor2).argmin()] = "6"
-    dic["wellijk"][0] = [gridf.cell(well1).i + 1, 1, gridf.cell(well1).k + 1]
-    dic["wellijk"][1] = [gridf.cell(well2).i + 1, 1, gridf.cell(well2).k + 1]
+    dic["well1"] = pd.Series(well1).argmin()
+    dic["well2"] = pd.Series(well2).argmin()
+    dic = locate_wells(dic)
+    with open(
+        f"{dic['exe']}/{dic['fol']}/deck/centers.txt",
+        "w",
+        encoding="utf8",
+    ) as file:
+        file.write("\n".join(centers))
+    return dic
+
+
+def locate_wells(dic):
+    """Find the wells positions"""
+    if dic["use"] == "opm":
+        well1ijk = dic["gridf"].ijk_from_global_index(dic["well1"])
+        well2ijk = dic["gridf"].ijk_from_global_index(dic["well2"])
+    else:
+        well1ijk = dic["gridf"].get_ijk(global_index=dic["well1"])
+        well2ijk = dic["gridf"].get_ijk(global_index=dic["well2"])
+    dic["wellijk"][0] = [well1ijk[0] + 1, 1, well1ijk[2] + 1]
+    dic["wellijk"][1] = [well2ijk[0] + 1, 1, well2ijk[2] + 1]
     # Work in process to implement properly this for the corner-point grid in spe11c
     if dic["spe11"] == "spe11c":
         dic["wellijkf"] = [[] for _ in range(len(dic["wellCoord"]))]
@@ -371,6 +459,30 @@ def positions(dic):
     for names in ["satnum", "poro", "permx", "thconr", "fipnum"]:
         dic[f"{names}"] = []
     if dic["grid"] == "corner-point":
+        if dic["use"] == "opm":
+            dic["gridf"] = OpmGrid(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.EGRID")
+            dic["initf"] = OpmFile(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.INIT")
+            dic["no_cells"] = (
+                dic["gridf"].dimension[0]
+                * dic["gridf"].dimension[1]
+                * dic["gridf"].dimension[2]
+            )
+            dic["pv"] = dic["initf"]["PORV"]
+            dic["actind"] = list(i for i in range(dic["no_cells"]) if dic["pv"][i] > 0)
+            dic["d_y"] = np.array([0.0] * dic["no_cells"])
+            dic["d_z"] = np.array([0.0] * dic["no_cells"])
+            dic["d_y"][dic["actind"]] = list(dic["initf"]["DY"])
+            dic["d_z"][dic["actind"]] = list(dic["initf"]["DZ"])
+        else:
+            dic["gridf"] = Grid(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.EGRID")
+            dic["initf"] = ResdataFile(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.INIT")
+            dic["actnum"] = list(dic["gridf"].export_actnum())
+            dic["no_cells"] = dic["gridf"].nx * dic["gridf"].ny * dic["gridf"].nz
+            dic["actind"] = list(i for i, act in enumerate(dic["actnum"]) if act == 1)
+            dic["d_y"] = np.array([0.0] * dic["no_cells"])
+            dic["d_z"] = np.array([0.0] * dic["no_cells"])
+            dic["d_y"][dic["actind"]] = list(dic["initf"].iget_kw("DY")[0])
+            dic["d_z"][dic["actind"]] = list(dic["initf"].iget_kw("DZ")[0])
         if dic["spe11"] == "spe11a":
             dic = corner_point_handling_spe11a(dic)
         else:

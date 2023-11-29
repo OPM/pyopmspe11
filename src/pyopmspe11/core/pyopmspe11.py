@@ -66,6 +66,12 @@ def pyopmspe11():
         help="Write only the 'dense', 'sparse', 'performance', 'dense_performance', "
         "'performance_sparse', 'dense_sparse', or 'all'",
     )
+    parser.add_argument(
+        "-u",
+        "--use",
+        default="resdata",
+        help="Using the 'opm' or 'resdata' python package (resdata by default).",
+    )
     cmdargs = vars(parser.parse_known_args()[0])
     file = cmdargs["input"].strip()  # Name of the input file
     dic = {"fol": cmdargs["output"].strip()}  # Name for the output folder
@@ -74,6 +80,7 @@ def pyopmspe11():
     dic["mode"] = cmdargs["mode"].strip()  # Parts of the workflow to run
     dic["pat"] = os.path.dirname(__file__)[:-5]  # Path to the pyopmspe11 folder
     dic["compare"] = cmdargs["compare"].strip()  # Make common figures for comparison
+    dic["use"] = cmdargs["use"]  # OPM or resdata python package
     dic["resolution"] = cmdargs[
         "resolution"
     ].strip()  # Spatial resolution to write the data

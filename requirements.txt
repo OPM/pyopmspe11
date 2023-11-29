@@ -1,4 +1,5 @@
 mako
 matplotlib
+pandas
 resdata
 shapely

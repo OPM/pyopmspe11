@@ -11,6 +11,7 @@ Welcome to pyopmspe11's documentation!
    examples
    api
    output_folder
+   related
    about
 
 Indices and tables

@@ -30,6 +30,7 @@ where
 - \-g, \-\-generate: Write only the 'dense', 'sparse', 'performance', 'dense_performance', 'performance_sparse', 'dense_sparse', or 'all' ('performance_sparse' by default).
 - \-r, \-\-resolution: Number of x, y, and z elements to write the data ('100,10,50' by default).
 - \-t, \-\-time: Time interval for the spatial maps (spe11a [h]; spe11b/c [y]) ('5' by default).
+- \-u, \-\-use: Using the 'opm' or 'resdata' python package ('resdata' by default).
 - \-c, \-\-compare: Generate a common plot for the current folders for 'spe11a', 'spe11b', or 'spe11c' ('' by default).
     
 Installation
