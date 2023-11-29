@@ -11,9 +11,20 @@ import csv
 from io import StringIO
 import numpy as np
 import pandas as pd
-from resdata.grid import Grid
-from resdata.resfile import ResdataFile
-from resdata.summary import Summary
+
+try:
+    from opm.io.ecl import EclFile as OpmFile
+    from opm.io.ecl import EGrid as OpmGrid
+    from opm.io.ecl import ERst as OpmRestart
+    from opm.io.ecl import ESmry as OpmSummary
+except ImportError:
+    print("The Python package opm was not found, using resdata")
+try:
+    from resdata.grid import Grid
+    from resdata.resfile import ResdataFile
+    from resdata.summary import Summary
+except ImportError:
+    print("The resdata Python package was not found, using opm")
 
 GAS_DEN_REF = 1.86843
 WAT_DEN_REF = 998.108
@@ -54,12 +65,19 @@ def main():
         help="Write only the 'dense', 'performance', 'sparse', 'dense_performance', "
         "'dense_sparse', 'performance_sparse', or 'all'",
     )
+    parser.add_argument(
+        "-u",
+        "--use",
+        default="resdata",
+        help="Using the 'resdata' or python package (resdata by default).",
+    )
     cmdargs = vars(parser.parse_known_args()[0])
     dic = {"path": cmdargs["path"].strip()}
     dic["case"] = cmdargs["deck"].strip()
     dic["mode"] = cmdargs["generate"].strip()
     dic["exe"] = os.getcwd()
     dic["where"] = f"{dic['exe']}/{dic['path']}/data"
+    dic["use"] = cmdargs["use"].strip()
     dic["nxyz"] = np.genfromtxt(
         StringIO(cmdargs["resolution"]), delimiter=",", dtype=int
     )
@@ -74,6 +92,20 @@ def main():
     if dic["case"] == "spe11c":
         dic["dims"][1] = 5000.0
     dic["nocellsr"] = dic["nxyz"][0] * dic["nxyz"][1] * dic["nxyz"][2]
+    if dic["use"] == "opm":
+        dic = read_opm(dic)
+    else:
+        dic = read_resdata(dic)
+    if dic["mode"] in ["performance", "all", "dense_performance", "performance_sparse"]:
+        performance(dic)
+    if dic["mode"] in ["all", "sparse", "dense_sparse", "performance_sparse"]:
+        sparse_data(dic)
+    if dic["mode"] in ["all", "dense", "dense_performance", "dense_sparse"]:
+        dense_data(dic)
+
+
+def read_resdata(dic):
+    """Using resdata"""
     case = "./" + dic["path"] + "/flow/" + f"{dic['path'].upper()}"
     for name in ["unrst", "init"]:
         dic[f"{name}"] = ResdataFile(case + f".{name.upper()}")
@@ -94,23 +126,127 @@ def main():
     dic["porva"] = [porv for (porv, act) in zip(dic["porv"], dic["actnum"]) if act == 1]
     dic["nocellst"], dic["nocellsa"] = len(dic["actnum"]), sum(dic["actnum"])
     dic["norst"] = dic["unrst"].num_report_steps()
-    if dic["mode"] in ["performance", "all", "dense_performance", "performance_sparse"]:
-        performance(dic)
-    if dic["mode"] in ["all", "dense", "dense_performance", "dense_sparse"]:
-        dense_data(dic)
-    if dic["mode"] in ["all", "sparse", "dense_sparse", "performance_sparse"]:
-        sparse_data(dic)
-
-
-def performance(dic):
-    """Write the performance within the benchmark format"""
     dic["d_t"] = (
         dic["smspec"].end_time - dic["unrst"].dates[dic["t0_rst"]]
     ).total_seconds() / (len(dic["unrst"].dates) - 1 - dic["t0_rst"])
     dic["times"] = [dic["d_t"] * j for j in range(1, dic["norst"] - 1 - dic["t0_rst"])]
+    dic["notimes"] = len(dic["times"])
     dic["t_0"] = (
         dic["unrst"].dates[dic["t0_rst"]] - dic["unrst"].dates[0]
     ).total_seconds()
+    dic["rsteps"] = [
+        rstep for rstep in dic["smspec"].get_report_step() if rstep > dic["t0_rst"]
+    ]
+    dic["map_rsteps"] = [
+        sum((1 if (rstep < i) else 0 for rstep in dic["smspec"].get_report_step()))
+        for i in range(dic["t1_rst"] + 1, dic["norst"] + 1)
+    ]
+    dic["gxyz"] = [dic["egrid"].nx, dic["egrid"].ny, dic["egrid"].nz]
+    dic["simxcent"] = [0.0] * len(dic["porv"])
+    dic["simycent"] = [0.0] * len(dic["porv"])
+    dic["simzcent"] = [0.0] * len(dic["porv"])
+    for cell in dic["egrid"].cells():
+        (
+            dic["simxcent"][cell.global_index],
+            dic["simycent"][cell.global_index],
+            dic["simzcent"][cell.global_index],
+        ) = (
+            cell.coordinate[0],
+            cell.coordinate[1],
+            dic["dims"][2] - cell.coordinate[2],
+        )
+    return dic
+
+
+def read_opm(dic):
+    """Using resdata"""
+    case = "./" + dic["path"] + "/flow/" + f"{dic['path'].upper()}"
+    dic["unrst"], dic["init"] = OpmRestart(case + ".UNRST"), OpmFile(case + ".INIT")
+    if dic["unrst"].count("WAT_DEN", 0):
+        dic["watDen"], dic["r_s"], dic["r_v"] = "wat_den", "rsw", "rvw"
+    else:
+        dic["watDen"], dic["r_s"], dic["r_v"] = "oil_den", "rs", "rv"
+    dic["egrid"], dic["smspec"] = OpmGrid(case + ".EGRID"), OpmSummary(case + ".SMSPEC")
+    names = ["sgas", dic["r_s"], "pressure", "gas_den", dic["watDen"], "gaskr"]
+    if dic["case"] != "spe11a":
+        names += [dic["r_v"], "temp"]
+    for name in names:
+        dic[f"{name}"] = []
+        for rst in dic["unrst"].report_steps:
+            dic[f"{name}"].append(list(dic["unrst"][name.upper(), rst]))
+    for name in ["porv", "satnum", "fipnum", "dx", "dy", "dz"]:
+        dic[f"{name}"] = list(dic["init"][name.upper()])
+    dic["actind"] = list(i for i, porv in enumerate(dic["porv"]) if porv > 0)
+    dic["porva"] = list(porv for porv in dic["porv"] if porv > 0)
+    dic["nocellst"], dic["nocellsa"] = len(dic["porv"]), dic["egrid"].active_cells
+    dic["norst"] = len(dic["unrst"].report_steps)
+    dic["infoiter"] = []
+    with open(
+        f"{dic['path']}/flow/{dic['path'].upper()}.INFOITER", "r", encoding="utf8"
+    ) as file:
+        for j, row in enumerate(csv.reader(file)):
+            if j > 0:
+                dic["infoiter"].append(
+                    [float(column) for column in (row[0].strip()).split()[:8]]
+                )
+    if dic["norst"] > 2:
+        whr1 = sum(row[0] < dic["norst"] - 2 for row in dic["infoiter"])
+        whr2 = sum(row[0] < dic["norst"] - 3 for row in dic["infoiter"])
+        dic["d_t"] = 1.0 * round(
+            86400 * (dic["infoiter"][whr1][2] - dic["infoiter"][whr2][2])
+        )
+    else:
+        dic["d_t"] = 1.0 * round(
+            (dic["smspec"].end_date - dic["smspec"].start_date).total_seconds()
+            / (dic["norst"] - 1)
+        )
+    whr0 = sum(row[0] < 1 for row in dic["infoiter"])
+    dic["times"] = [dic["d_t"] * j for j in range(1, dic["norst"] - 1 - dic["t0_rst"])]
+    dic["notimes"] = len(dic["times"])
+    dic["smsp_seconds"] = 86400 * dic["smspec"]["TIME"]
+    temp = dic["times"] + [dic["times"][-1] + dic["d_t"]]
+    if dic["case"] == "spe11a":
+        temp.insert(0, 0.0)
+    dic["smsp_rst"] = [
+        pd.Series(abs(dic["smsp_seconds"] - time)).argmin() + 1 for time in temp
+    ]
+    dic["t_0"] = 1.0 * round(86400 * dic["infoiter"][whr0][2])
+    dic["rsteps"] = [1 + dic["t0_rst"]] * (
+        dic["smsp_rst"][1] - dic["smsp_rst"][0] + 1 - dic["t0_rst"]
+    )
+    for i in range(dic["norst"] - dic["t1_rst"] - 2):
+        dic["rsteps"] += [2 + dic["t0_rst"] + i] * (
+            dic["smsp_rst"][2 + i] - dic["smsp_rst"][1 + i]
+        )
+    dic["rsteps"] += [dic["norst"] - dic["t0_rst"]] * (
+        len(dic["smsp_seconds"]) - dic["smsp_rst"][-1]
+    )
+    dic["map_rsteps"] = dic["smsp_rst"][dic["t0_rst"] :]
+    dic["map_rsteps"].append(len(dic["smsp_seconds"]))
+    dic["gxyz"] = [
+        dic["egrid"].dimension[0],
+        dic["egrid"].dimension[1],
+        dic["egrid"].dimension[2],
+    ]
+    dic = load_centers(dic)
+    return dic
+
+
+def load_centers(dic):
+    """opm.io.ecl.EGrid.xyz_from_ijk is returning nan values, that's why we do this"""
+    dic["simxcent"] = [0.0] * len(dic["porv"])
+    dic["simycent"] = [0.0] * len(dic["porv"])
+    dic["simzcent"] = [0.0] * len(dic["porv"])
+    with open(f"{dic['path']}/deck/centers.txt", "r", encoding="utf8") as file:
+        for j, row in enumerate(csv.reader(file)):
+            dic["simxcent"][j] = float(row[0])
+            dic["simycent"][j] = float(row[1])
+            dic["simzcent"][j] = dic["dims"][2] - float(row[2])
+    return dic
+
+
+def performance(dic):
+    """Write the performance within the benchmark format"""
     dic["infosteps"] = []
     with open(
         f"{dic['path']}/flow/{dic['path'].upper()}.INFOSTEP", "r", encoding="utf8"
@@ -127,17 +263,16 @@ def performance(dic):
     nress = [infostep[8] for infostep in dic["infosteps"]]
     tlinsols = [infostep[4] for infostep in dic["infosteps"]]
     runtimes = [sum(infostep[2:7]) for infostep in dic["infosteps"]]
-    rsteps = [
-        rstep for rstep in dic["smspec"].get_report_step() if rstep > dic["t0_rst"]
-    ]
-    fgip = dic["smspec"]["FGIP"]
-    tsteps = dic["smspec"]["TIMESTEP"]
-    nliters = dic["smspec"]["NEWTON"]
-    liniters = dic["smspec"]["MLINEARS"]
-    dic["map_rsteps"] = [
-        sum((1 if (rstep < i) else 0 for rstep in dic["smspec"].get_report_step()))
-        for i in range(dic["t1_rst"] + 1, dic["norst"] + 1)
-    ]
+    if dic["use"] == "opm":
+        fgip = dic["smspec"]["FGIP"]
+        tsteps = dic["smspec"]["TIMESTEP"]
+        nliters = dic["smspec"]["NEWTON"]
+        liniters = dic["smspec"]["MLINEARS"]
+    else:
+        fgip = dic["smspec"]["FGIP"].values
+        tsteps = dic["smspec"]["TIMESTEP"].values
+        nliters = dic["smspec"]["NEWTON"].values
+        liniters = dic["smspec"]["MLINEARS"].values
     dic["text"] = []
     dic["text"].append(
         "# t [s], tstep [s], fsteps [-], mass [kg], dof [-], nliter [-], "
@@ -153,22 +288,22 @@ def performance(dic):
     for j, time in enumerate(dic["times"]):
         dic["tstep"] = sum(
             (
-                tsteps[i].value
-                for i, rstep in enumerate(rsteps)
+                tsteps[i]
+                for i, rstep in enumerate(dic["rsteps"])
                 if rstep == (j + 1 + dic["t0_rst"])
             )
-        ) / rsteps.count(j + 1 + dic["t0_rst"])
+        ) / dic["rsteps"].count(j + 1 + dic["t0_rst"])
         dic["nliters"] = sum(
             (
-                nliters[i].value
-                for i, rstep in enumerate(rsteps)
+                nliters[i]
+                for i, rstep in enumerate(dic["rsteps"])
                 if rstep == (j + 1 + dic["t0_rst"])
             )
         )
         dic["liniters"] = sum(
             (
-                liniters[i].value
-                for i, rstep in enumerate(rsteps)
+                liniters[i]
+                for i, rstep in enumerate(dic["rsteps"])
                 if rstep == (j + 1 + dic["t0_rst"])
             )
         )
@@ -176,7 +311,7 @@ def performance(dic):
             f"{time:.3e}, "
             + f"{dic['tstep']:.3e}, "
             + f"{sum((fsteps[i] for i in dic['map_info'] if i==j)):.3e}, "
-            + f"{GAS_DEN_REF*fgip[dic['map_rsteps'][j]-1].value:.3e}, "
+            + f"{GAS_DEN_REF*fgip[dic['map_rsteps'][j]-1]:.3e}, "
             + f"{dic['dof'] * dic['nocellsa']:.3e}, "
             + f"{dic['nliters']:.3e}, "
             + f"{sum((nress[i] for i in dic['map_info'] if i==j)):.3e}, "
@@ -211,15 +346,12 @@ def sparse_data(dic):
         dic[ent] = []
     if dic["case"] != "spe11a":
         dic["boundtot"] = []
-    dic["d_t"] = (
-        dic["smspec"].end_time - dic["unrst"].dates[dic["t0_rst"]]
-    ).total_seconds() / (len(dic["unrst"].dates) - 1 - dic["t0_rst"])
     dic["boxa"] = [i for i, fip in enumerate(dic["fipnum"]) if fip in (2, 4, 5)]
     dic["boxb"] = [i for i, fip in enumerate(dic["fipnum"]) if fip == 3]
     dic["boxc"] = np.array([fip == 4 for fip in dic["fipnum"]])
     dic["boxc_x"] = list(np.roll(dic["boxc"], 1))
-    dic["boxc_y"] = list(np.roll(dic["boxc"], -dic["egrid"].nx))
-    dic["boxc_z"] = list(np.roll(dic["boxc"], -dic["egrid"].nx * dic["egrid"].ny))
+    dic["boxc_y"] = list(np.roll(dic["boxc"], -dic["gxyz"][0]))
+    dic["boxc_z"] = list(np.roll(dic["boxc"], -dic["gxyz"][0] * dic["gxyz"][1]))
     dic["boxc"] = [i for i, fip in enumerate(dic["fipnum"]) if fip == 4]
     dic["boxc_z"] = [i for i, fip in enumerate(dic["boxc_z"]) if fip == 1]
     dic["boxc_y"] = [i for i, fip in enumerate(dic["boxc_y"]) if fip == 1]
@@ -302,29 +434,12 @@ def write_sparse_data(dic):
 
 def dense_data(dic):
     """Write the quantities with the benchmark format"""
-    dic["d_t"] = (
-        dic["smspec"].end_time - dic["unrst"].dates[dic["t0_rst"]]
-    ).total_seconds() / (len(dic["unrst"].dates) - 1 - dic["t0_rst"])
     d_s = round(dic["spatial_t"] / dic["d_t"])
-    dic["d_t"] = round(
-        (dic["smspec"].end_time - dic["unrst"].dates[dic["t1_rst"]]).total_seconds()
-        / dic["spatial_t"]
-    )
+    n_t = round((dic["times"][-1 - dic["t0_rst"]] + dic["d_t"]) / dic["spatial_t"])
     for i, j, k in zip(["x", "y", "z"], dic["dims"], dic["nxyz"]):
         temp = np.linspace(0, j, k + 1)
         dic[f"ref{i}cent"] = 0.5 * (temp[1:] + temp[:-1])
-        dic[f"sim{i}cent"] = [0] * dic["nocellst"]
     ind, dic["cell_ind"] = 0, [0] * dic["nocellsr"]
-    for cell in dic["egrid"].cells():
-        (
-            dic["simxcent"][cell.global_index],
-            dic["simycent"][cell.global_index],
-            dic["simzcent"][cell.global_index],
-        ) = (
-            cell.coordinate[0],
-            cell.coordinate[1],
-            dic["dims"][2] - cell.coordinate[2],
-        )
     # This is very slow, it needs to be fixed
     for k in np.flip(dic["refzcent"]):
         for j in dic["refycent"]:
@@ -338,7 +453,7 @@ def dense_data(dic):
     names = ["pressure", "sgas", "xco2", "xh20", "gden", "wden", "tco2"]
     if dic["case"] != "spe11a":
         names += ["temp"]
-    for i in range(dic["d_t"] + 1):
+    for i in range(n_t + 1):
         t_n = i * d_s + dic["t1_rst"]
         for name in names:
             dic[f"{name}_array"] = np.array([np.nan] * dic["nocellst"])
@@ -363,7 +478,9 @@ def dense_data(dic):
                 dic["sgas"][t_n], dic[f"{dic['watDen']}"][t_n], dic["porva"]
             )
         ]
-        dic["pressure_array"][dic["actind"]] = dic["pressure"][t_n] * 1e5  # Pa
+        dic["pressure_array"][dic["actind"]] = [
+            1e5 * pres for pres in dic["pressure"][t_n]
+        ]
         dic["sgas_array"][dic["actind"]] = dic["sgas"][t_n]
         dic["gden_array"][dic["actind"]] = [
             den if gas > 0 else 0

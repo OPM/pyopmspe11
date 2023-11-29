@@ -65,6 +65,7 @@ def data(dic):
         "-g " + f"{dic['generate']}",
         "-r " + f"{dic['resolution']}",
         "-t " + f"{dic['time_data']}",
+        "-u " + f"{dic['use']}",
     ]
     print(" ".join(data_exe))
     prosc = subprocess.run(data_exe, check=True)
