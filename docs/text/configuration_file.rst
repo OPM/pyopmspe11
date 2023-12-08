@@ -38,7 +38,7 @@ The following input lines in the configuration file are:
     12                #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
     70 36.25          #Temperature bottom and top rig [C]            
     19620000 0.1      #Pressure on the top [Pa] and multiplier for the permeability in the z direction [-]
-    1e-9 2e-8 0       #Diffusion (in liquid and gas) [m^2/s] and dispersion [m] (disperison only available in Flow master)
+    1e-9 2e-8 0       #Diffusion (in liquid and gas) [m^2/s] and dispersion [m] (dispersion only available in Flow master)
     8.5e-1 2500       #Rock specific heat and density (for spe11b/c)
     0 5e4 1           #Added pore volume on top boundary (for spe11a [if 0, free flow bc]), pore volume on lateral boundaries, and width of buffer cell [m] (for spe11b/c)
     150 10            #Elevation of the parabola and back [m] (for spe11c) 

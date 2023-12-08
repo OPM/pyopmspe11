@@ -6,14 +6,14 @@ Examples
 Hello world 
 ===========
 
-Let us now consider the spe11b.txt file in the `examples <https://github.com/OPM/pyopmspe11/blob/main/examples>`_ folder.
-To generate the data as required for the benchmark, as well as some figures to visualize the results, this can be achived by executing:
+The `examples/hello_world <https://github.com/OPM/pyopmspe11/blob/main/examples/hello_world>`_ folder contains configuration files
+with low grid resolution and shorter injetion times (for initial testing of the framework). For example, by executing:
 
 .. code-block:: bash
 
-    pyopmspe11 -i spe11b.txt -o spe11b -m all -g all -t 200 -r 50,1,20
+    pyopmspe11 -i spe11b.txt -o spe11b -m all -g all -t 5 -r 50,1,20
 
-The following is the figure generated related to the temperature in the domain over time:
+the following is the figure generated related to the temperature in the domain over time:
 
 .. figure:: figs/spe11b_temp_2Dmaps.png
 
@@ -57,7 +57,17 @@ where you can also see some of the preliminary simulation results using OPM Flow
     * spe11b and spe11c have an extra layer [1 m] of grid cells on the left and right boundaries to include the buffer volume  
     ¨ The solver time step is the maximum value allowed by the simulator
 
-Then, the configuration files in the `examples <https://github.com/OPM/pyopmspe11/blob/main/examples>`_ folder can be modified to use the same grid sizes.
+Then `examples/finner_grids <https://github.com/OPM/pyopmspe11/blob/main/examples>`_ folder contains configuration files
+with grid size of the same order as requested for reporting the spatial data in the benchmark, as well as the required injection schedules. For example, by executing:
+
+.. code-block:: bash
+
+    pyopmspe11 -i spe11b.txt -o spe11b_cartesian -m all -g all -r 840,1,120 -t 5
+
+the following are some of the generated figures:
+
+.. figure:: figs/spe11b_sparse_data_finner.png
+.. figure:: figs/spe11b_performance_finner.png
 
 .. tip::
     By executing flow --help you get an overview of the available flags in the flow simulator to improve/fix convergence issues 

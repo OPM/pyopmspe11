@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Introduction &mdash; pyopmspe11  documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -87,12 +89,20 @@
 <h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h1>
 <img alt="_images/animation.gif" src="_images/animation.gif" />
 <p>This documentation describes the content of the <strong>pyopmspe11</strong> package.
-The numerical simulations for the CO2 are performed using the
-<a class="reference external" href="https://opm-project.org/?page_id=19">Flow</a> simulator.</p>
+The numerical studies are performed using the <a class="reference external" href="https://opm-project.org/?page_id=19">Flow</a> simulator.</p>
 <section id="concept">
 <h2>Concept<a class="headerlink" href="#concept" title="Link to this heading"></a></h2>
-<p>Simplified and flexible testing framework for the three cases in the SPE Comparative Solution Project
-using the open-source simulator OPM Flow.</p>
+<p>Simplified and flexible framework for the three cases in the SPE Comparative Solution Project
+via a <a class="reference internal" href="configuration_file.html"><span class="doc">configuration file</span></a>:</p>
+<ul class="simple">
+<li><p>Set the path to the OPM Flow simulator and simulator flags.</p></li>
+<li><p>Set the grid type (cartesian, tensor, or corner-point grid) and the number of cells.</p></li>
+<li><p>Set the rock and fluid properties.</p></li>
+<li><p>Set the well locations and injection schedule.</p></li>
+<li><p>After execution. generates the data in the same format as requested in the benchmark.</p></li>
+<li><p>In addition, generates .png figures for quick inspection.</p></li>
+<li><p>Also, generates figures for comparison between runs (i.e., to assess sensitivities).</p></li>
+</ul>
 </section>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>

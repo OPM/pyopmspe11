@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Examples &mdash; pyopmspe11  documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -86,12 +88,12 @@
 <h1>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h1>
 <section id="hello-world">
 <h2>Hello world<a class="headerlink" href="#hello-world" title="Link to this heading"></a></h2>
-<p>Let us now consider the spe11b.txt file in the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples">examples</a> folder.
-To generate the data as required for the benchmark, as well as some figures to visualize the results, this can be achived by executing:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.txt<span class="w"> </span>-o<span class="w"> </span>spe11b<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">200</span><span class="w"> </span>-r<span class="w"> </span><span class="m">50</span>,1,20
+<p>The <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/hello_world">examples/hello_world</a> folder contains configuration files
+with low grid resolution and shorter injetion times (for initial testing of the framework). For example, by executing:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.txt<span class="w"> </span>-o<span class="w"> </span>spe11b<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-r<span class="w"> </span><span class="m">50</span>,1,20
 </pre></div>
 </div>
-<p>The following is the figure generated related to the temperature in the domain over time:</p>
+<p>the following is the figure generated related to the temperature in the domain over time:</p>
 <figure class="align-default">
 <img alt="_images/spe11b_temp_2Dmaps.png" src="_images/spe11b_temp_2Dmaps.png" />
 </figure>
@@ -129,7 +131,18 @@ where you can also see some of the preliminary simulation results using OPM Flow
 <span class="l l-Scalar l-Scalar-Plain">¨ The solver time step is the maximum value allowed by the simulator</span>
 </pre></div>
 </div>
-<p>Then, the configuration files in the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples">examples</a> folder can be modified to use the same grid sizes.</p>
+<p>Then <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples">examples/finner_grids</a> folder contains configuration files
+with grid size of the same order as requested for reporting the spatial data in the benchmark, as well as the required injection schedules. For example, by executing:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.txt<span class="w"> </span>-o<span class="w"> </span>spe11b_cartesian<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">840</span>,1,120<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span>
+</pre></div>
+</div>
+<p>the following are some of the generated figures:</p>
+<figure class="align-default">
+<img alt="_images/spe11b_sparse_data_finner.png" src="_images/spe11b_sparse_data_finner.png" />
+</figure>
+<figure class="align-default">
+<img alt="_images/spe11b_performance_finner.png" src="_images/spe11b_performance_finner.png" />
+</figure>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>By executing flow –help you get an overview of the available flags in the flow simulator to improve/fix convergence issues
