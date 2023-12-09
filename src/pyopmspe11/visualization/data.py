@@ -159,7 +159,73 @@ def read_resdata(dic):
 
 
 def read_opm(dic):
-    """Using resdata"""
+    """Using opm"""
+    dic = opm_files(dic)
+    dic["actind"] = list(i for i, porv in enumerate(dic["porv"]) if porv > 0)
+    dic["porva"] = list(porv for porv in dic["porv"] if porv > 0)
+    dic["nocellst"], dic["nocellsa"] = len(dic["porv"]), dic["egrid"].active_cells
+    dic["norst"] = len(dic["unrst"].report_steps)
+    dic["infoiter"] = []
+    with open(
+        f"{dic['path']}/flow/{dic['path'].upper()}.INFOITER", "r", encoding="utf8"
+    ) as file:
+        for j, row in enumerate(csv.reader(file)):
+            if j > 0:
+                dic["infoiter"].append(
+                    [float(column) for column in (row[0].strip()).split()[:8]]
+                )
+    if dic["norst"] > 2 and dic["case"] != "spe11a":
+        # whr1 = sum(row[0] < dic["norst"] - 2 for row in dic["infoiter"])
+        # whr2 = sum(row[0] < dic["norst"] - 3 for row in dic["infoiter"])
+        # dic["d_t"] = 1.0 * round(
+        #     86400 * (dic["infoiter"][whr1][2] - dic["infoiter"][whr2][2])
+        # )
+        with open(f"{dic['path']}/deck/dt.txt", "r", encoding="utf8") as file:
+            for value in csv.reader(file):
+                dic["d_t"] = float(value[0])
+    else:
+        dic["d_t"] = 1.0 * round(
+            (dic["smspec"].end_date - dic["smspec"].start_date).total_seconds()
+            / (dic["norst"] - 1)
+        )
+    whr0 = sum(row[0] < 1 for row in dic["infoiter"])
+    dic["times"] = [dic["d_t"] * j for j in range(1, dic["norst"] - dic["t1_rst"])]
+    dic["notimes"] = len(dic["times"])
+    dic["smsp_seconds"] = 86400 * dic["smspec"]["TIME"]
+    if dic["case"] == "spe11a":
+        temp = [0.0]
+        temp += dic["times"][:-1]
+    else:
+        tini = dic["smsp_seconds"][-1] - dic["times"][-1]
+        temp = [tini + time - dic["d_t"] for time in dic["times"]]
+        temp.insert(0, tini - dic["d_t"])
+    dic["smsp_rst"] = [
+        pd.Series(abs(dic["smsp_seconds"] - time)).argmin() + 1 for time in temp
+    ]
+    dic["t_0"] = 1.0 * round(86400 * dic["infoiter"][whr0][2])
+    dic["rsteps"] = [1 + dic["t0_rst"]] * (
+        dic["smsp_rst"][1] - dic["smsp_rst"][0] + 1 - dic["t0_rst"]
+    )
+    for i in range(dic["norst"] - dic["t1_rst"] - 3 + dic["t0_rst"]):
+        dic["rsteps"] += [2 + dic["t0_rst"] + i] * (
+            dic["smsp_rst"][2 + i] - dic["smsp_rst"][1 + i]
+        )
+    dic["rsteps"] += [dic["norst"] - 1] * (
+        len(dic["smsp_seconds"]) - dic["smsp_rst"][-1]
+    )
+    dic["map_rsteps"] = dic["smsp_rst"][1:]
+    dic["map_rsteps"].append(len(dic["smsp_seconds"]))
+    dic["gxyz"] = [
+        dic["egrid"].dimension[0],
+        dic["egrid"].dimension[1],
+        dic["egrid"].dimension[2],
+    ]
+    dic = load_centers(dic)
+    return dic
+
+
+def opm_files(dic):
+    """Extract the data from the opm output files"""
     case = "./" + dic["path"] + "/flow/" + f"{dic['path'].upper()}"
     dic["unrst"], dic["init"] = OpmRestart(case + ".UNRST"), OpmFile(case + ".INIT")
     if dic["unrst"].count("WAT_DEN", 0):
@@ -176,59 +242,6 @@ def read_opm(dic):
             dic[f"{name}"].append(list(dic["unrst"][name.upper(), rst]))
     for name in ["porv", "satnum", "fipnum", "dx", "dy", "dz"]:
         dic[f"{name}"] = list(dic["init"][name.upper()])
-    dic["actind"] = list(i for i, porv in enumerate(dic["porv"]) if porv > 0)
-    dic["porva"] = list(porv for porv in dic["porv"] if porv > 0)
-    dic["nocellst"], dic["nocellsa"] = len(dic["porv"]), dic["egrid"].active_cells
-    dic["norst"] = len(dic["unrst"].report_steps)
-    dic["infoiter"] = []
-    with open(
-        f"{dic['path']}/flow/{dic['path'].upper()}.INFOITER", "r", encoding="utf8"
-    ) as file:
-        for j, row in enumerate(csv.reader(file)):
-            if j > 0:
-                dic["infoiter"].append(
-                    [float(column) for column in (row[0].strip()).split()[:8]]
-                )
-    if dic["norst"] > 2:
-        whr1 = sum(row[0] < dic["norst"] - 2 for row in dic["infoiter"])
-        whr2 = sum(row[0] < dic["norst"] - 3 for row in dic["infoiter"])
-        dic["d_t"] = 1.0 * round(
-            86400 * (dic["infoiter"][whr1][2] - dic["infoiter"][whr2][2])
-        )
-    else:
-        dic["d_t"] = 1.0 * round(
-            (dic["smspec"].end_date - dic["smspec"].start_date).total_seconds()
-            / (dic["norst"] - 1)
-        )
-    whr0 = sum(row[0] < 1 for row in dic["infoiter"])
-    dic["times"] = [dic["d_t"] * j for j in range(1, dic["norst"] - 1 - dic["t0_rst"])]
-    dic["notimes"] = len(dic["times"])
-    dic["smsp_seconds"] = 86400 * dic["smspec"]["TIME"]
-    temp = dic["times"] + [dic["times"][-1] + dic["d_t"]]
-    if dic["case"] == "spe11a":
-        temp.insert(0, 0.0)
-    dic["smsp_rst"] = [
-        pd.Series(abs(dic["smsp_seconds"] - time)).argmin() + 1 for time in temp
-    ]
-    dic["t_0"] = 1.0 * round(86400 * dic["infoiter"][whr0][2])
-    dic["rsteps"] = [1 + dic["t0_rst"]] * (
-        dic["smsp_rst"][1] - dic["smsp_rst"][0] + 1 - dic["t0_rst"]
-    )
-    for i in range(dic["norst"] - dic["t1_rst"] - 2):
-        dic["rsteps"] += [2 + dic["t0_rst"] + i] * (
-            dic["smsp_rst"][2 + i] - dic["smsp_rst"][1 + i]
-        )
-    dic["rsteps"] += [dic["norst"] - dic["t0_rst"]] * (
-        len(dic["smsp_seconds"]) - dic["smsp_rst"][-1]
-    )
-    dic["map_rsteps"] = dic["smsp_rst"][dic["t0_rst"] :]
-    dic["map_rsteps"].append(len(dic["smsp_seconds"]))
-    dic["gxyz"] = [
-        dic["egrid"].dimension[0],
-        dic["egrid"].dimension[1],
-        dic["egrid"].dimension[2],
-    ]
-    dic = load_centers(dic)
     return dic
 
 

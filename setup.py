@@ -36,7 +36,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
     ],
-    keywords="csp11 spe11 co2 flow python",
+    keywords="csp11 ccs cfd co2 flow opm python spe11",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     license="MIT",

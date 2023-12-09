@@ -136,3 +136,11 @@ def opm_files(dic):
     if prosc.returncode != 0:
         raise ValueError(f"Invalid result: { prosc.returncode }")
     os.system(f"rm -rf {dic['exe']}/{dic['fol']}/deck/saturation_functions.py")
+    # Way around to the time step the solutions are written (use in data.py)
+    if dic["use"] == "opm" and dic["spe11"] != "spe11a":
+        with open(
+            f"{dic['exe']}/{dic['fol']}/deck/dt.txt",
+            "w",
+            encoding="utf8",
+        ) as file:
+            file.write(f"{dic['inj'][-1][1]}")

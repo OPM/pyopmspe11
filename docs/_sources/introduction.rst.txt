@@ -5,13 +5,20 @@ Introduction
 .. image:: ./figs/animation.gif
 
 This documentation describes the content of the **pyopmspe11** package.
-The numerical simulations for the CO2 are performed using the 
-`Flow <https://opm-project.org/?page_id=19>`_ simulator. 
+The numerical studies are performed using the `Flow <https://opm-project.org/?page_id=19>`_ simulator. 
 
 Concept
 -------
-Simplified and flexible testing framework for the three cases in the SPE Comparative Solution Project
-using the open-source simulator OPM Flow. 
+Simplified and flexible framework for the three cases in the SPE Comparative Solution Project
+via a :doc:`configuration file <./configuration_file>`:
+
+- Set the path to the OPM Flow simulator and simulator flags.
+- Set the grid type (cartesian, tensor, or corner-point grid) and the number of cells.
+- Set the rock and fluid properties.
+- Set the well locations and injection schedule.
+- After execution. generates the data in the same format as requested in the benchmark.
+- In addition, generates .png figures for quick inspection.
+- Also, generates figures for comparison between runs (i.e., to assess sensitivities).  
 
 Overview
 --------

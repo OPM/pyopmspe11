@@ -1,14 +1,14 @@
 """Set the full path to the flow executable and flags"""
-flow --linear-solver=cprw --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations  --enable-well-operability-check=false --min-time-step-before-shutting-problematic-wells-in-days=1e-99
+mpirun -np 71 flow --linear-solver=cprw --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations  --enable-well-operability-check=false --min-time-step-before-shutting-problematic-wells-in-days=1e-99
 
 """Set the model parameters"""
 spe11c master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
 complete gaswater #Name of the co2 model (immiscible or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
-cartesian         #Type of grid (cartesian, tensor, or corner-point)
+corner-point      #Type of grid (cartesian, tensor, or corner-point)
 8400 5000 1200    #Length, width, and depth [m]
-84                #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
-50                #If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for spe11c)
-12                #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
+420               #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
+125               #If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for spe11c)
+5,3,1,2,3,1,2,2,5,2,4,4,2,4,2,8,8,3 #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
 70 36.25          #Temperature bottom and top rig [C]            
 19620000 0.1      #Pressure on the top [Pa] and multiplier for the permeability in the z direction [-]
 1e-9 2e-8 0       #Diffusion (in liquid and gas) [m^2/s] and dispersion [m] (disperison only available in Flow master)
@@ -49,8 +49,8 @@ PERM7       0 PORO7    0 THCONR7 2.00
 
 """Define the injection values ([hours] for spe11a; [years] for spe11b/c)""" 
 """injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
-995 995   1 0     0 10 0     0 10
-  5   5   1 0     0 10 0     0 10
- 25   5  .1 1    50 10 0     0 10
- 25   5  .1 1    50 10 1    50 10
-950   5   1 0     0 10 0     0 10
+999.9 999.9  10 0  0 10 0  0 10
+  0.1   0.1 0.1 0  0 10 0  0 10
+   25   0.1 0.1 1 50 10 0  0 10
+   25   0.1 0.1 1 50 10 1 50 10
+  950   0.1 0.1 0  0 10 0  0 10
