@@ -62,7 +62,7 @@ with grid size of the same order as requested for reporting the spatial data in 
 
 .. code-block:: bash
 
-    pyopmspe11 -i spe11b.txt -o spe11b_cartesian -m all -g all -r 840,1,120 -t 5
+    pyopmspe11 -i spe11b.txt -o spe11b_finner -m all -g all -r 840,1,120 -t 5
 
 the following are some of the generated figures:
 

@@ -323,14 +323,14 @@ def performance(dic):
         dic["text"].append(
             f"{time:.3e}, "
             + f"{dic['tstep']:.3e}, "
-            + f"{sum((fsteps[i] for i in dic['map_info'] if i==j)):.3e}, "
+            + f"{sum(fsteps[i] for i in dic['map_info'] if i==j):.3e}, "
             + f"{GAS_DEN_REF*fgip[dic['map_rsteps'][j]-1]:.3e}, "
             + f"{dic['dof'] * dic['nocellsa']:.3e}, "
             + f"{dic['nliters']:.3e}, "
-            + f"{sum((nress[i] for i in dic['map_info'] if i==j)):.3e}, "
+            + f"{sum(nress[i] for i in dic['map_info'] if i==j):.3e}, "
             + f"{dic['liniters']:.3e}, "
-            + f"{sum((runtimes[i] for i in dic['map_info'] if i==j)):.3e}, "
-            + f"{sum((tlinsols[i] for i in dic['map_info'] if i==j)):.3e}"
+            + f"{sum(runtimes[i] for i in dic['map_info'] if i==j):.3e}, "
+            + f"{sum(tlinsols[i] for i in dic['map_info'] if i==j):.3e}"
         )
     with open(
         f"{dic['where']}/{dic['case']}_performance_time_series.csv",
@@ -398,32 +398,39 @@ def write_sparse_data(dic):
             rss * rho * (1.0 - sga) * por * GAS_DEN_REF / WAT_DEN_REF
             for (rss, rho, sga, por) in zip(r_s, rhow, sgas, dic["porva"])
         ]
+        h2o_l = [
+            (1 - sga) * rho * por for (sga, rho, por) in zip(sgas, rhow, dic["porva"])
+        ]
+        dic["xcw"] = [co2 / (co2 + h2o) for (co2, h2o) in zip(co2_d, h2o_l)]
+        dic["xcw_max"] = max(dic["xcw"][i] for i in dic["boxc"])
+        if dic["xcw_max"] != 0:
+            dic["xcw"] = [xcw / dic["xcw_max"] for xcw in dic["xcw"]]
         dic["ip1c"] = dic["pressure"][j][dic["sensor1"]] * 1e5  # Pa
         dic["ip2c"] = dic["pressure"][j][dic["sensor2"]] * 1e5
-        dic["moba"] = sum((co2_g[i] * krp[i] for i in dic["boxa"]))
-        dic["imma"] = sum((co2_g[i] * krm[i] for i in dic["boxa"]))
-        dic["dissa"] = sum((co2_d[i] for i in dic["boxa"]))
+        dic["moba"] = sum(co2_g[i] * krp[i] for i in dic["boxa"])
+        dic["imma"] = sum(co2_g[i] * krm[i] for i in dic["boxa"])
+        dic["dissa"] = sum(co2_d[i] for i in dic["boxa"])
         dic["seala"] = sum(
-            ((co2_g[i] + co2_d[i]) * dic["facie1"][i] for i in dic["boxa"])
+            (co2_g[i] + co2_d[i]) * dic["facie1"][i] for i in dic["boxa"]
         )
-        dic["mobb"] = sum((co2_g[i] * krp[i] for i in dic["boxb"]))
-        dic["immb"] = sum((co2_g[i] * krm[i] for i in dic["boxb"]))
-        dic["dissb"] = sum((co2_d[i] for i in dic["boxb"]))
+        dic["mobb"] = sum(co2_g[i] * krp[i] for i in dic["boxb"])
+        dic["immb"] = sum(co2_g[i] * krm[i] for i in dic["boxb"])
+        dic["dissb"] = sum(co2_d[i] for i in dic["boxb"])
         dic["sealb"] = sum(
-            ((co2_g[i] + co2_d[i]) * dic["facie1"][i] for i in dic["boxb"])
+            (co2_g[i] + co2_d[i]) * dic["facie1"][i] for i in dic["boxb"]
         )
-        dic["sealtot"] = sum(((co2_g[i] + co2_d[i]) for i in dic["facie1ind"]))
+        dic["sealtot"] = sum((co2_g[i] + co2_d[i]) for i in dic["facie1ind"])
         if dic["case"] != "spe11c":
             dic["m_c"] = sum(
-                abs((r_s[i_x] - r_s[i]) * dic["dz"][i])
-                + abs((r_s[i_z] - r_s[i]) * dic["dx"][i])
+                abs((dic["xcw"][i_x] - dic["xcw"][i]) * dic["dz"][i])
+                + abs((dic["xcw"][i_z] - dic["xcw"][i]) * dic["dx"][i])
                 for (i, i_x, i_z) in zip(dic["boxc"], dic["boxc_x"], dic["boxc_z"])
             )
         else:
             dic["m_c"] = sum(
-                abs((r_s[i_x] - r_s[i]) * dic["dy"][i] * dic["dz"][i])
-                + abs((r_s[i_y] - r_s[i]) * dic["dx"][i] * dic["dz"][i])
-                + abs((r_s[i_z] - r_s[i]) * dic["dx"][i] * dic["dy"][i])
+                abs((dic["xcw"][i_x] - dic["xcw"][i]) * dic["dy"][i] * dic["dz"][i])
+                + abs((dic["xcw"][i_y] - dic["xcw"][i]) * dic["dx"][i] * dic["dz"][i])
+                + abs((dic["xcw"][i_z] - dic["xcw"][i]) * dic["dx"][i] * dic["dy"][i])
                 for (i, i_x, i_y, i_z) in zip(
                     dic["boxc"], dic["boxc_x"], dic["boxc_y"], dic["boxc_z"]
                 )
@@ -436,7 +443,7 @@ def write_sparse_data(dic):
             f",{dic['sealtot']:.3e}"
         )
         if dic["case"] != "spe11a":
-            dic["boundtot"] = sum(((co2_g[i] + co2_d[i]) for i in dic["boundariesind"]))
+            dic["boundtot"] = sum((co2_g[i] + co2_d[i]) for i in dic["boundariesind"])
             text[-1] += f",{dic['boundtot']:.3e}"
 
     with open(
