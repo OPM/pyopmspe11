@@ -120,7 +120,7 @@ def pyopmspe11():
         # Write used opm related files
         opm_files(dic)
 
-    if dic["mode"] in ["all", "deck_flow", "deck_flow_data", "deck_flow_plot"]:
+    if dic["mode"] in ["all", "flow", "deck_flow", "deck_flow_data", "deck_flow_plot"]:
         # Run the simulations
         simulations(dic, dic["fol"].upper(), "flow")
 
