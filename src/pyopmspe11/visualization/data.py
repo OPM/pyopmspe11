@@ -377,8 +377,29 @@ def sparse_data(dic):
     write_sparse_data(dic)
 
 
+def max_xcw(dic):
+    """Get the maximum CO2 mass fraction in the liquid phase"""
+    dic["xcw_max"] = 0
+    for j in range(dic["t1_rst"], dic["norst"]):
+        sgas = list(dic["sgas"][j])
+        rhow = list(dic[f"{dic['watDen']}"][j])
+        r_s = list(dic[f"{dic['r_s']}"][j])
+        co2_d = [
+            rss * rho * (1.0 - sga) * por * GAS_DEN_REF / WAT_DEN_REF
+            for (rss, rho, sga, por) in zip(r_s, rhow, sgas, dic["porva"])
+        ]
+        h2o_l = [
+            (1 - sga) * rho * por for (sga, rho, por) in zip(sgas, rhow, dic["porva"])
+        ]
+        xcw = [co2 / (co2 + h2o) for (co2, h2o) in zip(co2_d, h2o_l)]
+        xcw_max = max(xcw[i] for i in dic["boxc"])
+        dic["xcw_max"] = max(xcw_max, dic["xcw_max"])
+    return dic
+
+
 def write_sparse_data(dic):
     """Map the quantities to the locations"""
+    dic = max_xcw(dic)
     text = [
         "# t [s], p1 [Pa], p2 [Pa], mobA [kg], immA [kg], dissA [kg], sealA [kg], "
         + "<same for B>, MC [m^2], sealTot [kg]"
@@ -386,6 +407,10 @@ def write_sparse_data(dic):
     if dic["case"] != "spe11a":
         text[-1] += ", boundTot [kg]"
     for tim, j in enumerate(range(dic["t1_rst"], dic["norst"])):
+        print(
+            f"Processing sparse data {j+1-dic['t1_rst']} out "
+            + f"of {dic['norst']-dic['t1_rst']}"
+        )
         sgas = list(dic["sgas"][j])
         rhog = list(dic["gas_den"][j])
         k_r = list(dic["gaskr"][j])
@@ -402,7 +427,6 @@ def write_sparse_data(dic):
             (1 - sga) * rho * por for (sga, rho, por) in zip(sgas, rhow, dic["porva"])
         ]
         dic["xcw"] = [co2 / (co2 + h2o) for (co2, h2o) in zip(co2_d, h2o_l)]
-        dic["xcw_max"] = max(dic["xcw"][i] for i in dic["boxc"])
         if dic["xcw_max"] != 0:
             dic["xcw"] = [xcw / dic["xcw_max"] for xcw in dic["xcw"]]
         dic["ip1c"] = dic["pressure"][j][dic["sensor1"]] * 1e5  # Pa
@@ -474,6 +498,7 @@ def dense_data(dic):
     if dic["case"] != "spe11a":
         names += ["temp"]
     for i in range(n_t + 1):
+        print(f"Processing dense data {i+1} out of {n_t + 1}")
         t_n = i * d_s + dic["t1_rst"]
         for name in names:
             dic[f"{name}_array"] = np.array([np.nan] * dic["nocellst"])

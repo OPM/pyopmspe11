@@ -7,6 +7,7 @@ Utiliy functions to set the requiried input values by pyopmspe11.
 
 import csv
 from io import StringIO
+from subprocess import PIPE, Popen
 import numpy as np
 
 
@@ -204,3 +205,27 @@ def readthesecondpart(lol, dic):
         )
     dic["inj"] = column
     return dic
+
+
+def check_deck(dic):
+    """Write unsupported features to the terminal if flow from release is used"""
+    for value in dic["flow"].split():
+        if "flow" in value:
+            flow = value
+            break
+    with Popen(args=f"{flow} --version", stdout=PIPE, shell=True) as process:
+        dic["flow_version"] = str(process.communicate()[0])[7:-3]
+    if dic["flow_version"] == "2023.10":
+        if dic["co2store"] == "gaswater" and dic["spe11"] != "spe11a":
+            print(
+                "\nDiffusion is not supported for gaswater + energy systems in "
+                + "flow 2023.10.\nThen diffusion is not included in the generated "
+                + "deck.\nEither select the co2store gasoil implementation or build "
+                + "flow from the master GitHub branches.\n"
+            )
+        if dic["dispersion"] > 0:
+            print(
+                "\nDispersion is not supported in flow 2023.10.\nThen dispersion is "
+                + "not included in the generated deck.\nBuild flow from the master "
+                + "GitHub branches to include dispersion in the simulations.\n"
+            )

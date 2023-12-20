@@ -9,7 +9,7 @@ EQLDIMS
 /
 
 TABDIMS
-${dic['noSands']} 1* ${dic['tabdims']} ${dic['tabdims']} /
+${dic['noSands']} 1* ${dic['tabdims']} /
 
 % if dic["co2store"] == "gaswater":
 WATER
@@ -24,7 +24,9 @@ DISGASW
 % else:
 DISGAS
 % endif
+% if (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
 DIFFUSE
+% endif
 % endif
 
 METRIC
@@ -87,7 +89,7 @@ BCCON
 /
 % endif
 
-% if dic["version"] == "master" and dic["dispersion"] > 0:
+% if dic["version"] == "master" and dic["dispersion"] > 0 and dic["flow_version"] != "2023.10":
 DISPERC 
 ${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*${dic["dispersion"]} /
 % endif
@@ -106,7 +108,7 @@ PROPS
 INCLUDE
 'TABLES.INC' /
 
-% if dic['model'] == 'complete':
+% if dic['model'] == 'complete' and (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
 % if dic["co2store"] == "gaswater":
 DIFFCWAT
 ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
@@ -116,7 +118,7 @@ ${dic["diffusion"][1]} ${dic["diffusion"][1]} /
 % else:
 DIFFC
 1 1 ${dic["diffusion"][1]} ${dic["diffusion"][1]} ${dic["diffusion"][0]} ${dic["diffusion"][0]} / --The molecular weights are set to 1 since the diffusion coefficients are given for mass fractions
-%endif
+% endif
 % endif
 ----------------------------------------------------------------------------
 REGIONS

@@ -22,7 +22,7 @@ Then we run the simulations and we save the results in a different output folder
 
 .. code-block:: bash
 
-    pyopmspe11 -i spe11b.txt -o stricter_mb -m all -g all -t 200 -r 50,1,20
+    pyopmspe11 -i spe11b.txt -o stricter_mb -m all -g all -t 5 -r 50,1,20
 
 Then, to visualize the comparison between both runs, this can be achived by executing:
 
@@ -68,6 +68,7 @@ the following are some of the generated figures:
 
 .. figure:: figs/spe11b_sparse_data_finner.png
 .. figure:: figs/spe11b_performance_finner.png
+.. figure:: figs/spe11b_xco2_2Dmaps_finner.png
 
 .. tip::
     By executing flow --help you get an overview of the available flags in the flow simulator to improve/fix convergence issues 

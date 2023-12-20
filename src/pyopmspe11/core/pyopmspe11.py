@@ -4,7 +4,7 @@
 """Main script"""
 import os
 import argparse
-from pyopmspe11.utils.inputvalues import process_input
+from pyopmspe11.utils.inputvalues import process_input, check_deck
 from pyopmspe11.utils.runs import simulations, plotting, data
 from pyopmspe11.visualization.plotting import plot_results
 from pyopmspe11.utils.writefile import opm_files, initial
@@ -114,6 +114,10 @@ def pyopmspe11():
             os.chdir(f"{dic['exe']}/{dic['fol']}/deck")
             simulations(dic, "INITIAL", "flow")
             print("Files used to generate the corner-point grid (INITIAL.* files)")
+
+        # Check the generated deck, flow version, and chosen co2store implementation
+        check_deck(dic)
+
         # Get the sand and well positions
         dic = positions(dic)
 
