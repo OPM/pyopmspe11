@@ -321,8 +321,10 @@ def dense_data(dic):
             skip_header=1,
         )
         quan = np.array([csv[i][dic["dims"] + k] for i in range(csv.shape[0])])
-        dic["minc"] = quan[~np.isnan(quan)].min()
-        dic["maxc"] = quan[~np.isnan(quan)].max()
+        dic["minc"], dic["maxc"] = (
+            quan[~np.isnan(quan)].min(),
+            quan[~np.isnan(quan)].max(),
+        )
         for tmap in dic["tmaps"]:
             csv = np.genfromtxt(
                 f"{dic['exe']}/{dic['folders'][0]}/data/{dic['case']}_spatial_map_"
@@ -351,6 +353,7 @@ def dense_data(dic):
                         )
                     ]
         for j, time in enumerate(dic["tmaps"]):
+            print(f"Plotting {quantity}, time {time} out of {dic['tmaps'][-1]}")
             axis = dic["fig"].add_subplot(len(dic["tmaps"]), 3, j + 1)
             imag = axis.pcolormesh(
                 dic["xmsh"],

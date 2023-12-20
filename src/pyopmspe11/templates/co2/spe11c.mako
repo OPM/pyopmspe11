@@ -1,5 +1,4 @@
 -- Copyright (C) 2023 NORCE
-
 ----------------------------------------------------------------------------
 RUNSPEC
 ----------------------------------------------------------------------------
@@ -10,7 +9,7 @@ EQLDIMS
 /
 
 TABDIMS
-${dic['noSands']} 1* ${dic['tabdims']} ${dic['tabdims']} /
+${dic['noSands']} 1* ${dic['tabdims']} /
 
 % if dic["co2store"] == "gaswater":
 WATER
@@ -23,11 +22,16 @@ CO2STORE
 % if dic["co2store"] == "gaswater":
 DISGASW
 VAPWAT
+% if dic["flow_version"] != "2023.10" and (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
+DIFFUSE
+% endif
 % else:
 DISGAS
 VAPOIL
-% endif
+% if (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
 DIFFUSE
+% endif
+% endif
 THERMAL
 % endif
 
@@ -71,7 +75,7 @@ INCLUDE
 'THCONR.INC' /
 % endif
 
-% if dic["version"] == "master" and dic["dispersion"] > 0:
+% if dic["version"] == "master" and dic["dispersion"] > 0 and dic["flow_version"] != "2023.10":
 DISPERC 
 ${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*${dic["dispersion"]} /
 % endif
@@ -83,15 +87,19 @@ INCLUDE
 
 % if dic['model'] == 'complete':
 % if dic["co2store"] == "gaswater":
+% if dic["flow_version"] != "2023.10" and (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
 DIFFCWAT
 ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
 
 DIFFCGAS
 ${dic["diffusion"][1]} ${dic["diffusion"][1]} /
+% endif
 % else:
+% if (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
 DIFFC
 1 1 ${dic["diffusion"][1]} ${dic["diffusion"][1]} ${dic["diffusion"][0]} ${dic["diffusion"][0]} / --The molecular weights are set to 1 since the diffusion coefficients are given for mass fractions
-%endif
+% endif
+% endif
 
 SPECROCK
 % for i in range(dic['noSands']): 
