@@ -90,8 +90,8 @@ def readthefirstpart(lol, dic):
     dic["pressure"] = float(row[0])  # Pressure at the top [Pa]
     dic["kzMult"] = float(row[1])  # Permeability multiplier in the z dir [-]
     row = list((lol[13][0].strip()).split())
-    # Diffusion (in liquid and gas) [m^2/s]
-    dic["diffusion"] = [float(row[0]), float(row[1])]
+    # Diffusion (in liquid and gas) [m^2/s] to [m^2/day]
+    dic["diffusion"] = [float(row[0]) * 86400, float(row[1]) * 86400]
     dic["dispersion"] = float(row[2])  # Dispersion [m]
     row = list((lol[14][0].strip()).split())
     # Rock specific heat and density (for spe11b/c)
