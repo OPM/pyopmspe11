@@ -81,8 +81,8 @@ PERMX PERMZ /
 /
 
 % if dic["kzMult"] > 0:
-OPERATE
-PERMZ 1* 1* 1* 1* 1* 1* 'MULTX' PERMZ ${dic["kzMult"]} /
+MULTIPLY
+PERMZ ${dic["kzMult"]} /
 /
 % endif
 
