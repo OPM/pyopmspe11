@@ -75,8 +75,8 @@ PERMX PERMZ /
 /
 
 % if dic["kzMult"] > 0:
-OPERATE
-PERMZ 1* 1* 1* 1* 1* 1* 'MULTX' PERMZ ${dic["kzMult"]} /
+MULTIPLY
+PERMZ ${dic["kzMult"]} /
 /
 % endif
 
@@ -98,8 +98,8 @@ ${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*${dic["dispersion"]} /
 ----------------------------------------------------------------------------
 EDIT
 ----------------------------------------------------------------------------
-OPERATE
-PORV 1* 1* 1* 1* 1 1 ADDX PORV ${dic["spe11aBC"]} /
+ADD
+PORV ${dic["spe11aBC"]} 4* 1 1 /
 /
 % endif
 ----------------------------------------------------------------------------
