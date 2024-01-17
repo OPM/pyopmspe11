@@ -126,17 +126,18 @@ def read_resdata(dic):
     dic["porva"] = [porv for (porv, act) in zip(dic["porv"], dic["actnum"]) if act == 1]
     dic["nocellst"], dic["nocellsa"] = len(dic["actnum"]), sum(dic["actnum"])
     dic["norst"] = dic["unrst"].num_report_steps()
-    dic["d_t"] = (
-        dic["smspec"].end_time - dic["unrst"].dates[dic["t0_rst"]]
-    ).total_seconds() / (len(dic["unrst"].dates) - 1 - dic["t0_rst"])
-    dic["times"] = [dic["d_t"] * j for j in range(1, dic["norst"] - 1 - dic["t0_rst"])]
+    dic["d_t"] = 1.0 * round(
+        (dic["smspec"].end_time - dic["unrst"].dates[dic["t0_rst"]]).total_seconds()
+        / (len(dic["unrst"].dates) - 1 - dic["t0_rst"])
+    )
+    dic["times"] = [dic["d_t"] * j for j in range(1, dic["norst"] - dic["t1_rst"])]
     dic["notimes"] = len(dic["times"])
     dic["t_0"] = (
         dic["unrst"].dates[dic["t0_rst"]] - dic["unrst"].dates[0]
     ).total_seconds()
-    dic["rsteps"] = [
-        rstep for rstep in dic["smspec"].get_report_step() if rstep > dic["t0_rst"]
-    ]
+    # dic["rsteps"] = [
+    #     rstep for rstep in dic["smspec"].get_report_step() if rstep > dic["t0_rst"]
+    # ]
     dic["map_rsteps"] = [
         sum((1 if (rstep < i) else 0 for rstep in dic["smspec"].get_report_step()))
         for i in range(dic["t1_rst"] + 1, dic["norst"] + 1)
@@ -195,24 +196,25 @@ def read_opm(dic):
     if dic["case"] == "spe11a":
         temp = [0.0]
         temp += dic["times"][:-1]
+        dic["t_0"] = 0.0
     else:
         tini = dic["smsp_seconds"][-1] - dic["times"][-1]
         temp = [tini + time - dic["d_t"] for time in dic["times"]]
         temp.insert(0, tini - dic["d_t"])
+        dic["t_0"] = 1.0 * round(86400 * dic["infoiter"][whr0][2])
     dic["smsp_rst"] = [
         pd.Series(abs(dic["smsp_seconds"] - time)).argmin() + 1 for time in temp
     ]
-    dic["t_0"] = 1.0 * round(86400 * dic["infoiter"][whr0][2])
-    dic["rsteps"] = [1 + dic["t0_rst"]] * (
-        dic["smsp_rst"][1] - dic["smsp_rst"][0] + 1 - dic["t0_rst"]
-    )
-    for i in range(dic["norst"] - dic["t1_rst"] - 3 + dic["t0_rst"]):
-        dic["rsteps"] += [2 + dic["t0_rst"] + i] * (
-            dic["smsp_rst"][2 + i] - dic["smsp_rst"][1 + i]
-        )
-    dic["rsteps"] += [dic["norst"] - 1] * (
-        len(dic["smsp_seconds"]) - dic["smsp_rst"][-1]
-    )
+    # dic["rsteps"] = [1 + dic["t0_rst"]] * (
+    #     dic["smsp_rst"][1] - dic["smsp_rst"][0] + 1 - dic["t0_rst"]
+    # )
+    # for i in range(dic["norst"] - dic["t1_rst"] - 3 + dic["t0_rst"]):
+    #     dic["rsteps"] += [2 + dic["t0_rst"] + i] * (
+    #         dic["smsp_rst"][2 + i] - dic["smsp_rst"][1 + i]
+    #     )
+    # dic["rsteps"] += [dic["norst"] - 1] * (
+    #     len(dic["smsp_seconds"]) - dic["smsp_rst"][-1]
+    # )
     dic["map_rsteps"] = dic["smsp_rst"][1:]
     dic["map_rsteps"].append(len(dic["smsp_seconds"]))
     dic["gxyz"] = [
@@ -271,21 +273,18 @@ def performance(dic):
                         [float(column) for column in (row[0].strip()).split()]
                     )
     infotimes = [infostep[0] * 86400 - dic["t_0"] for infostep in dic["infosteps"]]
-    dic["map_info"] = [round(infotime / dic["d_t"]) for infotime in infotimes]
-    fsteps = [infostep[11] for infostep in dic["infosteps"]]
+    dic["map_info"] = [int(np.floor(infotime / dic["d_t"])) for infotime in infotimes]
+    fsteps = [1.0 * (infostep[11] == 0) for infostep in dic["infosteps"]]
     nress = [infostep[8] for infostep in dic["infosteps"]]
     tlinsols = [infostep[4] for infostep in dic["infosteps"]]
-    runtimes = [sum(infostep[2:7]) for infostep in dic["infosteps"]]
+    runtimes = [sum(infostep[i] for i in [2, 4, 5, 6]) for infostep in dic["infosteps"]]
+    liniters = [infostep[10] for infostep in dic["infosteps"]]
+    nliters = [infostep[9] for infostep in dic["infosteps"]]
+    dic["tsteps"] = [infostep[1] * infostep[11] for infostep in dic["infosteps"]]
     if dic["use"] == "opm":
         fgip = dic["smspec"]["FGIP"]
-        tsteps = dic["smspec"]["TIMESTEP"]
-        nliters = dic["smspec"]["NEWTON"]
-        liniters = dic["smspec"]["MLINEARS"]
     else:
         fgip = dic["smspec"]["FGIP"].values
-        tsteps = dic["smspec"]["TIMESTEP"].values
-        nliters = dic["smspec"]["NEWTON"].values
-        liniters = dic["smspec"]["MLINEARS"].values
     dic["text"] = []
     dic["text"].append(
         "# t [s], tstep [s], fsteps [-], mass [kg], dof [-], nliter [-], "
@@ -296,41 +295,28 @@ def performance(dic):
             "0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, "
             + "0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00"
         )
+        if 0.0 in dic["map_rsteps"]:
+            dic["map_rsteps"].remove(0.0)
     else:
         dic["times"].insert(0, 0.0)
     for j, time in enumerate(dic["times"]):
-        dic["tstep"] = sum(
-            (
-                tsteps[i]
-                for i, rstep in enumerate(dic["rsteps"])
-                if rstep == (j + 1 + dic["t0_rst"])
-            )
-        ) / dic["rsteps"].count(j + 1 + dic["t0_rst"])
-        dic["nliters"] = sum(
-            (
-                nliters[i]
-                for i, rstep in enumerate(dic["rsteps"])
-                if rstep == (j + 1 + dic["t0_rst"])
-            )
-        )
-        dic["liniters"] = sum(
-            (
-                liniters[i]
-                for i, rstep in enumerate(dic["rsteps"])
-                if rstep == (j + 1 + dic["t0_rst"])
-            )
-        )
+        dic["tstep"] = [
+            dic["tsteps"][k]
+            for k, i in enumerate(dic["map_info"])
+            if i == j and dic["tsteps"][k] > 0
+        ]
+        dic["tstep"] = sum(dic["tstep"]) / len(dic["tstep"])
         dic["text"].append(
             f"{time:.3e}, "
             + f"{dic['tstep']:.3e}, "
-            + f"{sum(fsteps[i] for i in dic['map_info'] if i==j):.3e}, "
+            + f"{sum(fsteps[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}, "
             + f"{GAS_DEN_REF*fgip[dic['map_rsteps'][j]-1]:.3e}, "
             + f"{dic['dof'] * dic['nocellsa']:.3e}, "
-            + f"{dic['nliters']:.3e}, "
-            + f"{sum(nress[i] for i in dic['map_info'] if i==j):.3e}, "
-            + f"{dic['liniters']:.3e}, "
-            + f"{sum(runtimes[i] for i in dic['map_info'] if i==j):.3e}, "
-            + f"{sum(tlinsols[i] for i in dic['map_info'] if i==j):.3e}"
+            + f"{sum(nliters[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}, "
+            + f"{sum(nress[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}, "
+            + f"{sum(liniters[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}, "
+            + f"{sum(runtimes[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}, "
+            + f"{sum(tlinsols[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}"
         )
     with open(
         f"{dic['where']}/{dic['case']}_performance_time_series.csv",

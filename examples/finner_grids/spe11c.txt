@@ -24,13 +24,13 @@ penmax * math.erf(pen * ((s_w-swi) / (1.-swi)) ** (-(1.0 / 1.5)) * math.pi**0.5 
 
 """Properties sat functions"""
 """swi [-], sni [-], pen [Pa], penmax [Pa], npoints [-]"""
-SWI1 0.32 SNI1 0.1 PEN1 193531.39 PENMAX1 3e7 NPOINTS1 200000 
-SWI2 0.14 SNI2 0.1 PEN2   8654.99 PENMAX2 3e7 NPOINTS2 200000 
-SWI3 0.12 SNI3 0.1 PEN3   6120.00 PENMAX3 3e7 NPOINTS3 200000 
-SWI4 0.12 SNI4 0.1 PEN4   3870.63 PENMAX4 3e7 NPOINTS4 200000 
-SWI5 0.12 SNI5 0.1 PEN5   3060.00 PENMAX5 3e7 NPOINTS5 200000 
-SWI6 0.10 SNI6 0.1 PEN6   2560.18 PENMAX6 3e7 NPOINTS6 200000 
-SWI7    0 SNI7   0 PEN7         0 PENMAX7 3e7 NPOINTS7      2
+SWI1 0.32 SNI1 0.1 PEN1 193531.39 PENMAX1 3e7 NPOINTS1 1000 
+SWI2 0.14 SNI2 0.1 PEN2   8654.99 PENMAX2 3e7 NPOINTS2 1000 
+SWI3 0.12 SNI3 0.1 PEN3   6120.00 PENMAX3 3e7 NPOINTS3 1000 
+SWI4 0.12 SNI4 0.1 PEN4   3870.63 PENMAX4 3e7 NPOINTS4 1000 
+SWI5 0.12 SNI5 0.1 PEN5   3060.00 PENMAX5 3e7 NPOINTS5 1000 
+SWI6 0.10 SNI6 0.1 PEN6   2560.18 PENMAX6 3e7 NPOINTS6 1000 
+SWI7    0 SNI7   0 PEN7         0 PENMAX7 3e7 NPOINTS7    2
 
 """Properties rock"""
 """K [mD], phi [-], thconr [W m-1 K-1]"""
@@ -43,9 +43,9 @@ PERM6 2026.50 PORO6 0.35 THCONR6 0.26
 PERM7    1e-5 PORO7 1e-6 THCONR7 2.00
 
 """Wells radius and position"""
-"""radius, x, y, and z position [m] (final positions as well for spe11c)"""
-0.15 2700. 1000. 300. 2700. 4000. 300. #Well 1 
-0.15 5100. 1000. 700. 5100. 4000. 700. #Well 2 
+"""radius (0 to use sources instead, only available in Flow master), x, y, and z position [m] (final positions as well for spe11c)"""
+0 2700. 1000. 300. 2700. 4000. 300. #Well 1 
+0 5100. 1000. 700. 5100. 4000. 700. #Well 2 
 
 """Define the injection values ([hours] for spe11a; [years] for spe11b/c)""" 
 """injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
