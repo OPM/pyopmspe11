@@ -51,8 +51,8 @@ def main():
     parser.add_argument(
         "-r",
         "--resolution",
-        default="10,10,5",
-        help="Number of x, y, and z elements to write the data ('10,10,5' by default).",
+        default="10,1,5",
+        help="Number of x, y, and z elements to write the data ('10,1,5' by default).",
     )
     parser.add_argument(
         "-t",
