@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>pyopmspe11.utils.mapproperties module &mdash; pyopmspe11  documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -86,7 +88,7 @@
 <p>Utiliy function for the grid and finding the wells i,j, and k ids.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.boxes">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">boxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.boxes" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">boxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">satnum</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.boxes" title="Link to this definition"></a></dt>
 <dd><p>Find the box positions</p>
 </dd></dl>
 
@@ -176,15 +178,28 @@ i (int): Global index</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.locate_wells">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">locate_wells</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.locate_wells" title="Link to this definition"></a></dt>
-<dd><p>Find the wells positions</p>
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.locate_wells_sensors">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">locate_wells_sensors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.locate_wells_sensors" title="Link to this definition"></a></dt>
+<dd><p>Find the wells and sensors positions</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.map_z">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">map_z</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.map_z" title="Link to this definition"></a></dt>
-<dd><p>Function to return the z position of the parabola</p>
+<dd><p>Function to return the z position of the parabola for the wells</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters
+j : cell id along the y axis</p>
+</dd>
+<dt>Returns:</dt><dd><p>z: Position</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.map_zn">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">map_zn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.map_zn" title="Link to this definition"></a></dt>
+<dd><p>Function to return the z position of the parabola for the boxes</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters
 j : cell id along the y axis</p>
@@ -223,6 +238,12 @@ ncx (int): new number of cells in the x-dir
 ncz (int): new number of cells in the z-dir</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.sensors">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">sensors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.sensors" title="Link to this definition"></a></dt>
+<dd><p>Find the i,j,k sensor indices</p>
 </dd></dl>
 
 <dl class="py function">

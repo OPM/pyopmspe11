@@ -11,7 +11,7 @@ with low grid resolution and shorter injetion times (for initial testing of the 
 
 .. code-block:: bash
 
-    pyopmspe11 -i spe11b.txt -o spe11b -m all -g all -t 5 -r 50,1,20
+    pyopmspe11 -i spe11b.txt -o spe11b -m all -g all -t 5 -r 50,1,20 -w 1
 
 the following is the figure generated related to the temperature in the domain over time:
 
@@ -22,7 +22,7 @@ Then we run the simulations and we save the results in a different output folder
 
 .. code-block:: bash
 
-    pyopmspe11 -i spe11b.txt -o stricter_mb -m all -g all -t 5 -r 50,1,20
+    pyopmspe11 -i spe11b.txt -o stricter_mb -m all -g all -t 5 -r 50,1,20 -w 1
 
 Then, to visualize the comparison between both runs, this can be achived by executing:
 
@@ -72,4 +72,4 @@ the following are some of the generated figures:
 
 .. tip::
     By executing flow --help you get an overview of the available flags in the flow simulator to improve/fix convergence issues 
-    (i.e., by setting the flag --linear-solver=cprw to changue the linear solver).
+    (i.e., by setting the flag --linear-solver=cprw to change the linear solver).

@@ -53,7 +53,7 @@ def pyopmspe11():
             os.system(f"mkdir {dic['exe']}/{dic['fol']}/{fil}")
     os.chdir(f"{dic['exe']}/{dic['fol']}")
 
-    if dic["mode"] in ["all", "deck", "deck_flow", "deck_flow_data", "deck_flow_plot"]:
+    if dic["mode"] in ["all", "deck", "deck_flow", "deck_flow_data"]:
         # Initialize the grid
         dic = grid(dic)
 
@@ -73,7 +73,7 @@ def pyopmspe11():
         # Write used opm related files
         opm_files(dic)
 
-    if dic["mode"] in ["all", "flow", "deck_flow", "deck_flow_data", "deck_flow_plot"]:
+    if dic["mode"] in ["all", "flow", "deck_flow", "deck_flow_data"]:
         # Run the simulations
         simulations(dic, dic["fol"].upper(), "flow")
 
@@ -83,7 +83,7 @@ def pyopmspe11():
             os.system(f"mkdir {dic['exe']}/{dic['fol']}/data")
         data(dic)
 
-    if dic["mode"] in ["all", "plot", "deck_flow_plot", "data_plot"]:
+    if dic["mode"] in ["all", "plot", "data_plot"]:
         # Make some useful plots after the studies
         if not os.path.exists(f"{dic['exe']}/{dic['fol']}/figures"):
             os.system(f"mkdir {dic['exe']}/{dic['fol']}/figures")
@@ -108,7 +108,7 @@ def load_parser():
         help="Run the whole framework ('all'), only create decks ('deck'), "
         "only run flow ('flow'), only write benchmark data ('data'), "
         "only create plots ('plot'), deck and run ('deck_flow'), "
-        "deck, run, and plot (deck_flow_plot), or deck, run, and data "
+        "data and plot (data_plot), or deck, run, and data "
         "(deck_flow_data) ('deck_flow' by default).",
     )
     parser.add_argument(
@@ -132,8 +132,8 @@ def load_parser():
     parser.add_argument(
         "-r",
         "--resolution",
-        default="100,10,50",
-        help="Number of x, y, and z elements to write the data ('100,10,50' by default).",
+        default="100,1,50",
+        help="Number of x, y, and z elements to write the data ('100,1,50' by default).",
     )
     parser.add_argument(
         "-g",

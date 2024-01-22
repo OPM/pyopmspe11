@@ -8,7 +8,7 @@ The first input parameter in the configuration file is:
     :linenos:
 
     """Set the full path to the flow executable and flags"""
-    flow --linear-solver=cprw --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations  --enable-well-operability-check=false --min-time-step-before-shutting-problematic-wells-in-days=1e-99 
+    flow --linear-solver=cprw --newton-min-iterations=1 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations  --enable-well-operability-check=false --min-time-step-before-shutting-problematic-wells-in-days=1e-99 
 
 If **flow** is not in your path, then write the full path to the executable
 (e.g., /Users/dmar/opm/build/opm-simulators/bin/flow). We also add in the same 
@@ -84,13 +84,13 @@ The following entries define the properties of the different facies:
 
     """Properties sat functions"""
     """swi [-], sni [-], pen [Pa], penmax [Pa], npoints [-]"""
-    SWI1 0.32 SNI1 0.1 PEN1 193531.39 PENMAX1 3e7 NPOINTS1 200000 
-    SWI2 0.14 SNI2 0.1 PEN2   8654.99 PENMAX2 3e7 NPOINTS2 200000 
-    SWI3 0.12 SNI3 0.1 PEN3   6120.00 PENMAX3 3e7 NPOINTS3 200000 
-    SWI4 0.12 SNI4 0.1 PEN4   3870.63 PENMAX4 3e7 NPOINTS4 200000 
-    SWI5 0.12 SNI5 0.1 PEN5   3060.00 PENMAX5 3e7 NPOINTS5 200000 
-    SWI6 0.10 SNI6 0.1 PEN6   2560.18 PENMAX6 3e7 NPOINTS6 200000 
-    SWI7    0 SNI7   0 PEN7         0 PENMAX7 3e7 NPOINTS7      2
+    SWI1 0.32 SNI1 0.1 PEN1 193531.39 PENMAX1 3e7 NPOINTS1 1000 
+    SWI2 0.14 SNI2 0.1 PEN2   8654.99 PENMAX2 3e7 NPOINTS2 1000 
+    SWI3 0.12 SNI3 0.1 PEN3   6120.00 PENMAX3 3e7 NPOINTS3 1000 
+    SWI4 0.12 SNI4 0.1 PEN4   3870.63 PENMAX4 3e7 NPOINTS4 1000 
+    SWI5 0.12 SNI5 0.1 PEN5   3060.00 PENMAX5 3e7 NPOINTS5 1000 
+    SWI6 0.10 SNI6 0.1 PEN6   2560.18 PENMAX6 3e7 NPOINTS6 1000 
+    SWI7    0 SNI7   0 PEN7         0 PENMAX7 3e7 NPOINTS7    2
 
     """Properties rock"""
     """K [mD], phi [-], thconr [W m-1 K-1]"""
@@ -123,11 +123,10 @@ The last part of the configuration file sets the wells radius, location, and the
 
     """Define the injection values ([hours] for spe11a; [years] for spe11b/c)""" 
     """injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
-    995 995  1 0     0 10 0     0 10
-      5   5  1 0     0 10 0     0 10
-     25   5 .1 1    50 10 0     0 10
-     25   5 .1 1    50 10 1    50 10
-    950   5  1 0     0 10 0     0 10
+    1000 1000   1 0  0 10 0  0 10
+      25    5 0.1 1 50 10 0  0 10
+      25    5 0.1 1 50 10 1 50 10
+     950    5 0.1 0  0 10 0  0 10
     
 .. warning::
     Keep the linebreak between the sections (in the current implementation this is used for the reading of the parameters).
