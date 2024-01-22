@@ -43,7 +43,7 @@ PERM6 10132499.7 PORO6 0.46
 PERM7          0 PORO7    0
 
 """Wells position"""
-"""radius, x, y, and z position [m] (final positions as well for spe11c)"""
+"""radius (0 to use the SOURCE keyword instead of well keywords, this requires a Flow version newer than 23-01-2024), x, y, and z position [m] (final positions as well for spe11c)"""
 9E-4 0.9 0.005 0.3 #Well 1 
 9E-4 1.7 0.005 0.7 #Well 2 
 
