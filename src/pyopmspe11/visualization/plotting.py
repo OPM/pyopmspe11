@@ -13,7 +13,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-font = {"family": "normal", "weight": "normal", "size": 15}
+font = {"family": "normal", "weight": "normal", "size": 20}
 matplotlib.rc("font", **font)
 plt.rcParams.update(
     {
@@ -23,7 +23,7 @@ plt.rcParams.update(
         "legend.handlelength": 3.5,
         "legend.fontsize": 15,
         "lines.linewidth": 4,
-        "axes.titlesize": 15,
+        "axes.titlesize": 20,
         "axes.grid": True,
         "figure.figsize": (10, 5),
     }
@@ -120,8 +120,6 @@ def plot_results(dic):
         if "compare" not in dic["folders"]:
             os.system(f"mkdir {dic['exe']}/compare")
         else:
-            os.system(f"rm -rf {dic['exe']}/compare")
-            os.system(f"mkdir {dic['exe']}/compare")
             dic["folders"].remove("compare")
     else:
         dic["where"] = f"{dic['exe']}/{dic['folders'][0]}/figures"
@@ -193,7 +191,7 @@ def performance(dic):
             ]
             times = [csv[i][0] / dic["tscale"] for i in range(csv.shape[0])]
             labels[k] += f" ({fol})"
-            axis.plot(
+            axis.step(
                 times,
                 [csv[i][k + 1] for i in range(csv.shape[0])],
                 lw=2,
