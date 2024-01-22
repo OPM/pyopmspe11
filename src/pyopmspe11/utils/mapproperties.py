@@ -95,8 +95,10 @@ def structured_handling_spe11a(dic):
                 (dic["xmx_center"][i] - dic["sensors"][1][0]) ** 2
                 + (dic["zmz_center"][k] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
             )
-            dic = boxes(dic, dic["xmx_center"][i], dic["zmz_center"][k], i)
             dic["satnum"].append(dic["ids_gmsh"][fgl][0])
+            dic = boxes(
+                dic, dic["xmx_center"][i], dic["zmz_center"][k], i, dic["satnum"][-1]
+            )
             dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
             dic["poro"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1])
             centers.append(
@@ -104,8 +106,11 @@ def structured_handling_spe11a(dic):
                     1:-1
                 ]
             )
-    dic["fipnum"][pd.Series(sensor1).argmin()] = "5"
-    dic["fipnum"][pd.Series(sensor2).argmin()] = "6"
+    dic["pop1"] = pd.Series(sensor1).argmin()
+    dic["pop2"] = pd.Series(sensor2).argmin()
+    dic["fipnum"][dic["pop1"]] = "8"
+    dic["fipnum"][dic["pop2"]] = "9"
+    dic = sensors(dic)
     dic = wells(dic)
     with open(
         f"{dic['exe']}/{dic['fol']}/deck/centers.txt",
@@ -148,9 +153,9 @@ def structured_handling_spe11bc(dic):
             )
             z_c = dic["zmz_center"][k]
             if dic["spe11"] == "spe11c":
-                z_c += map_z(dic, 0)
-            dic = boxes(dic, dic["xmx_center"][i], z_c, i)
+                z_c -= map_zn(dic, 0)
             dic["satnum"].append(dic["ids_gmsh"][fgl][0])
+            dic = boxes(dic, dic["xmx_center"][i], z_c, i, dic["satnum"][-1])
             dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
             dic["thconr"].append(
                 f"{dic['rockCond'][int(dic['ids_gmsh'][fgl][0])-1][0]}"
@@ -184,13 +189,22 @@ def structured_handling_spe11bc(dic):
                 )
                 z_c = dic["zmz_center"][k]
                 if dic["spe11"] == "spe11c":
-                    z_c += map_z(dic, j + 1)
-                dic = boxes(dic, dic["xmx_center"][i_i], z_c, i_i)
+                    z_c -= map_zn(dic, j + 1)
+                dic = boxes(
+                    dic,
+                    dic["xmx_center"][i_i],
+                    z_c,
+                    i_i,
+                    dic["satnum"][-dic["noCells"][0] + i_i],
+                )
                 centers.append(
                     str([dic["xmx_center"][i_i], dic["ymy_center"][j + 1], z_c])[1:-1]
                 )
-    dic["fipnum"][pd.Series(sensor1).argmin()] = "5"
-    dic["fipnum"][pd.Series(sensor2).argmin()] = "6"
+    dic["pop1"] = pd.Series(sensor1).argmin()
+    dic["pop2"] = pd.Series(sensor2).argmin()
+    dic["fipnum"][dic["pop1"]] = "8"
+    dic["fipnum"][dic["pop2"]] = "9"
+    dic = sensors(dic)
     dic = wells(dic)
     with open(
         f"{dic['exe']}/{dic['fol']}/deck/centers.txt",
@@ -235,21 +249,27 @@ def corner_point_handling_spe11a(dic):
             (dic["xyz"][0] - dic["sensors"][1][0]) ** 2
             + (dic["xyz"][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
         )
-        dic = boxes(dic, dic["xyz"][0], dic["xyz"][2], dic["ijk"][0])
         dic["satnum"].append(dic["ids_gmsh"][fgl][0])
+        dic = boxes(dic, dic["xyz"][0], dic["xyz"][2], dic["ijk"][0], dic["satnum"][-1])
         dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
         dic["poro"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1])
         centers.append(str([dic["xyz"][0], dic["ymy_center"][0], dic["xyz"][2]])[1:-1])
+    dic["pop1"] = pd.Series(sensor1).argmin()
+    dic["pop2"] = pd.Series(sensor2).argmin()
+    dic["fipnum"][dic["pop1"]] = "8"
+    dic["fipnum"][dic["pop2"]] = "9"
     idwell1 = pd.Series(well1).argmin()
     idwell2 = pd.Series(well2).argmin()
     if dic["use"] == "opm":
         well1ijk = dic["gridf"].ijk_from_global_index(idwell1)
         well2ijk = dic["gridf"].ijk_from_global_index(idwell2)
+        dic["sensorijk"][0] = dic["gridf"].ijk_from_global_index(dic["pop1"])
+        dic["sensorijk"][1] = dic["gridf"].ijk_from_global_index(dic["pop2"])
     else:
         well1ijk = dic["gridf"].get_ijk(global_index=idwell1)
         well2ijk = dic["gridf"].get_ijk(global_index=idwell2)
-    dic["fipnum"][pd.Series(sensor1).argmin()] = "5"
-    dic["fipnum"][pd.Series(sensor2).argmin()] = "6"
+        dic["sensorijk"][0] = dic["gridf"].get_ijk(global_index=dic["pop1"])
+        dic["sensorijk"][1] = dic["gridf"].get_ijk(global_index=dic["pop2"])
     dic["wellijk"][0] = [well1ijk[0] + 1, 1, well1ijk[2] + 1]
     dic["wellijk"][1] = [well2ijk[0] + 1, 1, well2ijk[2] + 1]
     with open(
@@ -322,19 +342,17 @@ def corner_point_handling_spe11bc(dic):
         )
         sensor1.append(
             (dic["xyz"][0] - dic["sensors"][0][0]) ** 2
-            + (dic["ymy_center"][0] - dic["sensors"][0][1]) ** 2
             + (dic["xyz"][2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
         )
         sensor2.append(
             (dic["xyz"][0] - dic["sensors"][1][0]) ** 2
-            + (dic["ymy_center"][0] - dic["sensors"][1][1]) ** 2
             + (dic["xyz"][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
         )
         z_c = dic["xyz"][2]
         if dic["spe11"] == "spe11c":
-            z_c += map_z(dic, dic["ijk"][1])
-        dic = boxes(dic, dic["xyz"][0], z_c, dic["ijk"][0])
+            z_c -= map_zn(dic, dic["ijk"][1])
         dic["satnum"].append(dic["ids_gmsh"][fgl][0])
+        dic = boxes(dic, dic["xyz"][0], z_c, dic["ijk"][0], dic["satnum"][-1])
         dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
         dic["thconr"].append(f"{dic['rockCond'][int(dic['ids_gmsh'][fgl][0])-1][0]}")
         if dic["ijk"][0] == 0 and (
@@ -353,29 +371,25 @@ def corner_point_handling_spe11bc(dic):
                 for names in ["satnum", "poro", "permx", "thconr"]:
                     dic[f"{names}"].extend(dic[f"{names}"][-dic["noCells"][0] :])
                 for i_i in range(dic["noCells"][0]):
-                    sensor1.append(
-                        (xtemp[i_i] - dic["sensors"][0][0]) ** 2
-                        + (dic["ymy_center"][j + 1] - dic["sensors"][0][1]) ** 2
-                        + (dic["xyz"][2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
-                    )
-                    sensor2.append(
-                        (xtemp[i_i] - dic["sensors"][1][0]) ** 2
-                        + (dic["ymy_center"][j + 1] - dic["sensors"][1][1]) ** 2
-                        + (dic["xyz"][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
-                    )
                     z_c = dic["xyz"][2]
                     if dic["spe11"] == "spe11c":
-                        z_c += map_z(dic, j + 1)
-                    dic = boxes(dic, xtemp[i_i], z_c, i_i)
+                        z_c -= map_zn(dic, j + 1)
+                    dic = boxes(
+                        dic,
+                        xtemp[i_i],
+                        z_c,
+                        i_i,
+                        dic["satnum"][-dic["noCells"][0] + i_i],
+                    )
                     centers.append(
                         str([xtemp[i_i], dic["ymy_center"][j + 1], z_c])[1:-1]
                     )
             xtemp = []
-    dic["fipnum"][pd.Series(sensor1).argmin()] = "5"
-    dic["fipnum"][pd.Series(sensor2).argmin()] = "6"
+    dic["pop1"] = pd.Series(sensor1).argmin()
+    dic["pop2"] = pd.Series(sensor2).argmin()
     dic["well1"] = pd.Series(well1).argmin()
     dic["well2"] = pd.Series(well2).argmin()
-    dic = locate_wells(dic)
+    dic = locate_wells_sensors(dic)
     with open(
         f"{dic['exe']}/{dic['fol']}/deck/centers.txt",
         "w",
@@ -385,14 +399,18 @@ def corner_point_handling_spe11bc(dic):
     return dic
 
 
-def locate_wells(dic):
-    """Find the wells positions"""
+def locate_wells_sensors(dic):
+    """Find the wells and sensors positions"""
     if dic["use"] == "opm":
         well1ijk = dic["gridf"].ijk_from_global_index(dic["well1"])
         well2ijk = dic["gridf"].ijk_from_global_index(dic["well2"])
+        dic["sensorijk"][0] = list(dic["gridf"].ijk_from_global_index(dic["pop1"]))
+        dic["sensorijk"][1] = list(dic["gridf"].ijk_from_global_index(dic["pop2"]))
     else:
         well1ijk = dic["gridf"].get_ijk(global_index=dic["well1"])
         well2ijk = dic["gridf"].get_ijk(global_index=dic["well2"])
+        dic["sensorijk"][0] = list(dic["gridf"].get_ijk(global_index=dic["pop1"]))
+        dic["sensorijk"][1] = list(dic["gridf"].get_ijk(global_index=dic["pop2"]))
     dic["wellijk"][0] = [well1ijk[0] + 1, 1, well1ijk[2] + 1]
     dic["wellijk"][1] = [well2ijk[0] + 1, 1, well2ijk[2] + 1]
     # Work in process to implement properly this for the corner-point grid in spe11c
@@ -403,18 +421,32 @@ def locate_wells(dic):
         dic["ymy_center"] = (np.array(dic["ymy"][1:]) + np.array(dic["ymy"][:-1])) / 2.0
         wji = pd.Series(abs(dic["wellCoord"][0][1] - dic["ymy_center"])).argmin() + 1
         wjf = pd.Series(abs(dic["wellCoordf"][0][1] - dic["ymy_center"])).argmin() + 1
+        sj1 = pd.Series(abs(dic["sensors"][0][1] - dic["ymy_center"])).argmin()
+        sj2 = pd.Series(abs(dic["sensors"][1][1] - dic["ymy_center"])).argmin()
+        dic["sensorijk"][0][1] = sj1
+        dic["sensorijk"][1][1] = sj2
         dic["wellijk"][0][1] = wji
         dic["wellijk"][1][1] = wji
         dic["wellijkf"][0][1] = wjf
         dic["wellijkf"][1][1] = wjf
         dic["wellkh"] = [
-            dic["wellijk"][1][2]
-            for _ in range(dic["wellijk"][1][1], dic["wellijkf"][1][1] + 1)
+            dic["wellijk"][0][2]
+            for _ in range(dic["wellijk"][0][1], dic["wellijkf"][0][1] + 1)
         ]
+    dic["fipnum"][
+        dic["sensorijk"][0][0]
+        + dic["sensorijk"][0][1] * dic["noCells"][0]
+        + dic["sensorijk"][0][2] * dic["noCells"][0] * dic["noCells"][1]
+    ] = "8"
+    dic["fipnum"][
+        dic["sensorijk"][1][0]
+        + dic["sensorijk"][1][1] * dic["noCells"][0]
+        + dic["sensorijk"][1][2] * dic["noCells"][0] * dic["noCells"][1]
+    ] = "9"
     return dic
 
 
-def boxes(dic, x_c, z_c, idx):
+def boxes(dic, x_c, z_c, idx, satnum):
     """Find the box positions"""
     if (
         (dic["dims"][2] - z_c >= dic["boxb"][0][2])
@@ -422,7 +454,10 @@ def boxes(dic, x_c, z_c, idx):
         & (x_c >= dic["boxb"][0][0])
         & (x_c <= dic["boxb"][1][0])
     ):
-        dic["fipnum"].append("3")
+        if satnum == "1":
+            dic["fipnum"].append("6")
+        else:
+            dic["fipnum"].append("3")
     elif (
         (dic["dims"][2] - z_c >= dic["boxc"][0][2])
         & (dic["dims"][2] - z_c <= dic["boxc"][1][2])
@@ -436,8 +471,16 @@ def boxes(dic, x_c, z_c, idx):
         & (x_c >= dic["boxa"][0][0])
         & (x_c <= dic["boxa"][1][0])
     ):
-        dic["fipnum"].append("2")
+        if satnum == "1":
+            dic["fipnum"].append("5")
+        else:
+            dic["fipnum"].append("2")
     elif dic["spe11"] != "spe11a" and idx in (0, dic["noCells"][0] - 1):
+        if satnum == "1":
+            dic["fipnum"].append("10")
+        else:
+            dic["fipnum"].append("11")
+    elif satnum == "1":
         dic["fipnum"].append("7")
     else:
         dic["fipnum"].append("1")
@@ -455,6 +498,7 @@ def positions(dic):
         dic (dict): Global dictionary with new added parameters
 
     """
+    dic["sensorijk"] = [[] for _ in range(len(dic["sensors"]))]
     dic = getfacies(dic)
     for names in ["satnum", "poro", "permx", "thconr", "fipnum"]:
         dic[f"{names}"] = []
@@ -495,6 +539,23 @@ def positions(dic):
     return dic
 
 
+def sensors(dic):
+    """Find the i,j,k sensor indices"""
+    for j, _ in enumerate(dic["sensors"]):
+        for sensor_coord, axis in zip(dic["sensors"][j], ["xmx", "ymy", "zmz"]):
+            if axis == "zmz":
+                dic["sensorijk"][j].append(
+                    pd.Series(
+                        abs(dic["dims"][2] - sensor_coord - dic[f"{axis}_center"])
+                    ).argmin()
+                )
+            else:
+                dic["sensorijk"][j].append(
+                    pd.Series(abs(sensor_coord - dic[f"{axis}_center"])).argmin()
+                )
+    return dic
+
+
 def wells(dic):
     """
     Function to find the wells index
@@ -528,28 +589,27 @@ def wells(dic):
                     ).argmin()
                     + 1
                 )
-            well_coord = dic["wellCoord"][j][2]
-            midpoints = dic["zmz_center"] + map_z(dic, dic["wellijk"][j][1])
-            dic["wellijk"][j].append(
-                pd.Series(
-                    abs(
-                        well_coord
-                        + dic["elevation"]
-                        + 0.5 * dic["backElevation"]
-                        - midpoints
-                    )
-                ).argmin()
-                + 1
-            )
+            if j == 0:
+                well_coord = dic["wellCoord"][j][2]
+                midpoints = dic["zmz_center"] - map_z(dic, dic["wellijk"][j][1])
+                dic["wellijk"][j].append(
+                    pd.Series(abs(well_coord - midpoints)).argmin() + 1
+                )
+            else:
+                well_coord = dic["wellCoord"][j][2]
+                midpoints = dic["zmz_center"]
+                dic["wellijk"][j].append(
+                    pd.Series(abs(well_coord - midpoints)).argmin() + 1
+                )
     if dic["spe11"] == "spe11c":
         dic["wellkh"] = []
-        for j in range(dic["wellijk"][1][1], dic["wellijkf"][1][1] + 1):
-            midpoints = dic["zmz_center"] + map_z(dic, j)
+        for j in range(dic["wellijk"][0][1], dic["wellijkf"][0][1] + 1):
+            midpoints = dic["zmz_center"] - map_z(dic, j)
             dic["wellkh"].append(
                 pd.Series(
                     abs(
-                        dic["wellCoord"][1][2]
-                        + map_z(dic, dic["wellijk"][1][1])
+                        dic["wellCoord"][0][2]
+                        - map_z(dic, dic["wellijk"][0][1])
                         - midpoints
                     )
                 ).argmin()
@@ -560,7 +620,28 @@ def wells(dic):
 
 def map_z(dic, j):
     """
-    Function to return the z position of the parabola
+    Function to return the z position of the parabola for the wells
+
+    Args:
+        dic (dict): Global dictionary with required parameters
+        j : cell id along the y axis
+
+    Returns:
+        z: Position
+
+    """
+    z_pos = (
+        -dic["elevation"]
+        + dic["elevation"]
+        * (1.0 - (dic["ymy_center"][j - 1] / (0.5 * dic["dims"][1]) - 1) ** 2.0)
+        - dic["ymy_center"][j - 1] * dic["backElevation"] / dic["dims"][1]
+    )
+    return z_pos
+
+
+def map_zn(dic, j):
+    """
+    Function to return the z position of the parabola for the boxes
 
     Args:
         dic (dict): Global dictionary with required parameters
@@ -572,9 +653,9 @@ def map_z(dic, j):
     """
     z_pos = (
         dic["elevation"]
-        - dic["elevation"]
-        * (1.0 - (dic["ymy_center"][j - 1] / (0.5 * dic["dims"][1]) - 1) ** 2.0)
-        - dic["ymy_center"][j - 1] * dic["backElevation"] / dic["dims"][1]
+        + dic["elevation"]
+        * (1.0 - (dic["ymy_center"][j] / (0.5 * dic["dims"][1]) - 1) ** 2.0)
+        + dic["ymy_center"][j] * dic["backElevation"] / dic["dims"][1]
     )
     return z_pos
 

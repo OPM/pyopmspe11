@@ -11,6 +11,7 @@ import csv
 from io import StringIO
 import numpy as np
 import pandas as pd
+from scipy.interpolate import interp1d
 
 try:
     from opm.io.ecl import EclFile as OpmFile
@@ -29,6 +30,7 @@ except ImportError:
 GAS_DEN_REF = 1.86843
 WAT_DEN_REF = 998.108
 SECONDS_IN_YEAR = 31536000
+KMOL_TO_KG = 1e3 * 0.044
 
 
 def main():
@@ -38,13 +40,13 @@ def main():
         "-p",
         "--path",
         default="output",
-        help="The name of the output folder.",
+        help="The name of the output folder ('output' by default).",
     )
     parser.add_argument(
         "-d",
         "--deck",
         default="spe11b",
-        help="The simulated case.",
+        help="The simulated case ('spe11b' by default).",
     )
     parser.add_argument(
         "-r",
@@ -57,6 +59,20 @@ def main():
         "--time",
         default="25",
         help="Time interval for the spatial maps (spe11a [h]; spe11b/c [y]) ('24' by default).",
+    )
+    parser.add_argument(
+        "-w",
+        "--write",
+        default="0.1",
+        help="Time interval for the sparse and performance data (spe11a [h]; spe11b/c [y])"
+        " ('0.1' by default).",
+    )
+    parser.add_argument(
+        "-l",
+        "--load",
+        default="summary",
+        help="Use the summary or restart for the interpolation in the sparse data"
+        " ('summary' by default).",
     )
     parser.add_argument(
         "-g",
@@ -75,6 +91,7 @@ def main():
     dic = {"path": cmdargs["path"].strip()}
     dic["case"] = cmdargs["deck"].strip()
     dic["mode"] = cmdargs["generate"].strip()
+    dic["load"] = cmdargs["load"].strip()
     dic["exe"] = os.getcwd()
     dic["where"] = f"{dic['exe']}/{dic['path']}/data"
     dic["use"] = cmdargs["use"].strip()
@@ -83,15 +100,18 @@ def main():
     )
     if dic["case"] == "spe11a":
         dic["spatial_t"] = float(cmdargs["time"].strip()) * 3600
+        dic["sparse_t"] = 1.0 * round(float(cmdargs["write"].strip()) * 3600)
         dic["dims"] = [2.8, 1.0, 1.2]
-        dic["dof"], dic["t0_rst"], dic["t1_rst"], dic["nxyz"][1] = 2, 0, 0, 1
+        dic["dof"], dic["nxyz"][1] = 2, 1
     else:
         dic["spatial_t"] = float(cmdargs["time"].strip()) * SECONDS_IN_YEAR
+        dic["sparse_t"] = float(cmdargs["write"].strip()) * SECONDS_IN_YEAR
         dic["dims"] = [8400.0, 1.0, 1200.0]
-        dic["dof"], dic["t0_rst"], dic["t1_rst"], dic["nxyz"][1] = 3, 1, 2, 1
+        dic["dof"], dic["nxyz"][1] = 3, 1
     if dic["case"] == "spe11c":
         dic["dims"][1] = 5000.0
     dic["nocellsr"] = dic["nxyz"][0] * dic["nxyz"][1] * dic["nxyz"][2]
+    dic = read_times(dic)
     if dic["use"] == "opm":
         dic = read_opm(dic)
     else:
@@ -102,6 +122,23 @@ def main():
         sparse_data(dic)
     if dic["mode"] in ["all", "dense", "dense_performance", "dense_sparse"]:
         dense_data(dic)
+
+
+def read_times(dic):
+    """Get the time for injection and restart number"""
+    with open(f"{dic['path']}/deck/dt.txt", "r", encoding="utf8") as file:
+        for i, value in enumerate(csv.reader(file)):
+            if i == 0:
+                dic["d_t"] = float(value[0])
+            elif i == 1:
+                dic["initial_t"] = float(value[0])
+            else:
+                dic["t1_rst"] = int(value[0])
+    if dic["t1_rst"] > 0:
+        dic["t0_rst"] = 1
+    else:
+        dic["t0_rst"] = 0
+    return dic
 
 
 def read_resdata(dic):
@@ -126,17 +163,9 @@ def read_resdata(dic):
     dic["porva"] = [porv for (porv, act) in zip(dic["porv"], dic["actnum"]) if act == 1]
     dic["nocellst"], dic["nocellsa"] = len(dic["actnum"]), sum(dic["actnum"])
     dic["norst"] = dic["unrst"].num_report_steps()
-    dic["d_t"] = (
-        dic["smspec"].end_time - dic["unrst"].dates[dic["t0_rst"]]
-    ).total_seconds() / (len(dic["unrst"].dates) - 1 - dic["t0_rst"])
-    dic["times"] = [dic["d_t"] * j for j in range(1, dic["norst"] - 1 - dic["t0_rst"])]
+    dic["times_ts"] = list(86400.0 * dic["smspec"]["TIME"].values - dic["initial_t"])
+    dic["times"] = [dic["d_t"] * j for j in range(1, dic["norst"] - dic["t1_rst"])]
     dic["notimes"] = len(dic["times"])
-    dic["t_0"] = (
-        dic["unrst"].dates[dic["t0_rst"]] - dic["unrst"].dates[0]
-    ).total_seconds()
-    dic["rsteps"] = [
-        rstep for rstep in dic["smspec"].get_report_step() if rstep > dic["t0_rst"]
-    ]
     dic["map_rsteps"] = [
         sum((1 if (rstep < i) else 0 for rstep in dic["smspec"].get_report_step()))
         for i in range(dic["t1_rst"] + 1, dic["norst"] + 1)
@@ -165,31 +194,8 @@ def read_opm(dic):
     dic["porva"] = list(porv for porv in dic["porv"] if porv > 0)
     dic["nocellst"], dic["nocellsa"] = len(dic["porv"]), dic["egrid"].active_cells
     dic["norst"] = len(dic["unrst"].report_steps)
-    dic["infoiter"] = []
-    with open(
-        f"{dic['path']}/flow/{dic['path'].upper()}.INFOITER", "r", encoding="utf8"
-    ) as file:
-        for j, row in enumerate(csv.reader(file)):
-            if j > 0:
-                dic["infoiter"].append(
-                    [float(column) for column in (row[0].strip()).split()[:8]]
-                )
-    if dic["norst"] > 2 and dic["case"] != "spe11a":
-        # whr1 = sum(row[0] < dic["norst"] - 2 for row in dic["infoiter"])
-        # whr2 = sum(row[0] < dic["norst"] - 3 for row in dic["infoiter"])
-        # dic["d_t"] = 1.0 * round(
-        #     86400 * (dic["infoiter"][whr1][2] - dic["infoiter"][whr2][2])
-        # )
-        with open(f"{dic['path']}/deck/dt.txt", "r", encoding="utf8") as file:
-            for value in csv.reader(file):
-                dic["d_t"] = float(value[0])
-    else:
-        dic["d_t"] = 1.0 * round(
-            (dic["smspec"].end_date - dic["smspec"].start_date).total_seconds()
-            / (dic["norst"] - 1)
-        )
-    whr0 = sum(row[0] < 1 for row in dic["infoiter"])
     dic["times"] = [dic["d_t"] * j for j in range(1, dic["norst"] - dic["t1_rst"])]
+    dic["times_ts"] = list(86400.0 * dic["smspec"]["TIME"] - dic["initial_t"])
     dic["notimes"] = len(dic["times"])
     dic["smsp_seconds"] = 86400 * dic["smspec"]["TIME"]
     if dic["case"] == "spe11a":
@@ -202,17 +208,6 @@ def read_opm(dic):
     dic["smsp_rst"] = [
         pd.Series(abs(dic["smsp_seconds"] - time)).argmin() + 1 for time in temp
     ]
-    dic["t_0"] = 1.0 * round(86400 * dic["infoiter"][whr0][2])
-    dic["rsteps"] = [1 + dic["t0_rst"]] * (
-        dic["smsp_rst"][1] - dic["smsp_rst"][0] + 1 - dic["t0_rst"]
-    )
-    for i in range(dic["norst"] - dic["t1_rst"] - 3 + dic["t0_rst"]):
-        dic["rsteps"] += [2 + dic["t0_rst"] + i] * (
-            dic["smsp_rst"][2 + i] - dic["smsp_rst"][1 + i]
-        )
-    dic["rsteps"] += [dic["norst"] - 1] * (
-        len(dic["smsp_seconds"]) - dic["smsp_rst"][-1]
-    )
     dic["map_rsteps"] = dic["smsp_rst"][1:]
     dic["map_rsteps"].append(len(dic["smsp_seconds"]))
     dic["gxyz"] = [
@@ -259,33 +254,49 @@ def load_centers(dic):
 
 
 def performance(dic):
-    """Write the performance within the benchmark format"""
+    """Write the performance within the benchmark format SECONDS_IN_YEAR"""
+    dic["times_s"] = np.linspace(
+        0, dic["times"][-1], round(dic["times"][-1] / dic["sparse_t"]) + 1
+    )
     dic["infosteps"] = []
     with open(
         f"{dic['path']}/flow/{dic['path'].upper()}.INFOSTEP", "r", encoding="utf8"
     ) as file:
         for j, row in enumerate(csv.reader(file)):
             if j > 0:
-                if float((row[0].strip()).split()[0]) >= (dic["t_0"] / 86400.0):
+                if float((row[0].strip()).split()[0]) >= (
+                    (dic["initial_t"] - dic["sparse_t"]) / 86400.0
+                ):
                     dic["infosteps"].append(
                         [float(column) for column in (row[0].strip()).split()]
                     )
-    infotimes = [infostep[0] * 86400 - dic["t_0"] for infostep in dic["infosteps"]]
-    dic["map_info"] = [round(infotime / dic["d_t"]) for infotime in infotimes]
-    fsteps = [infostep[11] for infostep in dic["infosteps"]]
+    infotimes = [
+        infostep[0] * 86400 - dic["initial_t"] for infostep in dic["infosteps"]
+    ]
+    dic["map_info"] = [
+        dic["t0_rst"] + int(np.floor(infotime / dic["sparse_t"]))
+        for infotime in infotimes
+    ]
+    fsteps = [1.0 * (infostep[11] == 0) for infostep in dic["infosteps"]]
     nress = [infostep[8] for infostep in dic["infosteps"]]
     tlinsols = [infostep[4] for infostep in dic["infosteps"]]
-    runtimes = [sum(infostep[2:7]) for infostep in dic["infosteps"]]
+    runtimes = [sum(infostep[i] for i in [2, 4, 5, 6]) for infostep in dic["infosteps"]]
+    liniters = [infostep[10] for infostep in dic["infosteps"]]
+    nliters = [infostep[9] for infostep in dic["infosteps"]]
+    dic["tsteps"] = [
+        86400 * infostep[1] * infostep[11] for infostep in dic["infosteps"]
+    ]
     if dic["use"] == "opm":
         fgip = dic["smspec"]["FGIP"]
-        tsteps = dic["smspec"]["TIMESTEP"]
-        nliters = dic["smspec"]["NEWTON"]
-        liniters = dic["smspec"]["MLINEARS"]
+        times = 86400.0 * dic["smspec"]["TIME"] - dic["initial_t"]
     else:
         fgip = dic["smspec"]["FGIP"].values
-        tsteps = dic["smspec"]["TIMESTEP"].values
-        nliters = dic["smspec"]["NEWTON"].values
-        liniters = dic["smspec"]["MLINEARS"].values
+        times = 86400.0 * dic["smspec"]["TIME"].values - dic["initial_t"]
+    interp_fgip = interp1d(
+        times,
+        GAS_DEN_REF * fgip,
+        fill_value="extrapolate",
+    )
     dic["text"] = []
     dic["text"].append(
         "# t [s], tstep [s], fsteps [-], mass [kg], dof [-], nliter [-], "
@@ -296,41 +307,28 @@ def performance(dic):
             "0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, "
             + "0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00"
         )
-    else:
-        dic["times"].insert(0, 0.0)
-    for j, time in enumerate(dic["times"]):
-        dic["tstep"] = sum(
-            (
-                tsteps[i]
-                for i, rstep in enumerate(dic["rsteps"])
-                if rstep == (j + 1 + dic["t0_rst"])
-            )
-        ) / dic["rsteps"].count(j + 1 + dic["t0_rst"])
-        dic["nliters"] = sum(
-            (
-                nliters[i]
-                for i, rstep in enumerate(dic["rsteps"])
-                if rstep == (j + 1 + dic["t0_rst"])
-            )
-        )
-        dic["liniters"] = sum(
-            (
-                liniters[i]
-                for i, rstep in enumerate(dic["rsteps"])
-                if rstep == (j + 1 + dic["t0_rst"])
-            )
-        )
+        dic["times_s"] = np.delete(dic["times_s"], 0)
+    for j, time in enumerate(dic["times_s"]):
+        dic["tstep"] = [
+            dic["tsteps"][k]
+            for k, i in enumerate(dic["map_info"])
+            if i == j and dic["tsteps"][k] > 0
+        ]
+        if dic["tstep"]:
+            dic["tstep"] = sum(dic["tstep"]) / len(dic["tstep"])
+        else:
+            dic["tstep"] = dic["sparse_t"]
         dic["text"].append(
             f"{time:.3e}, "
             + f"{dic['tstep']:.3e}, "
-            + f"{sum(fsteps[i] for i in dic['map_info'] if i==j):.3e}, "
-            + f"{GAS_DEN_REF*fgip[dic['map_rsteps'][j]-1]:.3e}, "
+            + f"{sum(fsteps[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}, "
+            + f"{interp_fgip(time):.3e}, "
             + f"{dic['dof'] * dic['nocellsa']:.3e}, "
-            + f"{dic['nliters']:.3e}, "
-            + f"{sum(nress[i] for i in dic['map_info'] if i==j):.3e}, "
-            + f"{dic['liniters']:.3e}, "
-            + f"{sum(runtimes[i] for i in dic['map_info'] if i==j):.3e}, "
-            + f"{sum(tlinsols[i] for i in dic['map_info'] if i==j):.3e}"
+            + f"{sum(nliters[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}, "
+            + f"{sum(nress[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}, "
+            + f"{sum(liniters[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}, "
+            + f"{sum(runtimes[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}, "
+            + f"{sum(tlinsols[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}"
         )
     with open(
         f"{dic['where']}/{dic['case']}_performance_time_series.csv",
@@ -340,11 +338,224 @@ def performance(dic):
         file.write("\n".join(dic["text"]))
 
 
+def create_from_summary(dic):
+    """Use the summary arrays for the sparse data interpolation"""
+    if dic["use"] == "opm":
+        for key in dic["smspec"].keys():
+            if key[0:4] == "BGPR":
+                if len(dic["pop1"]) == 0:
+                    dic["pop1"] = [
+                        dic["pressure"][0][dic["fipnum"].index(8)] * 1.0e5
+                    ] + list(
+                        dic["smspec"][key] * 1.0e5
+                    )  # Pa
+                else:
+                    dic["pop2"] = [
+                        dic["pressure"][0][dic["fipnum"].index(9)] * 1.0e5
+                    ] + list(
+                        dic["smspec"][key] * 1.0e5
+                    )  # Pa
+                    break
+        dic["moba"] = (
+            dic["smspec"]["RGCDM:2"]
+            + dic["smspec"]["RGCDM:4"]
+            + dic["smspec"]["RGCDM:5"]
+            + dic["smspec"]["RGCDM:8"]
+        ) * KMOL_TO_KG
+        dic["imma"] = (
+            dic["smspec"]["RGCDI:2"]
+            + dic["smspec"]["RGCDI:4"]
+            + dic["smspec"]["RGCDI:5"]
+            + dic["smspec"]["RGCDI:8"]
+        ) * KMOL_TO_KG
+        dic["dissa"] = (
+            dic["smspec"]["RWCD:2"]
+            + dic["smspec"]["RWCD:4"]
+            + dic["smspec"]["RWCD:5"]
+            + dic["smspec"]["RWCD:8"]
+        ) * KMOL_TO_KG
+        dic["seala"] = (
+            dic["smspec"]["RWCD:5"]
+            + dic["smspec"]["RGCDM:5"]
+            + dic["smspec"]["RGCDI:5"]
+            + dic["smspec"]["RWCD:8"]
+            + dic["smspec"]["RGCDM:8"]
+            + dic["smspec"]["RGCDI:8"]
+        ) * KMOL_TO_KG
+        dic["mobb"] = (dic["smspec"]["RGCDM:3"] + dic["smspec"]["RGCDM:6"]) * KMOL_TO_KG
+        dic["immb"] = (dic["smspec"]["RGCDI:3"] + dic["smspec"]["RGCDI:6"]) * KMOL_TO_KG
+        dic["dissb"] = (dic["smspec"]["RWCD:3"] + dic["smspec"]["RWCD:6"]) * KMOL_TO_KG
+        dic["sealb"] = (
+            dic["smspec"]["RWCD:6"]
+            + dic["smspec"]["RGCDM:6"]
+            + dic["smspec"]["RGCDI:6"]
+        ) * KMOL_TO_KG
+        dic["sealt"] = (
+            dic["seala"]
+            + dic["sealb"]
+            + (
+                dic["smspec"]["RWCD:7"]
+                + dic["smspec"]["RGCDM:7"]
+                + dic["smspec"]["RGCDI:7"]
+                + dic["smspec"]["RWCD:8"]
+                + dic["smspec"]["RGCDM:8"]
+                + dic["smspec"]["RGCDI:8"]
+            )
+            * KMOL_TO_KG
+        )
+        if dic["case"] != "spe11a":
+            sealbound = (
+                dic["smspec"]["RWCD:10"]
+                + dic["smspec"]["RGCDM:10"]
+                + dic["smspec"]["RGCDI:10"]
+            ) * KMOL_TO_KG
+            dic["sealt"] += sealbound
+            dic["boundtot"] = (
+                sealbound
+                + (
+                    dic["smspec"]["RWCD:11"]
+                    + dic["smspec"]["RGCDM:11"]
+                    + dic["smspec"]["RGCDI:11"]
+                )
+                * KMOL_TO_KG
+            )
+    else:
+        for key in dic["smspec"].keys():
+            if key[0:4] == "BGPR":
+                if len(dic["pop1"]) == 0:
+                    dic["pop1"] = [
+                        dic["pressure"][0][dic["fipnum"].index(8)] * 1.0e5
+                    ] + list(
+                        dic["smspec"][key].values * 1.0e5
+                    )  # Pa
+                else:
+                    dic["pop2"] = [
+                        dic["pressure"][0][dic["fipnum"].index(9)] * 1.0e5
+                    ] + list(
+                        dic["smspec"][key].values * 1.0e5
+                    )  # Pa
+                    break
+        dic["moba"] = (
+            dic["smspec"]["RGCDM:2"].values
+            + dic["smspec"]["RGCDM:4"].values
+            + dic["smspec"]["RGCDM:5"].values
+            + dic["smspec"]["RGCDM:8"].values
+        ) * KMOL_TO_KG
+        dic["imma"] = (
+            dic["smspec"]["RGCDI:2"].values
+            + dic["smspec"]["RGCDI:4"].values
+            + dic["smspec"]["RGCDI:5"].values
+            + dic["smspec"]["RGCDI:8"].values
+        ) * KMOL_TO_KG
+        dic["dissa"] = (
+            dic["smspec"]["RWCD:2"].values
+            + dic["smspec"]["RWCD:4"].values
+            + dic["smspec"]["RWCD:5"].values
+            + dic["smspec"]["RWCD:8"].values
+        ) * KMOL_TO_KG
+        dic["seala"] = (
+            dic["smspec"]["RWCD:5"].values
+            + dic["smspec"]["RGCDM:5"].values
+            + dic["smspec"]["RGCDI:5"].values
+            + dic["smspec"]["RWCD:8"].values
+            + dic["smspec"]["RGCDM:8"].values
+            + dic["smspec"]["RGCDI:8"].values
+        ) * KMOL_TO_KG
+        dic["mobb"] = (
+            dic["smspec"]["RGCDM:3"].values + dic["smspec"]["RGCDM:6"].values
+        ) * KMOL_TO_KG
+        dic["immb"] = (
+            dic["smspec"]["RGCDI:3"].values + dic["smspec"]["RGCDI:6"].values
+        ) * KMOL_TO_KG
+        dic["dissb"] = (
+            dic["smspec"]["RWCD:3"].values + dic["smspec"]["RWCD:6"].values
+        ) * KMOL_TO_KG
+        dic["sealb"] = (
+            dic["smspec"]["RWCD:6"].values
+            + dic["smspec"]["RGCDM:6"].values
+            + dic["smspec"]["RGCDI:6"].values
+        ) * KMOL_TO_KG
+        dic["sealt"] = (
+            dic["seala"]
+            + dic["sealb"]
+            + (
+                dic["smspec"]["RWCD:7"].values
+                + dic["smspec"]["RGCDM:7"].values
+                + dic["smspec"]["RGCDI:7"].values
+                + dic["smspec"]["RWCD:9"].values
+                + dic["smspec"]["RGCDM:9"].values
+                + dic["smspec"]["RGCDI:9"].values
+            )
+            * KMOL_TO_KG
+        )
+        if dic["case"] != "spe11a":
+            sealbound = (
+                dic["smspec"]["RWCD:10"].values
+                + dic["smspec"]["RGCDM:10"].values
+                + dic["smspec"]["RGCDI:10"].values
+            ) * KMOL_TO_KG
+            dic["sealt"] += sealbound
+            dic["boundtot"] = (
+                sealbound
+                + (
+                    dic["smspec"]["RWCD:11"].values
+                    + dic["smspec"]["RGCDM:11"].values
+                    + dic["smspec"]["RGCDI:11"].values
+                )
+                * KMOL_TO_KG
+            )
+    return dic
+
+
+def create_from_restart(dic):
+    """Use the restart file for the sparse data interpolation"""
+    dic["boxa"] = [i for i, fip in enumerate(dic["fipnum"]) if fip in (2, 4, 5, 8)]
+    dic["boxb"] = [i for i, fip in enumerate(dic["fipnum"]) if fip in (3, 6)]
+    dic["sensor1"] = dic["fipnum"].index(8)
+    dic["sensor2"] = dic["fipnum"].index(9)
+    dic["facie1"] = [sat == 1 for sat in dic["satnum"]]
+    dic["facie1ind"] = [i for i, sat in enumerate(dic["satnum"]) if sat == 1]
+    dic["boundariesind"] = [i for i, fip in enumerate(dic["fipnum"]) if fip in (10, 11)]
+    for j in range(dic["t1_rst"], dic["norst"]):
+        sgas = list(dic["sgas"][j])
+        rhog = list(dic["gas_den"][j])
+        k_r = list(dic["gaskr"][j])
+        rhow = list(dic[f"{dic['watDen']}"][j])
+        r_s = list(dic[f"{dic['r_s']}"][j])
+        krp = [k_rr > 0 for k_rr in k_r]
+        krm = [k_rr <= 0 for k_rr in k_r]
+        co2_g = [sga * rho * por for (sga, rho, por) in zip(sgas, rhog, dic["porva"])]
+        co2_d = [
+            rss * rho * (1.0 - sga) * por * GAS_DEN_REF / WAT_DEN_REF
+            for (rss, rho, sga, por) in zip(r_s, rhow, sgas, dic["porva"])
+        ]
+        dic["pop1"].append(dic["pressure"][j][dic["sensor1"]] * 1e5)  # Pa
+        dic["pop2"].append(dic["pressure"][j][dic["sensor2"]] * 1e5)
+        dic["moba"].append(sum(co2_g[i] * krp[i] for i in dic["boxa"]))
+        dic["imma"].append(sum(co2_g[i] * krm[i] for i in dic["boxa"]))
+        dic["dissa"].append(sum(co2_d[i] for i in dic["boxa"]))
+        dic["seala"].append(
+            sum((co2_g[i] + co2_d[i]) * dic["facie1"][i] for i in dic["boxa"])
+        )
+        dic["mobb"].append(sum(co2_g[i] * krp[i] for i in dic["boxb"]))
+        dic["immb"].append(sum(co2_g[i] * krm[i] for i in dic["boxb"]))
+        dic["dissb"].append(sum(co2_d[i] for i in dic["boxb"]))
+        dic["sealb"].append(
+            sum((co2_g[i] + co2_d[i]) * dic["facie1"][i] for i in dic["boxb"])
+        )
+        dic["sealt"].append(sum((co2_g[i] + co2_d[i]) for i in dic["facie1ind"]))
+        if dic["case"] != "spe11a":
+            dic["boundtot"].append(
+                sum((co2_g[i] + co2_d[i]) for i in dic["boundariesind"])
+            )
+    return dic
+
+
 def sparse_data(dic):
     """Compute the quantities in boxes A, B, and C"""
-    for ent in [
-        "ip1c",
-        "ip2c",
+    dic["names"] = [
+        "pop1",
+        "pop2",
         "moba",
         "imma",
         "dissa",
@@ -354,27 +565,132 @@ def sparse_data(dic):
         "dissb",
         "sealb",
         "m_c",
-        "sealtot",
-    ]:
-        dic[ent] = []
+        "sealt",
+    ]
     if dic["case"] != "spe11a":
-        dic["boundtot"] = []
-    dic["boxa"] = [i for i, fip in enumerate(dic["fipnum"]) if fip in (2, 4, 5)]
-    dic["boxb"] = [i for i, fip in enumerate(dic["fipnum"]) if fip == 3]
+        dic["names"] += ["boundtot"]
+    for ent in dic["names"]:
+        dic[ent] = []
+    dic["times_s"] = np.linspace(
+        0, dic["times"][-1], round(dic["times"][-1] / dic["sparse_t"]) + 1
+    )
+    if dic["load"] == "summary":
+        dic = create_from_summary(dic)
+    else:
+        dic = create_from_restart(dic)
+    dic = compute_m_c(
+        dic
+    )  # Using the restart data until implemented in OPM Flow summary
+    write_sparse_data(dic)
+
+
+def compute_m_c(dic):
+    """Normalized total variation of the concentration field within Box C"""
     dic["boxc"] = np.array([fip == 4 for fip in dic["fipnum"]])
     dic["boxc_x"] = list(np.roll(dic["boxc"], 1))
     dic["boxc_y"] = list(np.roll(dic["boxc"], -dic["gxyz"][0]))
     dic["boxc_z"] = list(np.roll(dic["boxc"], -dic["gxyz"][0] * dic["gxyz"][1]))
     dic["boxc"] = [i for i, fip in enumerate(dic["fipnum"]) if fip == 4]
-    dic["boxc_z"] = [i for i, fip in enumerate(dic["boxc_z"]) if fip == 1]
-    dic["boxc_y"] = [i for i, fip in enumerate(dic["boxc_y"]) if fip == 1]
-    dic["boxc_x"] = [i for i, fip in enumerate(dic["boxc_x"]) if fip == 1]
-    dic["sensor1"] = dic["fipnum"].index(5)
-    dic["sensor2"] = dic["fipnum"].index(6)
-    dic["facie1"] = [sat == 1 for sat in dic["satnum"]]
-    dic["facie1ind"] = [i for i, sat in enumerate(dic["satnum"]) if sat == 1]
-    dic["boundariesind"] = [i for i, fip in enumerate(dic["fipnum"]) if fip == 7]
-    write_sparse_data(dic)
+    dic["boxc_z"] = [i for i, val in enumerate(dic["boxc_z"]) if val == 1]
+    dic["boxc_y"] = [i for i, val in enumerate(dic["boxc_y"]) if val == 1]
+    dic["boxc_x"] = [i for i, val in enumerate(dic["boxc_x"]) if val == 1]
+    dic = max_xcw(dic)
+    for j in range(dic["t1_rst"] + 1, dic["norst"]):
+        sgas = list(dic["sgas"][j])
+        rhow = list(dic[f"{dic['watDen']}"][j])
+        r_s = list(dic[f"{dic['r_s']}"][j])
+        co2_d = [
+            rss * rho * (1.0 - sga) * por * GAS_DEN_REF / WAT_DEN_REF
+            for (rss, rho, sga, por) in zip(r_s, rhow, sgas, dic["porva"])
+        ]
+        h2o_l = [
+            (1 - sga) * rho * por for (sga, rho, por) in zip(sgas, rhow, dic["porva"])
+        ]
+        dic["xcw"] = [co2 / (co2 + h2o) for (co2, h2o) in zip(co2_d, h2o_l)]
+        if dic["xcw_max"] != 0:
+            dic["xcw"] = [xcw / dic["xcw_max"] for xcw in dic["xcw"]]
+        if dic["case"] != "spe11c":
+            dic["m_c"].append(
+                sum(
+                    abs((dic["xcw"][i_x] - dic["xcw"][i]) * dic["dz"][i])
+                    + abs((dic["xcw"][i_z] - dic["xcw"][i]) * dic["dx"][i])
+                    for (i, i_x, i_z) in zip(dic["boxc"], dic["boxc_x"], dic["boxc_z"])
+                )
+            )
+        else:
+            dic["m_c"].append(
+                sum(
+                    abs((dic["xcw"][i_x] - dic["xcw"][i]) * dic["dy"][i] * dic["dz"][i])
+                    + abs(
+                        (dic["xcw"][i_y] - dic["xcw"][i]) * dic["dx"][i] * dic["dz"][i]
+                    )
+                    + abs(
+                        (dic["xcw"][i_z] - dic["xcw"][i]) * dic["dx"][i] * dic["dy"][i]
+                    )
+                    for (i, i_x, i_y, i_z) in zip(
+                        dic["boxc"], dic["boxc_x"], dic["boxc_y"], dic["boxc_z"]
+                    )
+                )
+            )
+    return dic
+
+
+def write_sparse_data(dic):
+    """Routine to write the sparse data"""
+    for name in dic["names"]:
+        if dic["load"] == "summary":
+            if name == "m_c":
+                interp = interp1d(
+                    [0.0] + dic["times"],
+                    [0.0] + dic[f"{name}"],
+                    fill_value="extrapolate",
+                )
+            elif "pop" in name:
+                interp = interp1d(
+                    [0.0] + dic["times_ts"],
+                    dic[f"{name}"],
+                    fill_value="extrapolate",
+                )
+            else:
+                interp = interp1d(
+                    [0.0] + dic["times_ts"],
+                    [0.0] + list(dic[f"{name}"]),
+                    fill_value="extrapolate",
+                )
+        else:
+            if name == "m_c":
+                interp = interp1d(
+                    [0.0] + dic["times"],
+                    [0.0] + dic[f"{name}"],
+                    fill_value="extrapolate",
+                )
+            else:
+                interp = interp1d(
+                    [0.0] + dic["times"],
+                    dic[f"{name}"],
+                    fill_value="extrapolate",
+                )
+        dic[f"{name}"] = interp(dic["times_s"])
+    text = [
+        "# t [s], p1 [Pa], p2 [Pa], mobA [kg], immA [kg], dissA [kg], sealA [kg], "
+        + "<same for B>, MC [m^2], sealTot [kg]"
+    ]
+    if dic["case"] != "spe11a":
+        text[-1] += ", boundTot [kg]"
+    for j, time in enumerate(dic["times_s"]):
+        text.append(
+            f"{time:.3e},{dic['pop1'][j]:.3e},{dic['pop2'][j]:.3e}"
+            f",{dic['moba'][j]:.3e},{dic['imma'][j]:.3e},{dic['dissb'][j]:.3e}"
+            f",{dic['seala'][j]:.3e},{dic['mobb'][j]:.3e},{dic['immb'][j]:.3e}"
+            f",{dic['dissb'][j]:.3e},{dic['sealb'][j]:.3e},{dic['m_c'][j]:.3e}"
+            f",{dic['sealt'][j]:.3e}"
+        )
+        if dic["case"] != "spe11a":
+            text[-1] += f",{dic['boundtot'][j]:.3e}"
+    with open(
+        f"{dic['where']}/{dic['case']}_time_series.csv", "w", encoding="utf8"
+    ) as file:
+        file.write("\n".join(text))
 
 
 def max_xcw(dic):
@@ -397,89 +713,12 @@ def max_xcw(dic):
     return dic
 
 
-def write_sparse_data(dic):
-    """Map the quantities to the locations"""
-    dic = max_xcw(dic)
-    text = [
-        "# t [s], p1 [Pa], p2 [Pa], mobA [kg], immA [kg], dissA [kg], sealA [kg], "
-        + "<same for B>, MC [m^2], sealTot [kg]"
-    ]
-    if dic["case"] != "spe11a":
-        text[-1] += ", boundTot [kg]"
-    for tim, j in enumerate(range(dic["t1_rst"], dic["norst"])):
-        print(
-            f"Processing sparse data {j+1-dic['t1_rst']} out "
-            + f"of {dic['norst']-dic['t1_rst']}"
-        )
-        sgas = list(dic["sgas"][j])
-        rhog = list(dic["gas_den"][j])
-        k_r = list(dic["gaskr"][j])
-        rhow = list(dic[f"{dic['watDen']}"][j])
-        r_s = list(dic[f"{dic['r_s']}"][j])
-        krp = [k_rr > 0 for k_rr in k_r]
-        krm = [k_rr <= 0 for k_rr in k_r]
-        co2_g = [sga * rho * por for (sga, rho, por) in zip(sgas, rhog, dic["porva"])]
-        co2_d = [
-            rss * rho * (1.0 - sga) * por * GAS_DEN_REF / WAT_DEN_REF
-            for (rss, rho, sga, por) in zip(r_s, rhow, sgas, dic["porva"])
-        ]
-        h2o_l = [
-            (1 - sga) * rho * por for (sga, rho, por) in zip(sgas, rhow, dic["porva"])
-        ]
-        dic["xcw"] = [co2 / (co2 + h2o) for (co2, h2o) in zip(co2_d, h2o_l)]
-        if dic["xcw_max"] != 0:
-            dic["xcw"] = [xcw / dic["xcw_max"] for xcw in dic["xcw"]]
-        dic["ip1c"] = dic["pressure"][j][dic["sensor1"]] * 1e5  # Pa
-        dic["ip2c"] = dic["pressure"][j][dic["sensor2"]] * 1e5
-        dic["moba"] = sum(co2_g[i] * krp[i] for i in dic["boxa"])
-        dic["imma"] = sum(co2_g[i] * krm[i] for i in dic["boxa"])
-        dic["dissa"] = sum(co2_d[i] for i in dic["boxa"])
-        dic["seala"] = sum(
-            (co2_g[i] + co2_d[i]) * dic["facie1"][i] for i in dic["boxa"]
-        )
-        dic["mobb"] = sum(co2_g[i] * krp[i] for i in dic["boxb"])
-        dic["immb"] = sum(co2_g[i] * krm[i] for i in dic["boxb"])
-        dic["dissb"] = sum(co2_d[i] for i in dic["boxb"])
-        dic["sealb"] = sum(
-            (co2_g[i] + co2_d[i]) * dic["facie1"][i] for i in dic["boxb"]
-        )
-        dic["sealtot"] = sum((co2_g[i] + co2_d[i]) for i in dic["facie1ind"])
-        if dic["case"] != "spe11c":
-            dic["m_c"] = sum(
-                abs((dic["xcw"][i_x] - dic["xcw"][i]) * dic["dz"][i])
-                + abs((dic["xcw"][i_z] - dic["xcw"][i]) * dic["dx"][i])
-                for (i, i_x, i_z) in zip(dic["boxc"], dic["boxc_x"], dic["boxc_z"])
-            )
-        else:
-            dic["m_c"] = sum(
-                abs((dic["xcw"][i_x] - dic["xcw"][i]) * dic["dy"][i] * dic["dz"][i])
-                + abs((dic["xcw"][i_y] - dic["xcw"][i]) * dic["dx"][i] * dic["dz"][i])
-                + abs((dic["xcw"][i_z] - dic["xcw"][i]) * dic["dx"][i] * dic["dy"][i])
-                for (i, i_x, i_y, i_z) in zip(
-                    dic["boxc"], dic["boxc_x"], dic["boxc_y"], dic["boxc_z"]
-                )
-            )
-        text.append(
-            f"{dic['d_t']*tim:.3e},{dic['ip1c']:.3e},{dic['ip2c']:.3e}"
-            f",{dic['moba']:.3e},{dic['imma']:.3e},{dic['dissa']:.3e}"
-            f",{dic['seala']:.3e},{dic['mobb']:.3e},{dic['immb']:.3e}"
-            f",{dic['dissb']:.3e},{dic['sealb']:.3e},{dic['m_c']:.3e}"
-            f",{dic['sealtot']:.3e}"
-        )
-        if dic["case"] != "spe11a":
-            dic["boundtot"] = sum((co2_g[i] + co2_d[i]) for i in dic["boundariesind"])
-            text[-1] += f",{dic['boundtot']:.3e}"
-
-    with open(
-        f"{dic['where']}/{dic['case']}_time_series.csv", "w", encoding="utf8"
-    ) as file:
-        file.write("\n".join(text))
-
-
 def dense_data(dic):
     """Write the quantities with the benchmark format"""
     d_s = round(dic["spatial_t"] / dic["d_t"])
-    n_t = round((dic["times"][-1 - dic["t0_rst"]] + dic["d_t"]) / dic["spatial_t"])
+    n_t = int(
+        np.floor((dic["times"][-1 - dic["t0_rst"]] + dic["d_t"]) / dic["spatial_t"])
+    )
     for i, j, k in zip(["x", "y", "z"], dic["dims"], dic["nxyz"]):
         temp = np.linspace(0, j, k + 1)
         dic[f"ref{i}cent"] = 0.5 * (temp[1:] + temp[:-1])

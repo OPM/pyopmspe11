@@ -16,6 +16,82 @@ from pyopmspe11.utils.mapproperties import (
 
 def pyopmspe11():
     """Main function"""
+    cmdargs = load_parser()
+    file = cmdargs["input"].strip()  # Name of the input file
+    dic = {"fol": cmdargs["output"].strip()}  # Name for the output folder
+    dic["generate"] = cmdargs["generate"].strip()  # What data to write
+    dic["exe"] = os.getcwd()  # Path to the folder of the input.txt file
+    dic["mode"] = cmdargs["mode"].strip()  # Parts of the workflow to run
+    dic["pat"] = os.path.dirname(__file__)[:-5]  # Path to the pyopmspe11 folder
+    dic["compare"] = cmdargs["compare"].strip()  # Make common figures for comparison
+    dic["use"] = cmdargs["use"].strip()  # OPM or resdata python package
+    dic["load"] = cmdargs[
+        "load"
+    ].strip()  # Summary or restart data for the sparse data interpolation
+    dic["resolution"] = cmdargs[
+        "resolution"
+    ].strip()  # Spatial resolution to write the data
+    dic["time_data"] = float(
+        cmdargs["time"].strip()
+    )  # Temporal resolution to write the dense data
+    dic["dt_data"] = float(
+        cmdargs["write"].strip()
+    )  # Temporal resolution to write the sparse and performance data
+    # If the compare plots are generated, then we exit right afterwards
+    if dic["compare"]:
+        plot_results(dic)
+        return
+
+    # Process the input file (open pyopmspe11.utils.inputvalues to see the abbreviations meaning)
+    dic = process_input(dic, file)
+
+    # Make the output folders
+    if not os.path.exists(f"{dic['exe']}/{dic['fol']}"):
+        os.system(f"mkdir {dic['exe']}/{dic['fol']}")
+    for fil in ["deck", "flow"]:
+        if not os.path.exists(f"{dic['exe']}/{dic['fol']}/{fil}"):
+            os.system(f"mkdir {dic['exe']}/{dic['fol']}/{fil}")
+    os.chdir(f"{dic['exe']}/{dic['fol']}")
+
+    if dic["mode"] in ["all", "deck", "deck_flow", "deck_flow_data", "deck_flow_plot"]:
+        # Initialize the grid
+        dic = grid(dic)
+
+        # For corner-point grids, get the cell centers by executing flow
+        if dic["grid"] == "corner-point":
+            initial(dic)
+            os.chdir(f"{dic['exe']}/{dic['fol']}/deck")
+            simulations(dic, "INITIAL", "flow")
+            print("Files used to generate the corner-point grid (INITIAL.* files)")
+
+        # Check the generated deck, flow version, and chosen co2store implementation
+        check_deck(dic)
+
+        # Get the sand and well positions
+        dic = positions(dic)
+
+        # Write used opm related files
+        opm_files(dic)
+
+    if dic["mode"] in ["all", "flow", "deck_flow", "deck_flow_data", "deck_flow_plot"]:
+        # Run the simulations
+        simulations(dic, dic["fol"].upper(), "flow")
+
+    if dic["mode"] in ["all", "data", "deck_flow_data", "data_plot"]:
+        # Write the data
+        if not os.path.exists(f"{dic['exe']}/{dic['fol']}/data"):
+            os.system(f"mkdir {dic['exe']}/{dic['fol']}/data")
+        data(dic)
+
+    if dic["mode"] in ["all", "plot", "deck_flow_plot", "data_plot"]:
+        # Make some useful plots after the studies
+        if not os.path.exists(f"{dic['exe']}/{dic['fol']}/figures"):
+            os.system(f"mkdir {dic['exe']}/{dic['fol']}/figures")
+        plotting(dic)
+
+
+def load_parser():
+    """Argument options"""
     parser = argparse.ArgumentParser(
         description="Main script to run the spe11s with OPM Flow."
     )
@@ -72,73 +148,21 @@ def pyopmspe11():
         default="resdata",
         help="Using the 'opm' or 'resdata' python package (resdata by default).",
     )
-    cmdargs = vars(parser.parse_known_args()[0])
-    file = cmdargs["input"].strip()  # Name of the input file
-    dic = {"fol": cmdargs["output"].strip()}  # Name for the output folder
-    dic["generate"] = cmdargs["generate"].strip()  # What data to write
-    dic["exe"] = os.getcwd()  # Path to the folder of the input.txt file
-    dic["mode"] = cmdargs["mode"].strip()  # Parts of the workflow to run
-    dic["pat"] = os.path.dirname(__file__)[:-5]  # Path to the pyopmspe11 folder
-    dic["compare"] = cmdargs["compare"].strip()  # Make common figures for comparison
-    dic["use"] = cmdargs["use"]  # OPM or resdata python package
-    dic["resolution"] = cmdargs[
-        "resolution"
-    ].strip()  # Spatial resolution to write the data
-    dic["time_data"] = float(
-        cmdargs["time"].strip()
-    )  # Temporal resolution to write the data
-
-    # If the compare plots are generated, then we exit right afterwards
-    if dic["compare"]:
-        plot_results(dic)
-        return
-
-    # Process the input file (open pyopmspe11.utils.inputvalues to see the abbreviations meaning)
-    dic = process_input(dic, file)
-
-    # Make the output folders
-    if not os.path.exists(f"{dic['exe']}/{dic['fol']}"):
-        os.system(f"mkdir {dic['exe']}/{dic['fol']}")
-    for fil in ["deck", "flow"]:
-        if not os.path.exists(f"{dic['exe']}/{dic['fol']}/{fil}"):
-            os.system(f"mkdir {dic['exe']}/{dic['fol']}/{fil}")
-    os.chdir(f"{dic['exe']}/{dic['fol']}")
-
-    if dic["mode"] in ["all", "deck", "deck_flow", "deck_flow_data", "deck_flow_plot"]:
-        # Initialize the grid
-        dic = grid(dic)
-
-        # For corner-point grids, get the cell centers by executing flow
-        if dic["grid"] == "corner-point":
-            initial(dic)
-            os.chdir(f"{dic['exe']}/{dic['fol']}/deck")
-            simulations(dic, "INITIAL", "flow")
-            print("Files used to generate the corner-point grid (INITIAL.* files)")
-
-        # Check the generated deck, flow version, and chosen co2store implementation
-        check_deck(dic)
-
-        # Get the sand and well positions
-        dic = positions(dic)
-
-        # Write used opm related files
-        opm_files(dic)
-
-    if dic["mode"] in ["all", "flow", "deck_flow", "deck_flow_data", "deck_flow_plot"]:
-        # Run the simulations
-        simulations(dic, dic["fol"].upper(), "flow")
-
-    if dic["mode"] in ["all", "data", "deck_flow_data", "data_plot"]:
-        # Write the data
-        if not os.path.exists(f"{dic['exe']}/{dic['fol']}/data"):
-            os.system(f"mkdir {dic['exe']}/{dic['fol']}/data")
-        data(dic)
-
-    if dic["mode"] in ["all", "plot", "deck_flow_plot", "data_plot"]:
-        # Make some useful plots after the studies
-        if not os.path.exists(f"{dic['exe']}/{dic['fol']}/figures"):
-            os.system(f"mkdir {dic['exe']}/{dic['fol']}/figures")
-        plotting(dic)
+    parser.add_argument(
+        "-l",
+        "--load",
+        default="summary",
+        help="Use the summary or restart for the interpolation in the sparse data "
+        "('summary' by default).",
+    )
+    parser.add_argument(
+        "-w",
+        "--write",
+        default="0.1",
+        help="Time interval for the sparse and performance data (spe11a [h]; spe11b/c [y]) "
+        "('0.1' by default).",
+    )
+    return vars(parser.parse_known_args()[0])
 
 
 def main():

@@ -65,6 +65,8 @@ def data(dic):
         "-g " + f"{dic['generate']}",
         "-r " + f"{dic['resolution']}",
         "-t " + f"{dic['time_data']}",
+        "-w " + f"{dic['dt_data']}",
+        "-l " + f"{dic['load']}",
         "-u " + f"{dic['use']}",
     ]
     print(" ".join(data_exe))
