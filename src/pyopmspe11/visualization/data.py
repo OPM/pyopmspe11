@@ -151,7 +151,7 @@ def read_resdata(dic):
     else:
         dic["watDen"], dic["r_s"], dic["r_v"] = "oil_den", "rs", "rv"
     dic["egrid"], dic["smspec"] = Grid(case + ".EGRID"), Summary(case + ".SMSPEC")
-    names = ["sgas", dic["r_s"], "pressure", "gas_den", dic["watDen"], "gaskr"]
+    names = ["sgas", dic["r_s"], "pressure", "gas_den", dic["watDen"]]
     if dic["case"] != "spe11a":
         names += [dic["r_v"], "temp"]
     for name in names:
@@ -228,7 +228,7 @@ def opm_files(dic):
     else:
         dic["watDen"], dic["r_s"], dic["r_v"] = "oil_den", "rs", "rv"
     dic["egrid"], dic["smspec"] = OpmGrid(case + ".EGRID"), OpmSummary(case + ".SMSPEC")
-    names = ["sgas", dic["r_s"], "pressure", "gas_den", dic["watDen"], "gaskr"]
+    names = ["sgas", dic["r_s"], "pressure", "gas_den", dic["watDen"]]
     if dic["case"] != "spe11a":
         names += [dic["r_v"], "temp"]
     for name in names:
@@ -507,8 +507,18 @@ def create_from_summary(dic):
     return dic
 
 
+def read_snimm(dic):
+    """Get the immobile gas saturations"""
+    dic["sgimm"] = []
+    with open(f"{dic['path']}/deck/snimm.txt", "r", encoding="utf8") as file:
+        for value in csv.reader(file):
+            dic["sgimm"].append(float(value[0]))
+    return dic
+
+
 def create_from_restart(dic):
     """Use the restart file for the sparse data interpolation"""
+    dic = read_snimm(dic)
     dic["boxa"] = [i for i, fip in enumerate(dic["fipnum"]) if fip in (2, 4, 5, 8)]
     dic["boxb"] = [i for i, fip in enumerate(dic["fipnum"]) if fip in (3, 6)]
     dic["sensor1"] = dic["fipnum"].index(8)
@@ -519,11 +529,17 @@ def create_from_restart(dic):
     for j in range(dic["t1_rst"], dic["norst"]):
         sgas = list(dic["sgas"][j])
         rhog = list(dic["gas_den"][j])
-        k_r = list(dic["gaskr"][j])
         rhow = list(dic[f"{dic['watDen']}"][j])
         r_s = list(dic[f"{dic['r_s']}"][j])
-        krp = [k_rr > 0 for k_rr in k_r]
-        krm = [k_rr <= 0 for k_rr in k_r]
+        sgasm = [
+            min(dic["sgimm"][facie - 1], s_g) for facie, s_g in zip(dic["satnum"], sgas)
+        ]
+        sgasi = [
+            max(0, s_g - dic["sgimm"][facie - 1])
+            for facie, s_g in zip(dic["satnum"], sgas)
+        ]
+        co2_m = [sga * rho * por for (sga, rho, por) in zip(sgasm, rhog, dic["porva"])]
+        co2_i = [sga * rho * por for (sga, rho, por) in zip(sgasi, rhog, dic["porva"])]
         co2_g = [sga * rho * por for (sga, rho, por) in zip(sgas, rhog, dic["porva"])]
         co2_d = [
             rss * rho * (1.0 - sga) * por * GAS_DEN_REF / WAT_DEN_REF
@@ -531,14 +547,14 @@ def create_from_restart(dic):
         ]
         dic["pop1"].append(dic["pressure"][j][dic["sensor1"]] * 1e5)  # Pa
         dic["pop2"].append(dic["pressure"][j][dic["sensor2"]] * 1e5)
-        dic["moba"].append(sum(co2_g[i] * krp[i] for i in dic["boxa"]))
-        dic["imma"].append(sum(co2_g[i] * krm[i] for i in dic["boxa"]))
+        dic["moba"].append(sum(co2_m[i] for i in dic["boxa"]))
+        dic["imma"].append(sum(co2_i[i] for i in dic["boxa"]))
         dic["dissa"].append(sum(co2_d[i] for i in dic["boxa"]))
         dic["seala"].append(
             sum((co2_g[i] + co2_d[i]) * dic["facie1"][i] for i in dic["boxa"])
         )
-        dic["mobb"].append(sum(co2_g[i] * krp[i] for i in dic["boxb"]))
-        dic["immb"].append(sum(co2_g[i] * krm[i] for i in dic["boxb"]))
+        dic["mobb"].append(sum(co2_m[i] for i in dic["boxb"]))
+        dic["immb"].append(sum(co2_i[i] for i in dic["boxb"]))
         dic["dissb"].append(sum(co2_d[i] for i in dic["boxb"]))
         dic["sealb"].append(
             sum((co2_g[i] + co2_d[i]) * dic["facie1"][i] for i in dic["boxb"])
@@ -716,9 +732,7 @@ def max_xcw(dic):
 def dense_data(dic):
     """Write the quantities with the benchmark format"""
     d_s = round(dic["spatial_t"] / dic["d_t"])
-    n_t = int(
-        np.floor((dic["times"][-1 - dic["t0_rst"]] + dic["d_t"]) / dic["spatial_t"])
-    )
+    n_t = int(np.floor((dic["times"][-1]) / dic["spatial_t"]))
     for i, j, k in zip(["x", "y", "z"], dic["dims"], dic["nxyz"]):
         temp = np.linspace(0, j, k + 1)
         dic[f"ref{i}cent"] = 0.5 * (temp[1:] + temp[:-1])

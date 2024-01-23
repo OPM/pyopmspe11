@@ -138,7 +138,7 @@ RPTRST
 % if dic['model'] == 'immiscible': 
 'BASIC=2' FLOWS FLORES DEN/
 % else:
-'BASIC=2' DEN KRG/
+'BASIC=2' DEN/
 %endif
 
 % if dic['model'] == 'complete':
@@ -185,19 +185,25 @@ RPTRST
 % if dic['model'] == 'immiscible': 
 'BASIC=2' FLOWS FLORES DEN/
 % else:
-'BASIC=2' DEN KRG/
+'BASIC=2' DEN/
 %endif
 
+% if sum(dic['radius']) > 0:
 WELSPECS
 % for i in range(len(dic['wellijk'])):
+% if dic['radius'][i] > 0:
 'INJ${i}' 'G1' ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]} 1* 'GAS' ${dic['radius'][i]}/
+% endif
 % endfor
 /
 COMPDAT
 % for i in range(len(dic['wellijk'])):
-'INJ${i}' ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]} ${dic['wellijk'][i][2]} ${dic['wellijk'][i][2]} 'OPEN' 1* 1* ${2.*dic['radius'][i]} /
+% if dic['radius'][i] > 0:
+'INJ${i}' ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]} ${dic['wellijk'][i][2]} ${dic['wellijk'][i][2]} 'OPEN' 2* ${2.*dic['radius'][i]} /
+% endif
 % endfor
 /
+% endif
 % if dic["spe11aBC"] == 0:
 BCPROP
 1 'FREE' /
@@ -209,17 +215,34 @@ TUNING
 1e-2 ${dic['inj'][j][2] / 86400.} 1e-10 2* 1e-12/
 /
 /
+% if max(dic['radius']) > 0:
 WCONINJE
 % for i in range(len(dic['wellijk'])):
+% if dic['radius'][i] > 0:
 % if dic['inj'][j][3+3*i] > 0:
 'INJ${i}' 'GAS' ${'OPEN' if dic['inj'][j][4+3*i] > 0 else 'SHUT'}
-'RATE' ${f"{dic['inj'][j][4+3*i] * 86400 / 1.86843 : E}"}  1* 400/
+'RATE' ${f"{dic['inj'][j][4+3*i] * 86400 / 1.86843:E}"} 1* 400/
 % else:
 'INJ${i}' ${'WATER' if dic['co2store'] == 'gaswater' else 'OIL'} ${'OPEN' if dic['inj'][j][4+3*i] > 0 else 'SHUT'} 
-'RATE' ${f"{dic['inj'][j][4+3*i] * 86400 / 998.108 : E}"}  1* 400/
-%endif
+'RATE' ${f"{dic['inj'][j][4+3*i] * 86400 / 998.108:E}"} 1* 400/
+% endif
+% endif
 % endfor
 /
+% endif
+% if min(dic['radius']) == 0:
+SOURCE
+% for i in range(len(dic['wellijk'])):
+% if dic['radius'][i] == 0:
+% if dic['inj'][j][3+3*i] > 0:
+${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]} ${dic['wellijk'][i][2]} GAS ${f"{dic['inj'][j][4+3*i] * 86400:E}"} /
+% else:
+${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]} ${dic['wellijk'][i][2]} ${'WATER' if dic['co2store'] == 'gaswater' else 'OIL'} ${f"{dic['inj'][j][4+3*i] * 86400:E}"} /
+% endif
+% endif
+% endfor
+/
+% endif
 TSTEP
 ${round(dic['inj'][j][0]/dic['inj'][j][1])}*${dic['inj'][j][1] / 86400.}
 /
