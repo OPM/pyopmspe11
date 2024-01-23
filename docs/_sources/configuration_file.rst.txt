@@ -8,7 +8,7 @@ The first input parameter in the configuration file is:
     :linenos:
 
     """Set the full path to the flow executable and flags"""
-    flow --linear-solver=cprw --newton-min-iterations=1 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations  --enable-well-operability-check=false --min-time-step-before-shutting-problematic-wells-in-days=1e-99 
+    flow --linear-solver=cprw --newton-min-iterations=1 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations 
 
 If **flow** is not in your path, then write the full path to the executable
 (e.g., /Users/dmar/opm/build/opm-simulators/bin/flow). We also add in the same 
@@ -38,7 +38,7 @@ The following input lines in the configuration file are:
     12                #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
     70 36.25          #Temperature bottom and top rig [C]            
     19620000 0.1      #Pressure on the top [Pa] and multiplier for the permeability in the z direction [-]
-    1e-9 2e-8 0       #Diffusion (in liquid and gas) [m^2/s] and dispersion [m] (dispersion only available in Flow master)
+    1e-9 2e-8 10      #Diffusion (in liquid and gas) [m^2/s] and dispersion [m] (dispersion requires a Flow version newer than 17-11-2023)
     8.5e-1 2500       #Rock specific heat and density (for spe11b/c)
     0 5e4 1           #Added pore volume on top boundary (for spe11a [if 0, free flow bc]), pore volume on lateral boundaries, and width of buffer cell [m] (for spe11b/c)
     150 10            #Elevation of the parabola and back [m] (for spe11c) 
@@ -61,11 +61,7 @@ resulting in 18 levels. Then, the z-refinment in each of these levels is set. Se
 
     Examples of a cartesian (top), tensor (middle), and corner-point (bottom) grids. The cartesian is generated using 170, 100, and 120
     elements, the tensor grid by setting the x-array to 50,100,20; the y-array to 5,10,70,10,5; and the z-array to 5,10,20,20,20,20,20,5; and 
-    the corner-point grid using the same xy-arrays as in the tensor grid and for the z-refinment 4,4,3,3,5,3,7,5,13,5,4,3,5,3,9,21,21,2. 
-
-.. warning::
-    Dispersion seems to work fine for the spe11a case where there are no thermal effects nor water evaporation. However, for spe11b/c there are
-    issues with the current implementation (we are working in this, then for now disperison should be set to 0 for spe11b/c).  
+    the corner-point grid using the same xy-arrays as in the tensor grid and for the z-refinment 4,4,3,3,5,3,7,5,13,5,4,3,5,3,9,21,21,2.  
 
 ***********************
 Soil-related parameters
@@ -117,16 +113,16 @@ The last part of the configuration file sets the wells radius, location, and the
     :lineno-start: 45
 
     """Wells radius and position"""
-    """radius, x, y, and z position [m] (final positions as well for spe11c)"""
+    """radius (0 to use the SOURCE keyword instead of well keywords, this requires a Flow version newer than 23-01-2024), x, y, and z position [m] (final positions as well for spe11c)"""
     0.15 2700. 1000. 300. 2700. 4000. 300. #Well 1 
     0.15 5100. 1000. 700. 5100. 4000. 700. #Well 2 
 
     """Define the injection values ([hours] for spe11a; [years] for spe11b/c)""" 
     """injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
-    1000 1000   1 0  0 10 0  0 10
-      25    5 0.1 1 50 10 0  0 10
+    1000 1000 0.1 1  0 10 1  0 10
+      25    5 0.1 1 50 10 1  0 10
       25    5 0.1 1 50 10 1 50 10
-     950    5 0.1 0  0 10 0  0 10
+     950    5 0.1 1  0 10 1  0 10
     
 .. warning::
     Keep the linebreak between the sections (in the current implementation this is used for the reading of the parameters).

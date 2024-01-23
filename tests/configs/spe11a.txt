@@ -11,7 +11,7 @@ cartesian         #Type of grid (cartesian or corner-point)
 25                #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
 20 20             #Temperature bottom and top rig [C]
 110000 1          #Pressure on the top [Pa] and multiplier for the permeability in the z direction [-] 
-0 0 0             #Diffusion (in liquid and gas) [m^2/s] and dispersion [m] (dispersion only available in Flow master)
+0 0 0             #Diffusion (in liquid and gas) [m^2/s] and dispersion [m] (dispersion requires a Flow version newer than 17-11-2023)
 0 0               #Rock specific heat and density (for spe11b/c)
 0 0 0             #Added pore volume on top boundary (for spe11a [if 0, free flow bc]), pore volume on lateral boundaries, and width of buffer cell [m] (for spe11b/c)
 0 0               #Elevation of the parabola [m] (for spe11c) 
@@ -44,9 +44,9 @@ PERM7          0 PORO7    0
 
 """Wells position"""
 """radius (0 to use the SOURCE keyword instead of well keywords, this requires a Flow version newer than 23-01-2024), x, y, and z position [m] (final positions as well for spe11c)"""
-9E-4 0.9 0.005 0.3 #Well 1 
-9E-4 1.7 0.005 0.7 #Well 2 
+9e-4 0.9 0.005 0.3 #Well 1 
+9e-4 1.7 0.005 0.7 #Well 2 
 
 """Define the injection values ([hours] for spe11a; [years] for spe11b/c)""" 
 """injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
-1.5 1.5 0.5 1 1.7E-7 20 1 1.7E-7 20
+1.5 1.5 0.5 1 1.7e-7 20 1 1.7e-7 20

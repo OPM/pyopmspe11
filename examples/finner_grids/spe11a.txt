@@ -1,5 +1,5 @@
 """Set the full path to the flow executable and flags"""
-mpirun -np 23 flow --linear-solver=cprw --newton-min-iterations=1 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations  --enable-well-operability-check=false --min-time-step-before-shutting-problematic-wells-in-days=1e-99
+mpirun -np 23 flow --linear-solver=cprw --newton-min-iterations=1 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations
 
 """Set the model parameters"""
 spe11a master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
@@ -11,10 +11,10 @@ cartesian         #Type of grid (cartesian, tensor, or corner-point)
 120               #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
 20 20             #Temperature bottom and top rig [C]
 110000 1          #Pressure on the top [Pa] and multiplier for the permeability in the z direction [-] 
-1e-9 1.6e-5 1e-2  #Diffusion (in liquid and gas) [m^2/s] and dispersion [m] (disperison only available in Flow master)
+1e-9 1.6e-5 1e-2  #Diffusion (in liquid and gas) [m^2/s] and dispersion [m] (dispersion requires a Flow version newer than 17-11-2023)
 0 0               #Rock specific heat and density (for spe11b/c)
 0 0 0             #Added pore volume on top boundary (for spe11a [if 0, free flow bc]), pore volume on lateral boundaries, and width of buffer cell [m] (for spe11b/c)
-0 0               #Elevation of the parabola [m] (for spe11c) 
+0 0               #Elevation of the parabola [m] (for spe11c)
 
 """Set the saturation functions"""
 (max(0, (s_w - swi) / (1 - swi))) ** 1.5                                                        #Wetting rel perm saturation function [-]
@@ -44,11 +44,11 @@ PERM7          0 PORO7    0
 
 """Wells position"""
 """radius (0 to use the SOURCE keyword instead of well keywords, this requires a Flow version newer than 23-01-2024), x, y, and z position [m] (final positions as well for spe11c)"""
-9E-4 0.9 0.005 0.3 #Well 1 
-9E-4 1.7 0.005 0.7 #Well 2 
+0 0.9 0.005 0.3 #Well 1
+0 1.7 0.005 0.7 #Well 2
 
 """Define the injection values ([hours] for spe11a; [years] for spe11b/c)""" 
 """injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
-2.5 0.1666667 .0001 1 1.7E-7 20 0      0 20
-2.5 0.1666667 .0001 1 1.7E-7 20 1 1.7E-7 20
-115 0.1666667 .0001 0      0 20 0      0 20
+2.5 0.5 .0001 1 1.7e-7 20 1      0 20
+2.5 0.5 .0001 1 1.7e-7 20 1 1.7e-7 20
+115 0.5 .0001 1      0 20 1      0 20
