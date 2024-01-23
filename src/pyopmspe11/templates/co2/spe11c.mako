@@ -41,8 +41,10 @@ METRIC
 START
 1 'JAN' 2025 /
 
+% if sum(dic['radius']) > 0:
 WELLDIMS
 ${len(dic['wellijk'])} ${1+max(dic['wellijkf'][0][1]-dic['wellijk'][0][1], dic['wellijkf'][1][1]-dic['wellijk'][1][1])} ${len(dic['wellijk'])} ${len(dic['wellijk'])} /
+% endif
 
 UNIFIN
 UNIFOUT
