@@ -17,10 +17,10 @@ cartesian         #Type of grid (cartesian, tensor, or corner-point)
 0 0               #Elevation of the parabola [m] (for spe11c)
 
 """Set the saturation functions"""
-(max(0, (s_w - swi) / (1 - swi))) ** 1.5                                                        #Wetting rel perm saturation function [-]
-(max(0, (1 - s_w - sni) / (1 - sni))) ** 1.5                                                    #Non-wetting rel perm saturation function [-]
-penmax * math.erf(pen * ((s_w-swi) / (1.-swi)) ** (-(1.0 / 1.5)) * math.pi**0.5 / (penmax * 2)) #Capillary pressure saturation function [Pa]
-(np.exp(np.flip(np.linspace(0, 5.0, npoints))) - 1) / (np.exp(5.0) - 1)                         #Points to evaluate the saturation functions (s_w) [-]
+(max(0, (s_w - swi) / (1 - swi))) ** 2                                                        #Wetting rel perm saturation function [-]
+(max(0, (1 - s_w - sni) / (1 - sni))) ** 2                                                    #Non-wetting rel perm saturation function [-]
+penmax * math.erf(pen * ((s_w-swi) / (1.-swi)) ** (-(1.0 / 2)) * math.pi**0.5 / (penmax * 2)) #Capillary pressure saturation function [Pa]
+(np.exp(np.flip(np.linspace(0, 5.0, npoints))) - 1) / (np.exp(5.0) - 1)                       #Points to evaluate the saturation functions (s_w) [-]
 
 """Properties sat functions"""
 """swi [-], sni [-], pen [Pa], penmax [Pa], npoints [-]"""

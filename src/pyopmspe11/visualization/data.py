@@ -736,17 +736,27 @@ def dense_data(dic):
     for i, j, k in zip(["x", "y", "z"], dic["dims"], dic["nxyz"]):
         temp = np.linspace(0, j, k + 1)
         dic[f"ref{i}cent"] = 0.5 * (temp[1:] + temp[:-1])
-    ind, dic["cell_ind"] = 0, [0] * dic["nocellsr"]
-    # This is very slow, it needs to be fixed
-    for k in np.flip(dic["refzcent"]):
+        dic[f"ref{i}grid"] = []
+    for k in dic["refzcent"]:
         for j in dic["refycent"]:
             for i in dic["refxcent"]:
-                dic["cell_ind"][ind] = pd.Series(
-                    (dic["simxcent"] - i) ** 2
-                    + (dic["simycent"] - j) ** 2
-                    + (dic["simzcent"] - k) ** 2
-                ).argmin()
-                ind += 1
+                dic["refxgrid"].append(i)
+                dic["refygrid"].append(j)
+                dic["refzgrid"].append(k)
+    for i in ["x", "y", "z"]:
+        dic[f"ref{i}grid"] = np.array(dic[f"ref{i}grid"])
+    ind, dic["cell_ind"] = 0, [0] * dic["nocellst"]
+    # This is very slow, it needs to be fixed
+    for i, j, k in zip(dic["simxcent"], dic["simycent"], np.flip(dic["simzcent"])):
+        dic["cell_ind"][ind] = pd.Series(
+            (dic["refxgrid"] - i) ** 2
+            + (dic["refygrid"] - j) ** 2
+            + (dic["refzgrid"] - k) ** 2
+        ).argmin()
+        ind += 1
+    dic["porv_array"] = np.array(dic["porv"])
+    if max(dic["satnum"]) < 7:
+        dic = handle_inactive_mapping(dic)
     names = ["pressure", "sgas", "xco2", "xh20", "gden", "wden", "tco2"]
     if dic["case"] != "spe11a":
         names += ["temp"]
@@ -754,7 +764,7 @@ def dense_data(dic):
         print(f"Processing dense data {i+1} out of {n_t + 1}")
         t_n = i * d_s + dic["t1_rst"]
         for name in names:
-            dic[f"{name}_array"] = np.array([np.nan] * dic["nocellst"])
+            dic[f"{name}_array"] = np.array([0.0] * dic["nocellst"])
         co2_g = [
             sga * rho * por
             for (sga, rho, por) in zip(
@@ -807,10 +817,46 @@ def dense_data(dic):
                 h2o / (h2o + co2) if (h2o + co2) > 0 else 0.0
                 for (h2o, co2) in zip(h2o_v, co2_g)
             ]
-        for name in names:
-            dic[f"{name}_refg"] = [np.nan] * dic["nocellsr"]
-            dic[f"{name}_refg"] = dic[f"{name}_array"][dic["cell_ind"]]
+        dic = map_to_report_grid(dic, names)
         write_dense_data(dic, i)
+
+
+def handle_inactive_mapping(dic):
+    """Set to inf the inactive grid centers in the reporting grid"""
+    var_array = np.array([np.nan] * dic["nocellst"])
+    var_array[dic["actind"]] = dic["sgas"][0]
+    for ii in range(dic["nocellsr"]):
+        inds = [iii == ii for iii in dic["cell_ind"]]
+        if np.isnan(sum(var_array[inds])):
+            dic["refxgrid"][ii] = np.inf
+            dic["refygrid"][ii] = np.inf
+            dic["refzgrid"][ii] = np.inf
+    ind, dic["cell_ind"] = 0, [0] * dic["nocellst"]
+    for i, j, k in zip(dic["simxcent"], dic["simycent"], np.flip(dic["simzcent"])):
+        dic["cell_ind"][ind] = pd.Series(
+            (dic["refxgrid"] - i) ** 2
+            + (dic["refygrid"] - j) ** 2
+            + (dic["refzgrid"] - k) ** 2
+        ).argmin()
+        ind += 1
+    return dic
+
+
+def map_to_report_grid(dic, names):
+    """Map the simulation grid to the reporting grid"""
+    for name in names:
+        dic[f"{name}_refg"] = [np.nan] * dic["nocellsr"]
+        for ii in range(dic["nocellsr"]):
+            inds = [iii == ii for iii in dic["cell_ind"]]
+            p_v = sum(dic["porv_array"][inds])
+            if p_v > 0:
+                if name == "tco2":
+                    dic[f"{name}_refg"][ii] = sum(dic[f"{name}_array"][inds])
+                else:
+                    dic[f"{name}_refg"][ii] = (
+                        sum(dic[f"{name}_array"][inds] * dic["porv_array"][inds]) / p_v
+                    )
+    return dic
 
 
 def write_dense_data(dic, i):
