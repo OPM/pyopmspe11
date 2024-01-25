@@ -27,6 +27,7 @@ def process_input(dic, in_file):
         for row in csv.reader(file, delimiter="#"):
             lol.append(row)
     dic = readthefirstpart(lol, dic)
+    dic["maxelevation"] = 0.0
     if dic["spe11"] == "spe11a":
         dic["sensors"] = [[1.5, 0.005, 0.5], [1.7, 0.005, 1.1]]
         dic["boxa"] = [[1.1, 0.0, 0.0], [2.8, 0.01, 0.6]]
@@ -40,6 +41,7 @@ def process_input(dic, in_file):
         dic["boxc"] = [[3300.0, 0.0, 100.0], [7800.0, 1.0, 400.0]]
         dic["time"] = 31536000.0  # year to seconds
     else:
+        dic["maxelevation"] = 155.04166666666666  # at y = 2541 + 2/3
         corr = dic["elevation"] + 0.5 * dic["backElevation"]
         dic["sensors"] = [
             [4500.0, 2500.0, 655.0 - corr],
@@ -91,8 +93,9 @@ def readthefirstpart(lol, dic):
         float(row[1]),
     ]
     row = list((lol[12][0].strip()).split())
-    dic["pressure"] = float(row[0])  # Pressure at the top [Pa]
-    dic["kzMult"] = float(row[1])  # Permeability multiplier in the z dir [-]
+    dic["datum"] = float(row[0])  # Datum [m]
+    dic["pressure"] = float(row[1])  # Pressure at the datum [Pa]
+    dic["kzMult"] = float(row[2])  # Permeability multiplier in the z dir [-]
     row = list((lol[13][0].strip()).split())
     # Diffusion (in liquid and gas) [m^2/s] to [m^2/day]
     dic["diffusion"] = [float(row[0]) * 86400, float(row[1]) * 86400]

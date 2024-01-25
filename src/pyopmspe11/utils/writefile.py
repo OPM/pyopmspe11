@@ -141,6 +141,7 @@ def opm_files(dic):
     os.system(f"rm -rf {dic['exe']}/{dic['fol']}/deck/saturation_functions.py")
     inj_t = 0.0
     skip_unrst = 0
+    d_t = 0.0
     for inj in dic["inj"]:
         if inj[4] + inj[7] == 0.0:
             inj_t += inj[0]

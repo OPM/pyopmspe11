@@ -134,7 +134,7 @@ INCLUDE
 SOLUTION
 ---------------------------------------------------------------------------
 EQUIL
-0 ${dic['pressure']/1.E5} ${0 if dic["co2store"] == "gaswater" else dic['dims'][2]} 0 0 0 1 1 0 /
+${dic['dims'][2]-dic['datum']} ${dic['pressure']/1.E5} ${0 if dic["co2store"] == "gaswater" else dic['dims'][2]} 0 0 0 1 1 0 /
 
 RPTRST
 % if dic['model'] == 'immiscible': 

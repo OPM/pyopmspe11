@@ -132,8 +132,8 @@ def load_parser():
     parser.add_argument(
         "-r",
         "--resolution",
-        default="100,1,50",
-        help="Number of x, y, and z elements to write the data ('100,1,50' by default).",
+        default="8,1,5",
+        help="Number of x, y, and z elements to write the data ('8,1,5' by default).",
     )
     parser.add_argument(
         "-g",

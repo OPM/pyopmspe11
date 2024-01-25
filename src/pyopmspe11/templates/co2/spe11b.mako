@@ -97,6 +97,13 @@ INCLUDE
 'THCONR.INC' /
 % endif
 
+% if dic['model'] == 'complete' and dic["flow_version"] != "2023.10":
+BCCON 
+1 1 ${dic['noCells'][0]} 1 1 1 1 Z-/
+2 1 ${dic['noCells'][0]} 1 1 ${dic['noCells'][2]} ${dic['noCells'][2]} Z/
+/
+% endif
+
 % if dic["version"] == "master" and dic["dispersion"] > 0 and dic["flow_version"] != "2023.10":
 DISPERC 
 ${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*${dic["dispersion"]} /
@@ -140,7 +147,7 @@ INCLUDE
 SOLUTION
 ---------------------------------------------------------------------------
 EQUIL
-0 ${dic['pressure']/1.E5} ${0 if dic["co2store"] == "gaswater" else dic['dims'][2]} 0 0 0 1 1 0 /
+${dic['dims'][2]-dic['datum']} ${dic['pressure']/1.E5} ${0 if dic["co2store"] == "gaswater" else dic['dims'][2]} 0 0 0 1 1 0 /
 
 RPTRST
 % if dic['model'] == 'immiscible': 
@@ -199,6 +206,13 @@ RPTRST
 % else:
 'BASIC=2' DEN/
 %endif
+
+% if dic['model'] == 'complete' and dic["flow_version"] != "2023.10":
+BCPROP
+1 THERMAL /
+2 THERMAL /
+/
+% endif
 
 % if sum(dic['radius']) > 0:
 WELSPECS

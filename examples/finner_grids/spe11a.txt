@@ -10,7 +10,7 @@ cartesian         #Type of grid (cartesian, tensor, or corner-point)
 1                 #If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for spe11c)
 120               #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
 20 20             #Temperature bottom and top rig [C]
-110000 1          #Pressure on the top [Pa] and multiplier for the permeability in the z direction [-] 
+1.2 110000 1      #Datum [m], pressure at the datum [Pa], and multiplier for the permeability in the z direction [-] 
 1e-9 1.6e-5 1e-2  #Diffusion (in liquid and gas) [m^2/s] and dispersion [m] (dispersion requires a Flow version newer than 17-11-2023)
 0 0               #Rock specific heat and density (for spe11b/c)
 0 0 0             #Added pore volume on top boundary (for spe11a [if 0, free flow bc]), pore volume on lateral boundaries, and width of buffer cell [m] (for spe11b/c)

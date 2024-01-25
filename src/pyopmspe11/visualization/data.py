@@ -507,6 +507,39 @@ def create_from_summary(dic):
     return dic
 
 
+def overlapping_c_and_facie1_contribution(dic):
+    """Add the corresponding fipnum 12 contribution"""
+    if dic["use"] == "opm":
+        dic["moba"] += dic["smspec"]["RGCDM:12"] * KMOL_TO_KG
+        dic["imma"] += dic["smspec"]["RGCDI:12"] * KMOL_TO_KG
+        dic["dissa"] += dic["smspec"]["RWCD:12"] * KMOL_TO_KG
+        dic["seala"] += (
+            dic["smspec"]["RWCD:12"]
+            + dic["smspec"]["RGCDM:12"]
+            + dic["smspec"]["RGCDI:12"]
+        ) * KMOL_TO_KG
+        dic["sealt"] += (
+            dic["smspec"]["RWCD:12"]
+            + dic["smspec"]["RGCDM:12"]
+            + dic["smspec"]["RGCDI:12"]
+        ) * KMOL_TO_KG
+    else:
+        dic["moba"] += dic["smspec"]["RGCDM:12"].values * KMOL_TO_KG
+        dic["imma"] += dic["smspec"]["RGCDI:12"].values * KMOL_TO_KG
+        dic["dissa"] += dic["smspec"]["RWCD:12"].values * KMOL_TO_KG
+        dic["seala"] += (
+            dic["smspec"]["RWCD:12"].values
+            + dic["smspec"]["RGCDM:12"].values
+            + dic["smspec"]["RGCDI:12"].values
+        ) * KMOL_TO_KG
+        dic["sealt"] += (
+            dic["smspec"]["RWCD:12"].values
+            + dic["smspec"]["RGCDM:12"].values
+            + dic["smspec"]["RGCDI:12"].values
+        ) * KMOL_TO_KG
+    return dic
+
+
 def read_snimm(dic):
     """Get the immobile gas saturations"""
     dic["sgimm"] = []
@@ -519,7 +552,7 @@ def read_snimm(dic):
 def create_from_restart(dic):
     """Use the restart file for the sparse data interpolation"""
     dic = read_snimm(dic)
-    dic["boxa"] = [i for i, fip in enumerate(dic["fipnum"]) if fip in (2, 4, 5, 8)]
+    dic["boxa"] = [i for i, fip in enumerate(dic["fipnum"]) if fip in (2, 4, 5, 8, 12)]
     dic["boxb"] = [i for i, fip in enumerate(dic["fipnum"]) if fip in (3, 6)]
     dic["sensor1"] = dic["fipnum"].index(8)
     dic["sensor2"] = dic["fipnum"].index(9)
@@ -592,6 +625,8 @@ def sparse_data(dic):
     )
     if dic["load"] == "summary":
         dic = create_from_summary(dic)
+        if dic["case"] == "spe11c" and max(dic["fipnum"]) == 12:
+            dic = overlapping_c_and_facie1_contribution(dic)
     else:
         dic = create_from_restart(dic)
     dic = compute_m_c(
@@ -602,11 +637,11 @@ def sparse_data(dic):
 
 def compute_m_c(dic):
     """Normalized total variation of the concentration field within Box C"""
-    dic["boxc"] = np.array([fip == 4 for fip in dic["fipnum"]])
+    dic["boxc"] = np.array([fip in (4, 12) for fip in dic["fipnum"]])
     dic["boxc_x"] = list(np.roll(dic["boxc"], 1))
     dic["boxc_y"] = list(np.roll(dic["boxc"], -dic["gxyz"][0]))
     dic["boxc_z"] = list(np.roll(dic["boxc"], -dic["gxyz"][0] * dic["gxyz"][1]))
-    dic["boxc"] = [i for i, fip in enumerate(dic["fipnum"]) if fip == 4]
+    dic["boxc"] = [i for i, fip in enumerate(dic["fipnum"]) if fip in (4, 12)]
     dic["boxc_z"] = [i for i, val in enumerate(dic["boxc_z"]) if val == 1]
     dic["boxc_y"] = [i for i, val in enumerate(dic["boxc_y"]) if val == 1]
     dic["boxc_x"] = [i for i, val in enumerate(dic["boxc_x"]) if val == 1]
