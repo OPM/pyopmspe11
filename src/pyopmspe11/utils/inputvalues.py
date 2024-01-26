@@ -111,9 +111,7 @@ def readthefirstpart(lol, dic):
     dic["elevation"] = float(row[0])  # Elevation of the caprock [m]
     dic["backElevation"] = float(row[1])  # Elevation of back boundary [m]
     dic["noSands"] = 7  # No. saturation regions
-    dic[
-        "index"
-    ] = 19  # Increase this if more rows are added to the model parameters part
+    dic["index"] = 19  # Increase if more rows are added to the parameters part
     return dic
 
 
