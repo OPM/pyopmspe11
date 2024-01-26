@@ -52,6 +52,11 @@ def process_input(dic, in_file):
         dic["boxc"] = [[3300.0, 0.0, 250.0], [7800.0, 5000.0, 550.0]]
         dic["time"] = 31536000.0  # year to seconds
     dic = readthesecondpart(lol, dic)
+    if dic["co2store"] == "gaswater":  # For gaswater, EQUIL reads the gas press
+        if dic["spe11"] == "spe11a":
+            dic["pressure"] += dic["safu"][0][2]
+        else:
+            dic["pressure"] += dic["safu"][4][2]
     return dic
 
 
