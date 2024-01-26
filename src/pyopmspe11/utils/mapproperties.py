@@ -153,7 +153,7 @@ def structured_handling_spe11bc(dic):
             )
             z_c = dic["zmz_center"][k]
             if dic["spe11"] == "spe11c":
-                z_c -= map_zn(dic, 0)
+                z_c -= map_z(dic, 0)
             dic["satnum"].append(dic["ids_gmsh"][fgl][0])
             dic = boxes(dic, dic["xmx_center"][i], z_c, i, dic["satnum"][-1])
             dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
@@ -189,7 +189,7 @@ def structured_handling_spe11bc(dic):
                 )
                 z_c = dic["zmz_center"][k]
                 if dic["spe11"] == "spe11c":
-                    z_c -= map_zn(dic, j + 1)
+                    z_c -= map_z(dic, j + 1)
                 dic = boxes(
                     dic,
                     dic["xmx_center"][i_i],
@@ -350,7 +350,7 @@ def corner_point_handling_spe11bc(dic):
         )
         z_c = dic["xyz"][2]
         if dic["spe11"] == "spe11c":
-            z_c -= map_zn(dic, dic["ijk"][1])
+            z_c -= map_z(dic, dic["ijk"][1])
         dic["satnum"].append(dic["ids_gmsh"][fgl][0])
         dic = boxes(dic, dic["xyz"][0], z_c, dic["ijk"][0], dic["satnum"][-1])
         dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
@@ -373,7 +373,7 @@ def corner_point_handling_spe11bc(dic):
                 for i_i in range(dic["noCells"][0]):
                     z_c = dic["xyz"][2]
                     if dic["spe11"] == "spe11c":
-                        z_c -= map_zn(dic, j + 1)
+                        z_c -= map_z(dic, j + 1)
                     dic = boxes(
                         dic,
                         xtemp[i_i],
@@ -449,41 +449,41 @@ def locate_wells_sensors(dic):
 def boxes(dic, x_c, z_c, idx, satnum):
     """Find the box positions"""
     if (
-        (dic["dims"][2] - z_c >= dic["boxb"][0][2])
-        & (dic["dims"][2] - z_c <= dic["boxb"][1][2])
+        (dic["dims"][2] + dic["maxelevation"] - z_c >= dic["boxb"][0][2])
+        & (dic["dims"][2] + dic["maxelevation"] - z_c <= dic["boxb"][1][2])
         & (x_c >= dic["boxb"][0][0])
         & (x_c <= dic["boxb"][1][0])
     ):
-        if satnum == "1":
-            dic["fipnum"].append("6")
-        else:
-            dic["fipnum"].append("3")
+        check_facie1(dic, satnum, "6", "3")
     elif (
-        (dic["dims"][2] - z_c >= dic["boxc"][0][2])
-        & (dic["dims"][2] - z_c <= dic["boxc"][1][2])
+        (dic["dims"][2] + dic["maxelevation"] - z_c >= dic["boxc"][0][2])
+        & (dic["dims"][2] + dic["maxelevation"] - z_c <= dic["boxc"][1][2])
         & (x_c >= dic["boxc"][0][0])
         & (x_c <= dic["boxc"][1][0])
     ):
-        dic["fipnum"].append("4")
+        check_facie1(dic, satnum, "12", "4")
     elif (
-        (dic["dims"][2] - z_c >= dic["boxa"][0][2])
-        & (dic["dims"][2] - z_c <= dic["boxa"][1][2])
+        (dic["dims"][2] + dic["maxelevation"] - z_c >= dic["boxa"][0][2])
+        & (dic["dims"][2] + dic["maxelevation"] - z_c <= dic["boxa"][1][2])
         & (x_c >= dic["boxa"][0][0])
         & (x_c <= dic["boxa"][1][0])
     ):
-        if satnum == "1":
-            dic["fipnum"].append("5")
-        else:
-            dic["fipnum"].append("2")
+        check_facie1(dic, satnum, "5", "2")
     elif dic["spe11"] != "spe11a" and idx in (0, dic["noCells"][0] - 1):
-        if satnum == "1":
-            dic["fipnum"].append("10")
-        else:
-            dic["fipnum"].append("11")
+        check_facie1(dic, satnum, "10", "11")
     elif satnum == "1":
         dic["fipnum"].append("7")
     else:
         dic["fipnum"].append("1")
+    return dic
+
+
+def check_facie1(dic, satnum, numa, numb):
+    """Handle the overlaping with facie 1"""
+    if satnum == "1":
+        dic["fipnum"].append(numa)
+    else:
+        dic["fipnum"].append(numb)
     return dic
 
 
@@ -635,27 +635,6 @@ def map_z(dic, j):
         + dic["elevation"]
         * (1.0 - (dic["ymy_center"][j - 1] / (0.5 * dic["dims"][1]) - 1) ** 2.0)
         - dic["ymy_center"][j - 1] * dic["backElevation"] / dic["dims"][1]
-    )
-    return z_pos
-
-
-def map_zn(dic, j):
-    """
-    Function to return the z position of the parabola for the boxes
-
-    Args:
-        dic (dict): Global dictionary with required parameters
-        j : cell id along the y axis
-
-    Returns:
-        z: Position
-
-    """
-    z_pos = (
-        dic["elevation"]
-        + dic["elevation"]
-        * (1.0 - (dic["ymy_center"][j] / (0.5 * dic["dims"][1]) - 1) ** 2.0)
-        + dic["ymy_center"][j] * dic["backElevation"] / dic["dims"][1]
     )
     return z_pos
 
