@@ -54,12 +54,6 @@ def main():
         help="The simulated spe case.",
     )
     parser.add_argument(
-        "-t",
-        "--time",
-        default="24",
-        help="Time interval for the spatial maps (spe11b/c [y]; spe11a [h]) ('24' by default).",
-    )
-    parser.add_argument(
         "-g",
         "--generate",
         default="sparse",
@@ -70,7 +64,6 @@ def main():
     dic = {"folders": [cmdargs["folder"].strip()]}
     dic["case"] = cmdargs["deck"].strip()
     dic["generate"] = cmdargs["generate"].strip()
-    dic["spatial_t"] = float(cmdargs["time"].strip())
     dic["compare"] = cmdargs["compare"]  # No empty, then the create compare folder
     dic["exe"] = os.getcwd()  # Path to the folder of the configuration file
     plot_results(dic)
@@ -285,10 +278,6 @@ def dense_data(dic):
     dic["sort_ind"] = np.argsort(dic["times"])
     dic["files"] = [dic["files"][i] for i in dic["sort_ind"]]
     dic["times"] = [dic["times"][i] for i in dic["sort_ind"]]
-    dic["tmaps"] = [
-        i * round(dic["spatial_t"])
-        for i in range(1, round(dic["times"][-1] / (dic["spatial_t"])) + 1)
-    ]
     csv = np.genfromtxt(
         f"{dic['exe']}/{dic['folders'][0]}/data/{dic['files'][0]}",
         delimiter=",",
@@ -309,9 +298,9 @@ def dense_data(dic):
     dic["xmsh"], dic["zmsh"] = np.meshgrid(dic["xmx"], dic["zmz"][::-1])
     for k, quantity in enumerate(dic["quantities"]):
         if dic["case"] != "spe11a":
-            dic["fig"] = plt.figure(figsize=(38, 3 * len(dic["tmaps"])))
+            dic["fig"] = plt.figure(figsize=(50, 3 * len(dic["times"])))
         else:
-            dic["fig"] = plt.figure(figsize=(34, 5 * len(dic["tmaps"])))
+            dic["fig"] = plt.figure(figsize=(45, 6.5 * len(dic["times"])))
         dic["plot"] = []
         csv = np.genfromtxt(
             f"{dic['exe']}/{dic['folders'][0]}/data/{dic['files'][0]}",
@@ -323,7 +312,7 @@ def dense_data(dic):
             quan[~np.isnan(quan)].min(),
             quan[~np.isnan(quan)].max(),
         )
-        for tmap in dic["tmaps"]:
+        for tmap in dic["times"]:
             csv = np.genfromtxt(
                 f"{dic['exe']}/{dic['folders'][0]}/data/{dic['case']}_spatial_map_"
                 + f"{tmap}{dic['tlabel']}.csv",
@@ -350,9 +339,9 @@ def dense_data(dic):
                             * (len(dic["xmx"]) - 1)
                         )
                     ]
-        for j, time in enumerate(dic["tmaps"]):
-            print(f"Plotting {quantity}, time {time} out of {dic['tmaps'][-1]}")
-            axis = dic["fig"].add_subplot(len(dic["tmaps"]), 3, j + 1)
+        for j, time in enumerate(dic["times"]):
+            print(f"Plotting {quantity}, time {j+1} out of {len(dic['times'])}")
+            axis = dic["fig"].add_subplot(len(dic["times"]), 3, j + 1)
             imag = axis.pcolormesh(
                 dic["xmsh"],
                 dic["zmsh"],

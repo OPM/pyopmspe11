@@ -141,22 +141,24 @@ def opm_files(dic):
     os.system(f"rm -rf {dic['exe']}/{dic['fol']}/deck/saturation_functions.py")
     inj_t = 0.0
     skip_unrst = 0
-    d_t = 0.0
+    ini_count = 0
+    times = ["0."]
     for inj in dic["inj"]:
-        if inj[4] + inj[7] == 0.0:
+        if inj[4] + inj[7] == 0.0 and ini_count == 0:
             inj_t += inj[0]
             skip_unrst += int(inj[0] / inj[1])
         else:
-            d_t = inj[1]
-            break
+            ini_count = 1
+            for _ in range(int(inj[0] / inj[1])):
+                times.append(f"{inj[1] + float(times[-1])}")
     with open(
         f"{dic['exe']}/{dic['fol']}/deck/dt.txt",
         "w",
         encoding="utf8",
     ) as file:
-        file.write(f"{d_t}\n")
         file.write(f"{inj_t}\n")
-        file.write(f"{skip_unrst}")
+        file.write(f"{skip_unrst}\n")
+        file.write(" ".join(times))
     text = []
     for row in dic["safu"]:
         text.append(f"{row[1]} ")

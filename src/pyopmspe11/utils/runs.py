@@ -40,7 +40,6 @@ def plotting(dic):
         "-d " + f"{dic['spe11']}",
         "-g " + f"{dic['generate']}",
         "-r " + f"{dic['resolution']}",
-        "-t " + f"{dic['time_data']}",
     ]
     print(" ".join(plot_exe))
     prosc = subprocess.run(plot_exe, check=True)

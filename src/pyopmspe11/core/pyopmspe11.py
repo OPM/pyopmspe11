@@ -31,9 +31,7 @@ def pyopmspe11():
     dic["resolution"] = cmdargs[
         "resolution"
     ].strip()  # Spatial resolution to write the data
-    dic["time_data"] = float(
-        cmdargs["time"].strip()
-    )  # Temporal resolution to write the dense data
+    dic["time_data"] = cmdargs["time"]  # Temporal resolution to write the dense data
     dic["dt_data"] = float(
         cmdargs["write"].strip()
     )  # Temporal resolution to write the sparse and performance data
@@ -127,7 +125,8 @@ def load_parser():
         "-t",
         "--time",
         default="5",
-        help="Time interval for the spatial maps (spe11a [h]; spe11b/c [y]) ('24' by default).",
+        help="If one number, time step for the spatial maps (spe11a [h]; spe11b/c "
+        "[y]) ('5' by default); otherwise, times separated by commas.",
     )
     parser.add_argument(
         "-r",

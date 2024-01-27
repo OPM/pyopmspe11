@@ -51,4 +51,4 @@ PERM7          0 PORO7    0
 """injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
 2.5 0.5 .0001 1 1.7e-7 20 1      0 20
 2.5 0.5 .0001 1 1.7e-7 20 1 1.7e-7 20
-115 0.5 .0001 1      0 20 1      0 20
+115   1 .0001 1      0 20 1      0 20
