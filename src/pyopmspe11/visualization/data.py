@@ -35,7 +35,7 @@ KMOL_TO_KG = 1e3 * 0.044
 
 def main():
     """Postprocessing"""
-    parser = argparse.ArgumentParser(description="Main script to plot the results")
+    parser = argparse.ArgumentParser(description="Main script to porcess the data")
     parser.add_argument(
         "-p",
         "--path",
@@ -69,13 +69,6 @@ def main():
         " ('0.1' by default).",
     )
     parser.add_argument(
-        "-l",
-        "--load",
-        default="summary",
-        help="Use the summary or restart for the interpolation in the sparse data"
-        " ('summary' by default).",
-    )
-    parser.add_argument(
         "-g",
         "--generate",
         default="sparse",
@@ -89,512 +82,385 @@ def main():
         help="Using the 'resdata' or python package (resdata by default).",
     )
     cmdargs = vars(parser.parse_known_args()[0])
-    dic = {"path": cmdargs["path"].strip()}
-    dic["case"] = cmdargs["deck"].strip()
-    dic["mode"] = cmdargs["generate"].strip()
-    dic["load"] = cmdargs["load"].strip()
-    dic["exe"] = os.getcwd()
-    dic["where"] = f"{dic['exe']}/{dic['path']}/data"
-    dic["use"] = cmdargs["use"].strip()
-    dic["nxyz"] = np.genfromtxt(
+    dig = {"path": cmdargs["path"].strip()}
+    dig["case"] = cmdargs["deck"].strip()
+    dig["mode"] = cmdargs["generate"].strip()
+    dig["exe"] = os.getcwd()
+    dig["where"] = f"{dig['exe']}/{dig['path']}/data"
+    dig["use"] = cmdargs["use"].strip()
+    dig["nxyz"] = np.genfromtxt(
         StringIO(cmdargs["resolution"]), delimiter=",", dtype=int
     )
-    if dic["case"] == "spe11a":
-        dic["dense_t"] = (
+    dig["sim"] = "./" + dig["path"] + "/flow/" + f"{dig['path'].upper()}"
+    if dig["case"] == "spe11a":
+        dig["dense_t"] = (
             np.genfromtxt(StringIO(cmdargs["time"]), delimiter=",", dtype=float) * 3600
         )
-        dic["sparse_t"] = 1.0 * round(float(cmdargs["write"].strip()) * 3600)
-        dic["dims"] = [2.8, 1.0, 1.2]
-        dic["dof"], dic["nxyz"][1] = 2, 1
+        dig["sparse_t"] = 1.0 * round(float(cmdargs["write"].strip()) * 3600)
+        dig["dims"] = [2.8, 1.0, 1.2]
+        dig["dof"], dig["nxyz"][1] = 2, 1
     else:
-        dic["dense_t"] = (
+        dig["dense_t"] = (
             np.genfromtxt(StringIO(cmdargs["time"]), delimiter=",", dtype=float)
             * SECONDS_IN_YEAR
         )
-        dic["sparse_t"] = float(cmdargs["write"].strip()) * SECONDS_IN_YEAR
-        dic["dims"] = [8400.0, 1.0, 1200.0]
-        dic["dof"] = 3
-    if dic["case"] == "spe11c":
-        dic["dims"][1] = 5000.0
-    dic["nocellsr"] = dic["nxyz"][0] * dic["nxyz"][1] * dic["nxyz"][2]
-    dic = read_times(dic)
-    if dic["use"] == "opm":
-        dic = read_opm(dic)
+        dig["sparse_t"] = float(cmdargs["write"].strip()) * SECONDS_IN_YEAR
+        dig["dims"] = [8400.0, 1.0, 1200.0]
+        dig["dof"] = 3
+    if dig["case"] == "spe11c":
+        dig["dims"][1] = 5000.0
+    dig["nocellsr"] = dig["nxyz"][0] * dig["nxyz"][1] * dig["nxyz"][2]
+    dig = read_times(dig)
+    if dig["use"] == "opm":
+        dig = read_opm(dig)
     else:
-        dic = read_resdata(dic)
-    if dic["mode"] in ["performance", "all", "dense_performance", "performance_sparse"]:
-        performance(dic)
-    if dic["mode"] in ["all", "sparse", "dense_sparse", "performance_sparse"]:
-        sparse_data(dic)
-    if dic["mode"] in ["all", "dense", "dense_performance", "dense_sparse"]:
-        if isinstance(dic["dense_t"], float):
-            dic["dense_t"] = [
-                i * dic["dense_t"]
-                for i in range(int(np.floor((dic["times"][-1]) / dic["dense_t"])) + 1)
+        dig = read_resdata(dig)
+    if dig["mode"] in ["performance", "all", "dense_performance", "performance_sparse"]:
+        performance(dig)
+    if dig["mode"] in ["all", "sparse", "dense_sparse", "performance_sparse"]:
+        sparse_data(dig)
+    if dig["mode"] in ["all", "dense", "dense_performance", "dense_sparse"]:
+        if isinstance(dig["dense_t"], float):
+            dig["dense_t"] = [
+                i * dig["dense_t"]
+                for i in range(int(np.floor((dig["times"][-1]) / dig["dense_t"])) + 1)
             ]
-        dense_data(dic)
+        dense_data(dig)
 
 
-def read_times(dic):
+def read_times(dig):
     """Get the time for injection and restart number"""
-    with open(f"{dic['path']}/deck/dt.txt", "r", encoding="utf8") as file:
+    with open(f"{dig['path']}/deck/dt.txt", "r", encoding="utf8") as file:
         for i, value in enumerate(csv.reader(file)):
             if i == 0:
-                dic["time_initial"] = float(value[0])
+                dig["time_initial"] = float(value[0])
             elif i == 1:
-                dic["no_skip_rst"] = int(value[0])
+                dig["no_skip_rst"] = int(value[0])
             else:
-                dic["times"] = list(
+                dig["times"] = list(
                     np.genfromtxt(StringIO(value[0]), delimiter=" ", dtype=float)
                 )
-    return dic
+    return dig
 
 
-def read_resdata(dic):
+def read_resdata(dig):
     """Using resdata"""
-    case = "./" + dic["path"] + "/flow/" + f"{dic['path'].upper()}"
-    for name in ["unrst", "init"]:
-        dic[f"{name}"] = ResdataFile(case + f".{name.upper()}")
-    if dic["unrst"].has_kw("WAT_DEN"):
-        dic["watDen"], dic["r_s"], dic["r_v"] = "wat_den", "rsw", "rvw"
+    if ResdataFile(f"{dig['sim']}.UNRST").has_kw("WAT_DEN"):
+        dig["watDen"], dig["r_s"], dig["r_v"] = "wat_den", "rsw", "rvw"
     else:
-        dic["watDen"], dic["r_s"], dic["r_v"] = "oil_den", "rs", "rv"
-    dic["egrid"], dic["smspec"] = Grid(case + ".EGRID"), Summary(case + ".SMSPEC")
-    names = ["sgas", dic["r_s"], "pressure", "gas_den", dic["watDen"]]
-    if dic["case"] != "spe11a":
-        names += [dic["r_v"], "temp"]
-    for name in names:
-        dic[f"{name}"] = list(dic["unrst"].iget_kw(name.upper()))
-    for name in ["porv", "satnum", "fipnum", "dx", "dy", "dz"]:
-        dic[f"{name}"] = list(dic["init"].iget_kw(name.upper())[0])
-    dic["actnum"] = list(dic["egrid"].export_actnum())
-    dic["actind"] = list(i for i, act in enumerate(dic["actnum"]) if act == 1)
-    dic["porva"] = [porv for (porv, act) in zip(dic["porv"], dic["actnum"]) if act == 1]
-    dic["nocellst"], dic["nocellsa"] = len(dic["actnum"]), sum(dic["actnum"])
-    dic["norst"] = dic["unrst"].num_report_steps()
-    dic["times_summary"] = [0.0]
-    dic["times_summary"] += list(
-        86400.0 * dic["smspec"]["TIME"].values - dic["time_initial"]
+        dig["watDen"], dig["r_s"], dig["r_v"] = "oil_den", "rs", "rv"
+    dig["smspec"] = Summary(f"{dig['sim']}.SMSPEC")
+    dig["porv"] = np.array(ResdataFile(f"{dig['sim']}.INIT").iget_kw("PORV")[0])
+    dig["actnum"] = list(Grid(f"{dig['sim']}.EGRID").export_actnum())
+    dig["actind"] = list(i for i, act in enumerate(dig["actnum"]) if act == 1)
+    dig["porva"] = np.array(
+        [porv for (porv, act) in zip(dig["porv"], dig["actnum"]) if act == 1]
     )
-    dic["gxyz"] = [dic["egrid"].nx, dic["egrid"].ny, dic["egrid"].nz]
-    dic["simxcent"] = [0.0] * len(dic["porv"])
-    dic["simycent"] = [0.0] * len(dic["porv"])
-    dic["simzcent"] = [0.0] * len(dic["porv"])
-    for cell in dic["egrid"].cells():
-        (
-            dic["simxcent"][cell.global_index],
-            dic["simycent"][cell.global_index],
-            dic["simzcent"][cell.global_index],
-        ) = (
-            cell.coordinate[0],
-            cell.coordinate[1],
-            dic["dims"][2] - cell.coordinate[2],
-        )
-    return dic
-
-
-def read_opm(dic):
-    """Using opm"""
-    dic = opm_files(dic)
-    dic["actind"] = list(i for i, porv in enumerate(dic["porv"]) if porv > 0)
-    dic["porva"] = list(porv for porv in dic["porv"] if porv > 0)
-    dic["nocellst"], dic["nocellsa"] = len(dic["porv"]), dic["egrid"].active_cells
-    dic["norst"] = len(dic["unrst"].report_steps)
-    dic["times_summary"] = [0.0]
-    dic["times_summary"] += list(86400.0 * dic["smspec"]["TIME"] - dic["time_initial"])
-    dic["gxyz"] = [
-        dic["egrid"].dimension[0],
-        dic["egrid"].dimension[1],
-        dic["egrid"].dimension[2],
+    dig["nocellst"], dig["nocellsa"] = len(dig["actnum"]), sum(dig["actnum"])
+    dig["norst"] = ResdataFile(f"{dig['sim']}.UNRST").num_report_steps()
+    dig["times_summary"] = [0.0]
+    dig["times_summary"] += list(
+        86400.0 * dig["smspec"]["TIME"].values - dig["time_initial"]
+    )
+    dig["gxyz"] = [
+        Grid(f"{dig['sim']}.EGRID").nx,
+        Grid(f"{dig['sim']}.EGRID").ny,
+        Grid(f"{dig['sim']}.EGRID").nz,
     ]
-    dic = load_centers(dic)
-    return dic
+    return dig
 
 
-def opm_files(dic):
-    """Extract the data from the opm output files"""
-    case = "./" + dic["path"] + "/flow/" + f"{dic['path'].upper()}"
-    dic["unrst"], dic["init"] = OpmRestart(case + ".UNRST"), OpmFile(case + ".INIT")
-    if dic["unrst"].count("WAT_DEN", 0):
-        dic["watDen"], dic["r_s"], dic["r_v"] = "wat_den", "rsw", "rvw"
-    else:
-        dic["watDen"], dic["r_s"], dic["r_v"] = "oil_den", "rs", "rv"
-    dic["egrid"], dic["smspec"] = OpmGrid(case + ".EGRID"), OpmSummary(case + ".SMSPEC")
-    names = ["sgas", dic["r_s"], "pressure", "gas_den", dic["watDen"]]
-    if dic["case"] != "spe11a":
-        names += [dic["r_v"], "temp"]
-    for name in names:
-        dic[f"{name}"] = []
-        for rst in dic["unrst"].report_steps:
-            dic[f"{name}"].append(list(dic["unrst"][name.upper(), rst]))
-    for name in ["porv", "satnum", "fipnum", "dx", "dy", "dz"]:
-        dic[f"{name}"] = list(dic["init"][name.upper()])
-    return dic
-
-
-def load_centers(dic):
-    """opm.io.ecl.EGrid.xyz_from_ijk is returning nan values, that's why we do this"""
-    dic["simxcent"] = [0.0] * len(dic["porv"])
-    dic["simycent"] = [0.0] * len(dic["porv"])
-    dic["simzcent"] = [0.0] * len(dic["porv"])
-    with open(f"{dic['path']}/deck/centers.txt", "r", encoding="utf8") as file:
-        for j, row in enumerate(csv.reader(file)):
-            dic["simxcent"][j] = float(row[0])
-            dic["simycent"][j] = float(row[1])
-            dic["simzcent"][j] = dic["dims"][2] - float(row[2])
-    return dic
-
-
-def performance(dic):
-    """Write the performance within the benchmark format SECONDS_IN_YEAR"""
-    dic["times_data"] = np.linspace(
-        0, dic["times"][-1], round(dic["times"][-1] / dic["sparse_t"]) + 1
+def read_opm(dig):
+    """Using opm"""
+    dig = opm_files(dig)
+    dig["actind"] = list(i for i, porv in enumerate(dig["porv"]) if porv > 0)
+    dig["porva"] = np.array([porv for porv in dig["porv"] if porv > 0])
+    dig["nocellst"], dig["nocellsa"] = (
+        len(dig["porv"]),
+        OpmGrid(f"{dig['sim']}.EGRID").active_cells,
     )
-    dic["infosteps"] = []
+    dig["times_summary"] = [0.0]
+    dig["times_summary"] += list(86400.0 * dig["smspec"]["TIME"] - dig["time_initial"])
+    dig["gxyz"] = [
+        OpmGrid(f"{dig['sim']}.EGRID").dimension[0],
+        OpmGrid(f"{dig['sim']}.EGRID").dimension[1],
+        OpmGrid(f"{dig['sim']}.EGRID").dimension[2],
+    ]
+    return dig
+
+
+def opm_files(dig):
+    """Extract the data from the opm output files"""
+    dig["norst"] = len(OpmRestart(f"{dig['sim']}.UNRST").report_steps)
+    if OpmRestart(f"{dig['sim']}.UNRST").count("WAT_DEN", 0):
+        dig["watDen"], dig["r_s"], dig["r_v"] = "wat_den", "rsw", "rvw"
+    else:
+        dig["watDen"], dig["r_s"], dig["r_v"] = "oil_den", "rs", "rv"
+    dig["smspec"] = OpmSummary(f"{dig['sim']}.SMSPEC")
+    dig["porv"] = np.array(OpmFile(f"{dig['sim']}.INIT")["PORV"])
+    return dig
+
+
+def performance(dig):
+    """Write the performance within the benchmark format SECONDS_IN_YEAR"""
+    dil = {"infosteps": []}
+    dil["times_data"] = np.linspace(
+        0, dig["times"][-1], round(dig["times"][-1] / dig["sparse_t"]) + 1
+    )
     with open(
-        f"{dic['path']}/flow/{dic['path'].upper()}.INFOSTEP", "r", encoding="utf8"
+        f"{dig['path']}/flow/{dig['path'].upper()}.INFOSTEP", "r", encoding="utf8"
     ) as file:
         for j, row in enumerate(csv.reader(file)):
             if j > 0:
                 if float((row[0].strip()).split()[0]) >= (
-                    (dic["time_initial"] - dic["sparse_t"]) / 86400.0
+                    (dig["time_initial"] - dig["sparse_t"]) / 86400.0
                 ):
-                    dic["infosteps"].append(
+                    dil["infosteps"].append(
                         [float(column) for column in (row[0].strip()).split()]
                     )
     infotimes = [
-        infostep[0] * 86400 - dic["time_initial"] for infostep in dic["infosteps"]
+        infostep[0] * 86400 - dig["time_initial"] for infostep in dil["infosteps"]
     ]
-    times = max(0, dic["no_skip_rst"] - 1)
-    dic["map_info"] = [
-        times + int(np.floor(infotime / dic["sparse_t"])) for infotime in infotimes
-    ]
-    fsteps = [1.0 * (infostep[11] == 0) for infostep in dic["infosteps"]]
-    nress = [infostep[8] for infostep in dic["infosteps"]]
-    tlinsols = [infostep[4] for infostep in dic["infosteps"]]
-    runtimes = [sum(infostep[i] for i in [2, 4, 5, 6]) for infostep in dic["infosteps"]]
-    liniters = [infostep[10] for infostep in dic["infosteps"]]
-    nliters = [infostep[9] for infostep in dic["infosteps"]]
-    dic["tsteps"] = [
-        86400 * infostep[1] * infostep[11] for infostep in dic["infosteps"]
-    ]
-    if dic["use"] == "opm":
-        fgip = dic["smspec"]["FGIP"]
-        times = 86400.0 * dic["smspec"]["TIME"] - dic["time_initial"]
+    times = max(0, dig["no_skip_rst"] - 1)
+    dil["map_info"] = np.array(
+        [times + int(np.floor(infotime / dig["sparse_t"])) for infotime in infotimes]
+    )
+    dil["fsteps"] = np.array(
+        [1.0 * (infostep[11] == 0) for infostep in dil["infosteps"]]
+    )
+    dil["nress"] = np.array([infostep[8] for infostep in dil["infosteps"]])
+    dil["tlinsols"] = np.array([infostep[4] for infostep in dil["infosteps"]])
+    dil["runtimes"] = np.array(
+        [sum(infostep[i] for i in [2, 4, 5, 6]) for infostep in dil["infosteps"]]
+    )
+    dil["liniters"] = np.array([infostep[10] for infostep in dil["infosteps"]])
+    dil["nliters"] = np.array([infostep[9] for infostep in dil["infosteps"]])
+    dil["tsteps"] = np.array(
+        [86400 * infostep[1] * infostep[11] for infostep in dil["infosteps"]]
+    )
+    if dig["use"] == "opm":
+        fgip = OpmSummary(f"{dig['sim']}.SMSPEC")["FGIP"]
+        times = (
+            86400.0 * OpmSummary(f"{dig['sim']}.SMSPEC")["TIME"] - dig["time_initial"]
+        )
     else:
-        fgip = dic["smspec"]["FGIP"].values
-        times = 86400.0 * dic["smspec"]["TIME"].values - dic["time_initial"]
+        fgip = Summary(f"{dig['sim']}.SMSPEC")["FGIP"].values
+        times = (
+            86400.0 * Summary(f"{dig['sim']}.SMSPEC")["TIME"].values
+            - dig["time_initial"]
+        )
     interp_fgip = interp1d(
         times,
         GAS_DEN_REF * fgip,
         fill_value="extrapolate",
     )
-    dic["text"] = []
-    dic["text"].append(
+    dil["text"] = []
+    dil["text"].append(
         "# t [s], tstep [s], fsteps [-], mass [kg], dof [-], nliter [-], "
         + "nres [-], liniter [-], runtime [s], tlinsol [s]"
     )
-    if dic["no_skip_rst"] == 0:
-        dic["text"].append(
+    if dig["no_skip_rst"] == 0:
+        dil["text"].append(
             "0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, "
             + "0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00"
         )
-        dic["times_data"] = np.delete(dic["times_data"], 0)
-    for j, time in enumerate(dic["times_data"]):
-        dic["tstep"] = [
-            dic["tsteps"][k]
-            for k, i in enumerate(dic["map_info"])
-            if i == j and dic["tsteps"][k] > 0
-        ]
-        if dic["tstep"]:
-            dic["tstep"] = sum(dic["tstep"]) / len(dic["tstep"])
-        else:
-            dic["tstep"] = dic["sparse_t"]
-        dic["text"].append(
+        dil["times_data"] = np.delete(dil["times_data"], 0)
+    for j, time in enumerate(dil["times_data"]):
+        ind = j == dil["map_info"]
+        dil["tstep"] = np.sum(dil["tsteps"][ind])
+        if dil["tstep"] > 0:
+            dil["tstep"] /= np.sum(ind)
+        dil["text"].append(
             f"{time:.3e}, "
-            + f"{dic['tstep']:.3e}, "
-            + f"{sum(fsteps[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}, "
+            + f"{dil['tstep']:.3e}, "
+            + f"{np.sum(dil['fsteps'][ind]):.3e}, "
             + f"{interp_fgip(time):.3e}, "
-            + f"{dic['dof'] * dic['nocellsa']:.3e}, "
-            + f"{sum(nliters[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}, "
-            + f"{sum(nress[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}, "
-            + f"{sum(liniters[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}, "
-            + f"{sum(runtimes[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}, "
-            + f"{sum(tlinsols[k] for k, i in enumerate(dic['map_info']) if i==j):.3e}"
+            + f"{dig['dof'] * dig['nocellsa']:.3e}, "
+            + f"{np.sum(dil['nliters'][ind]):.3e}, "
+            + f"{np.sum(dil['nress'][ind]):.3e}, "
+            + f"{np.sum(dil['liniters'][ind]):.3e}, "
+            + f"{np.sum(dil['runtimes'][ind]):.3e}, "
+            + f"{np.sum(dil['tlinsols'][ind]):.3e}"
         )
     with open(
-        f"{dic['where']}/{dic['case']}_performance_time_series.csv",
+        f"{dig['where']}/{dig['case']}_performance_time_series.csv",
         "w",
         encoding="utf8",
     ) as file:
-        file.write("\n".join(dic["text"]))
+        file.write("\n".join(dil["text"]))
 
 
-def create_from_summary(dic):
+def create_from_summary(dig, dil):
     """Use the summary arrays for the sparse data interpolation"""
-    if dic["use"] == "opm":
-        for key in dic["smspec"].keys():
-            if key[0:4] == "BGPR":
-                if len(dic["pop1"]) == 0:
-                    dic["pop1"] = [
-                        dic["pressure"][0][dic["fipnum"].index(8)] * 1.0e5
-                    ] + list(
-                        dic["smspec"][key] * 1.0e5
-                    )  # Pa
-                else:
-                    dic["pop2"] = [
-                        dic["pressure"][0][dic["fipnum"].index(9)] * 1.0e5
-                    ] + list(
-                        dic["smspec"][key] * 1.0e5
-                    )  # Pa
-                    break
-        dic["moba"] = (
-            dic["smspec"]["RGCDM:2"]
-            + dic["smspec"]["RGCDM:4"]
-            + dic["smspec"]["RGCDM:5"]
-            + dic["smspec"]["RGCDM:8"]
-        ) * KMOL_TO_KG
-        dic["imma"] = (
-            dic["smspec"]["RGCDI:2"]
-            + dic["smspec"]["RGCDI:4"]
-            + dic["smspec"]["RGCDI:5"]
-            + dic["smspec"]["RGCDI:8"]
-        ) * KMOL_TO_KG
-        dic["dissa"] = (
-            dic["smspec"]["RWCD:2"]
-            + dic["smspec"]["RWCD:4"]
-            + dic["smspec"]["RWCD:5"]
-            + dic["smspec"]["RWCD:8"]
-        ) * KMOL_TO_KG
-        dic["seala"] = (
-            dic["smspec"]["RWCD:5"]
-            + dic["smspec"]["RGCDM:5"]
-            + dic["smspec"]["RGCDI:5"]
-            + dic["smspec"]["RWCD:8"]
-            + dic["smspec"]["RGCDM:8"]
-            + dic["smspec"]["RGCDI:8"]
-        ) * KMOL_TO_KG
-        dic["mobb"] = (dic["smspec"]["RGCDM:3"] + dic["smspec"]["RGCDM:6"]) * KMOL_TO_KG
-        dic["immb"] = (dic["smspec"]["RGCDI:3"] + dic["smspec"]["RGCDI:6"]) * KMOL_TO_KG
-        dic["dissb"] = (dic["smspec"]["RWCD:3"] + dic["smspec"]["RWCD:6"]) * KMOL_TO_KG
-        dic["sealb"] = (
-            dic["smspec"]["RWCD:6"]
-            + dic["smspec"]["RGCDM:6"]
-            + dic["smspec"]["RGCDI:6"]
-        ) * KMOL_TO_KG
-        dic["sealt"] = (
-            dic["seala"]
-            + dic["sealb"]
-            + (
-                dic["smspec"]["RWCD:7"]
-                + dic["smspec"]["RGCDM:7"]
-                + dic["smspec"]["RGCDI:7"]
-                + dic["smspec"]["RWCD:8"]
-                + dic["smspec"]["RGCDM:8"]
-                + dic["smspec"]["RGCDI:8"]
-            )
-            * KMOL_TO_KG
-        )
-        if dic["case"] != "spe11a":
-            sealbound = (
-                dic["smspec"]["RWCD:10"]
-                + dic["smspec"]["RGCDM:10"]
-                + dic["smspec"]["RGCDI:10"]
+    ind, names, i_jk = 0, [], []
+    for key in dig["smspec"].keys():
+        if key[0:4] == "BGPR" and "," in key[5:]:
+            names.append(key)
+            i_jk.append(np.genfromtxt(StringIO(key[5:]), delimiter=",", dtype=int)[0])
+            ind += 1
+            if ind == 2:
+                break
+    sort = sorted(range(len(i_jk)), key=i_jk.__getitem__)
+    if dig["use"] == "opm":
+        dil["pop1"] = [
+            OpmRestart(f"{dig['sim']}.UNRST")["PRESSURE", 0][dil["fipnum"].index(8)]
+            * 1.0e5
+        ] + list(
+            dig["smspec"][names[sort[0]]] * 1.0e5
+        )  # Pa
+        dil["pop2"] = [
+            OpmRestart(f"{dig['sim']}.UNRST")["PRESSURE", 0][dil["fipnum"].index(9)]
+            * 1.0e5
+        ] + list(
+            dig["smspec"][names[sort[1]]] * 1.0e5
+        )  # Pa
+        for i in [2, 4, 5, 8]:
+            dil["moba"] += dig["smspec"][f"RGCDM:{i}"] * KMOL_TO_KG
+            dil["imma"] += dig["smspec"][f"RGCDI:{i}"] * KMOL_TO_KG
+            dil["dissa"] += dig["smspec"][f"RWCD:{i}"] * KMOL_TO_KG
+        for i in [5, 8]:
+            dil["seala"] += (
+                dig["smspec"][f"RWCD:{i}"]
+                + dig["smspec"][f"RGCDM:{i}"]
+                + dig["smspec"][f"RGCDI:{i}"]
             ) * KMOL_TO_KG
-            dic["sealt"] += sealbound
-            dic["boundtot"] = (
+        for i in [3, 6]:
+            dil["mobb"] += dig["smspec"][f"RGCDM:{i}"] * KMOL_TO_KG
+            dil["immb"] += dig["smspec"][f"RGCDI:{i}"] * KMOL_TO_KG
+            dil["dissb"] += dig["smspec"][f"RWCD:{i}"] * KMOL_TO_KG
+        for key in ["RWCD:6", "RGCDM:6", "RGCDI:6"]:
+            dil["sealb"] += dig["smspec"][key] * KMOL_TO_KG
+        dil["sealt"] = dil["seala"] + dil["sealb"]
+        for name in ["RWCD", "RGCDM", "RGCDI"]:
+            dil["sealt"] += (
+                dig["smspec"][f"{name}:7"] + dig["smspec"][f"{name}:9"]
+            ) * KMOL_TO_KG
+        if dig["case"] != "spe11a":
+            sealbound = (
+                dig["smspec"]["RWCD:10"]
+                + dig["smspec"]["RGCDM:10"]
+                + dig["smspec"]["RGCDI:10"]
+            ) * KMOL_TO_KG
+            dil["sealt"] += sealbound
+            dil["boundtot"] = (
                 sealbound
                 + (
-                    dic["smspec"]["RWCD:11"]
-                    + dic["smspec"]["RGCDM:11"]
-                    + dic["smspec"]["RGCDI:11"]
+                    dig["smspec"]["RWCD:11"]
+                    + dig["smspec"]["RGCDM:11"]
+                    + dig["smspec"]["RGCDI:11"]
                 )
                 * KMOL_TO_KG
             )
     else:
-        for key in dic["smspec"].keys():
-            if key[0:4] == "BGPR":
-                if len(dic["pop1"]) == 0:
-                    dic["pop1"] = [
-                        dic["pressure"][0][dic["fipnum"].index(8)] * 1.0e5
-                    ] + list(
-                        dic["smspec"][key].values * 1.0e5
-                    )  # Pa
-                else:
-                    dic["pop2"] = [
-                        dic["pressure"][0][dic["fipnum"].index(9)] * 1.0e5
-                    ] + list(
-                        dic["smspec"][key].values * 1.0e5
-                    )  # Pa
-                    break
-        dic["moba"] = (
-            dic["smspec"]["RGCDM:2"].values
-            + dic["smspec"]["RGCDM:4"].values
-            + dic["smspec"]["RGCDM:5"].values
-            + dic["smspec"]["RGCDM:8"].values
+        dil = resdata_summary(dig, dil, names, sort)
+    return dil
+
+
+def resdata_summary(dig, dil, names, sort):
+    """Using resdata"""
+    dil["pop1"] = [
+        ResdataFile(f"{dig['sim']}.UNRST")["PRESSURE"][0][dil["fipnum"].index(8)]
+        * 1.0e5
+    ] + list(
+        dig["smspec"][names[sort[0]]].values * 1.0e5
+    )  # Pa
+    dil["pop2"] = [
+        ResdataFile(f"{dig['sim']}.UNRST")["PRESSURE"][0][dil["fipnum"].index(9)]
+        * 1.0e5
+    ] + list(
+        dig["smspec"][names[sort[1]]].values * 1.0e5
+    )  # Pa
+    for i in [2, 4, 5, 8]:
+        dil["moba"] += dig["smspec"][f"RGCDM:{i}"].values * KMOL_TO_KG
+        dil["imma"] += dig["smspec"][f"RGCDI:{i}"].values * KMOL_TO_KG
+        dil["dissa"] += dig["smspec"][f"RWCD:{i}"].values * KMOL_TO_KG
+    for i in [5, 8]:
+        dil["seala"] += (
+            dig["smspec"][f"RWCD:{i}"].values
+            + dig["smspec"][f"RGCDM:{i}"].values
+            + dig["smspec"][f"RGCDI:{i}"].values
         ) * KMOL_TO_KG
-        dic["imma"] = (
-            dic["smspec"]["RGCDI:2"].values
-            + dic["smspec"]["RGCDI:4"].values
-            + dic["smspec"]["RGCDI:5"].values
-            + dic["smspec"]["RGCDI:8"].values
+    for i in [3, 6]:
+        dil["mobb"] += dig["smspec"][f"RGCDM:{i}"].values * KMOL_TO_KG
+        dil["immb"] += dig["smspec"][f"RGCDI:{i}"].values * KMOL_TO_KG
+        dil["dissb"] += dig["smspec"][f"RWCD:{i}"].values * KMOL_TO_KG
+    for key in ["RWCD:6", "RGCDM:6", "RGCDI:6"]:
+        dil["sealb"] += dig["smspec"][key].values * KMOL_TO_KG
+    dil["sealt"] = dil["seala"] + dil["sealb"]
+    for name in ["RWCD", "RGCDM", "RGCDI"]:
+        dil["sealt"] += (
+            dig["smspec"][f"{name}:7"].values + dig["smspec"][f"{name}:9"].values
         ) * KMOL_TO_KG
-        dic["dissa"] = (
-            dic["smspec"]["RWCD:2"].values
-            + dic["smspec"]["RWCD:4"].values
-            + dic["smspec"]["RWCD:5"].values
-            + dic["smspec"]["RWCD:8"].values
+    if dig["case"] != "spe11a":
+        sealbound = (
+            dig["smspec"]["RWCD:10"].values
+            + dig["smspec"]["RGCDM:10"].values
+            + dig["smspec"]["RGCDI:10"].values
         ) * KMOL_TO_KG
-        dic["seala"] = (
-            dic["smspec"]["RWCD:5"].values
-            + dic["smspec"]["RGCDM:5"].values
-            + dic["smspec"]["RGCDI:5"].values
-            + dic["smspec"]["RWCD:8"].values
-            + dic["smspec"]["RGCDM:8"].values
-            + dic["smspec"]["RGCDI:8"].values
-        ) * KMOL_TO_KG
-        dic["mobb"] = (
-            dic["smspec"]["RGCDM:3"].values + dic["smspec"]["RGCDM:6"].values
-        ) * KMOL_TO_KG
-        dic["immb"] = (
-            dic["smspec"]["RGCDI:3"].values + dic["smspec"]["RGCDI:6"].values
-        ) * KMOL_TO_KG
-        dic["dissb"] = (
-            dic["smspec"]["RWCD:3"].values + dic["smspec"]["RWCD:6"].values
-        ) * KMOL_TO_KG
-        dic["sealb"] = (
-            dic["smspec"]["RWCD:6"].values
-            + dic["smspec"]["RGCDM:6"].values
-            + dic["smspec"]["RGCDI:6"].values
-        ) * KMOL_TO_KG
-        dic["sealt"] = (
-            dic["seala"]
-            + dic["sealb"]
+        dil["sealt"] += sealbound
+        dil["boundtot"] = (
+            sealbound
             + (
-                dic["smspec"]["RWCD:7"].values
-                + dic["smspec"]["RGCDM:7"].values
-                + dic["smspec"]["RGCDI:7"].values
-                + dic["smspec"]["RWCD:9"].values
-                + dic["smspec"]["RGCDM:9"].values
-                + dic["smspec"]["RGCDI:9"].values
+                dig["smspec"]["RWCD:11"].values
+                + dig["smspec"]["RGCDM:11"].values
+                + dig["smspec"]["RGCDI:11"].values
             )
             * KMOL_TO_KG
         )
-        if dic["case"] != "spe11a":
-            sealbound = (
-                dic["smspec"]["RWCD:10"].values
-                + dic["smspec"]["RGCDM:10"].values
-                + dic["smspec"]["RGCDI:10"].values
-            ) * KMOL_TO_KG
-            dic["sealt"] += sealbound
-            dic["boundtot"] = (
-                sealbound
-                + (
-                    dic["smspec"]["RWCD:11"].values
-                    + dic["smspec"]["RGCDM:11"].values
-                    + dic["smspec"]["RGCDI:11"].values
-                )
-                * KMOL_TO_KG
-            )
-    return dic
+    return dil
 
 
-def overlapping_c_and_facie1_contribution(dic):
+def overlapping_c_and_facie1_contribution(dig, dil):
     """Add the corresponding fipnum 12 contribution"""
-    if dic["use"] == "opm":
-        dic["moba"] += dic["smspec"]["RGCDM:12"] * KMOL_TO_KG
-        dic["imma"] += dic["smspec"]["RGCDI:12"] * KMOL_TO_KG
-        dic["dissa"] += dic["smspec"]["RWCD:12"] * KMOL_TO_KG
-        dic["seala"] += (
-            dic["smspec"]["RWCD:12"]
-            + dic["smspec"]["RGCDM:12"]
-            + dic["smspec"]["RGCDI:12"]
+    if dig["use"] == "opm":
+        dil["moba"] += dig["smspec"]["RGCDM:12"] * KMOL_TO_KG
+        dil["imma"] += dig["smspec"]["RGCDI:12"] * KMOL_TO_KG
+        dil["dissa"] += dig["smspec"]["RWCD:12"] * KMOL_TO_KG
+        dil["seala"] += (
+            dig["smspec"]["RWCD:12"]
+            + dig["smspec"]["RGCDM:12"]
+            + dig["smspec"]["RGCDI:12"]
         ) * KMOL_TO_KG
-        dic["sealt"] += (
-            dic["smspec"]["RWCD:12"]
-            + dic["smspec"]["RGCDM:12"]
-            + dic["smspec"]["RGCDI:12"]
+        dil["sealt"] += (
+            dig["smspec"]["RWCD:12"]
+            + dig["smspec"]["RGCDM:12"]
+            + dig["smspec"]["RGCDI:12"]
         ) * KMOL_TO_KG
     else:
-        dic["moba"] += dic["smspec"]["RGCDM:12"].values * KMOL_TO_KG
-        dic["imma"] += dic["smspec"]["RGCDI:12"].values * KMOL_TO_KG
-        dic["dissa"] += dic["smspec"]["RWCD:12"].values * KMOL_TO_KG
-        dic["seala"] += (
-            dic["smspec"]["RWCD:12"].values
-            + dic["smspec"]["RGCDM:12"].values
-            + dic["smspec"]["RGCDI:12"].values
+        dil["moba"] += dig["smspec"]["RGCDM:12"].values * KMOL_TO_KG
+        dil["imma"] += dig["smspec"]["RGCDI:12"].values * KMOL_TO_KG
+        dil["dissa"] += dig["smspec"]["RWCD:12"].values * KMOL_TO_KG
+        dil["seala"] += (
+            dig["smspec"]["RWCD:12"].values
+            + dig["smspec"]["RGCDM:12"].values
+            + dig["smspec"]["RGCDI:12"].values
         ) * KMOL_TO_KG
-        dic["sealt"] += (
-            dic["smspec"]["RWCD:12"].values
-            + dic["smspec"]["RGCDM:12"].values
-            + dic["smspec"]["RGCDI:12"].values
+        dil["sealt"] += (
+            dig["smspec"]["RWCD:12"].values
+            + dig["smspec"]["RGCDM:12"].values
+            + dig["smspec"]["RGCDI:12"].values
         ) * KMOL_TO_KG
-    return dic
+    return dil
 
 
-def read_snimm(dic):
-    """Get the immobile gas saturations"""
-    dic["sgimm"] = []
-    with open(f"{dic['path']}/deck/snimm.txt", "r", encoding="utf8") as file:
-        for value in csv.reader(file):
-            dic["sgimm"].append(float(value[0]))
-    return dic
-
-
-def create_from_restart(dic):
-    """Use the restart file for the sparse data interpolation"""
-    dic = read_snimm(dic)
-    dic["boxa"] = [i for i, fip in enumerate(dic["fipnum"]) if fip in (2, 4, 5, 8, 12)]
-    dic["boxb"] = [i for i, fip in enumerate(dic["fipnum"]) if fip in (3, 6)]
-    dic["sensor1"] = dic["fipnum"].index(8)
-    dic["sensor2"] = dic["fipnum"].index(9)
-    dic["facie1"] = [sat == 1 for sat in dic["satnum"]]
-    dic["facie1ind"] = [i for i, sat in enumerate(dic["satnum"]) if sat == 1]
-    dic["boundariesind"] = [i for i, fip in enumerate(dic["fipnum"]) if fip in (10, 11)]
-    for j in range(dic["no_skip_rst"], dic["norst"]):
-        sgas = list(dic["sgas"][j])
-        rhog = list(dic["gas_den"][j])
-        rhow = list(dic[f"{dic['watDen']}"][j])
-        r_s = list(dic[f"{dic['r_s']}"][j])
-        sgasm = [
-            min(dic["sgimm"][facie - 1], s_g) for facie, s_g in zip(dic["satnum"], sgas)
-        ]
-        sgasi = [
-            max(0, s_g - dic["sgimm"][facie - 1])
-            for facie, s_g in zip(dic["satnum"], sgas)
-        ]
-        co2_m = [sga * rho * por for (sga, rho, por) in zip(sgasm, rhog, dic["porva"])]
-        co2_i = [sga * rho * por for (sga, rho, por) in zip(sgasi, rhog, dic["porva"])]
-        co2_g = [sga * rho * por for (sga, rho, por) in zip(sgas, rhog, dic["porva"])]
-        co2_d = [
-            rss * rho * (1.0 - sga) * por * GAS_DEN_REF / WAT_DEN_REF
-            for (rss, rho, sga, por) in zip(r_s, rhow, sgas, dic["porva"])
-        ]
-        dic["pop1"].append(dic["pressure"][j][dic["sensor1"]] * 1e5)  # Pa
-        dic["pop2"].append(dic["pressure"][j][dic["sensor2"]] * 1e5)
-        dic["moba"].append(sum(co2_m[i] for i in dic["boxa"]))
-        dic["imma"].append(sum(co2_i[i] for i in dic["boxa"]))
-        dic["dissa"].append(sum(co2_d[i] for i in dic["boxa"]))
-        dic["seala"].append(
-            sum((co2_g[i] + co2_d[i]) * dic["facie1"][i] for i in dic["boxa"])
-        )
-        dic["mobb"].append(sum(co2_m[i] for i in dic["boxb"]))
-        dic["immb"].append(sum(co2_i[i] for i in dic["boxb"]))
-        dic["dissb"].append(sum(co2_d[i] for i in dic["boxb"]))
-        dic["sealb"].append(
-            sum((co2_g[i] + co2_d[i]) * dic["facie1"][i] for i in dic["boxb"])
-        )
-        dic["sealt"].append(sum((co2_g[i] + co2_d[i]) for i in dic["facie1ind"]))
-        if dic["case"] != "spe11a":
-            dic["boundtot"].append(
-                sum((co2_g[i] + co2_d[i]) for i in dic["boundariesind"])
-            )
-    return dic
-
-
-def sparse_data(dic):
+def sparse_data(dig):
     """Compute the quantities in boxes A, B, and C"""
-    dic["names"] = [
+    dil = {
+        "times_data": np.linspace(
+            0, dig["times"][-1], round(dig["times"][-1] / dig["sparse_t"]) + 1
+        )
+    }
+    if dig["use"] == "opm":
+        dil["fipnum"] = list(OpmFile(f"{dig['sim']}.INIT")["FIPNUM"])
+        for name in ["dx", "dy", "dz"]:
+            dil[f"{name}"] = np.array(OpmFile(f"{dig['sim']}.INIT")[name.upper()])
+    else:
+        dil["fipnum"] = list(ResdataFile(f"{dig['sim']}.INIT").iget_kw("FIPNUM")[0])
+        for name in ["dx", "dy", "dz"]:
+            dil[f"{name}"] = np.array(
+                ResdataFile(f"{dig['sim']}.INIT").iget_kw(name.upper())[0]
+            )
+    dil["names"] = [
         "pop1",
         "pop2",
         "moba",
@@ -605,300 +471,334 @@ def sparse_data(dic):
         "immb",
         "dissb",
         "sealb",
-        "m_c",
         "sealt",
     ]
-    if dic["case"] != "spe11a":
-        dic["names"] += ["boundtot"]
-    for ent in dic["names"]:
-        dic[ent] = []
-    dic["times_data"] = np.linspace(
-        0, dic["times"][-1], round(dic["times"][-1] / dic["sparse_t"]) + 1
-    )
-    if dic["load"] == "summary":
-        dic = create_from_summary(dic)
-        if dic["case"] == "spe11c" and max(dic["fipnum"]) == 12:
-            dic = overlapping_c_and_facie1_contribution(dic)
-    else:
-        dic = create_from_restart(dic)
-    dic = compute_m_c(
-        dic
-    )  # Using the restart data until implemented in OPM Flow summary
-    write_sparse_data(dic)
+    if dig["case"] != "spe11a":
+        dil["names"] += ["boundtot"]
+    for ent in dil["names"]:
+        dil[ent] = 0.0
+    dil["m_c"] = []
+    dil = create_from_summary(dig, dil)
+    if dig["case"] == "spe11c" and max(dil["fipnum"]) == 12:
+        dil = overlapping_c_and_facie1_contribution(dig, dil)
+    # Using the restart data until implemented in OPM Flow summary
+    dil = compute_m_c(dig, dil)
+    write_sparse_data(dig, dil)
 
 
-def compute_m_c(dic):
+def compute_m_c(dig, dil):
     """Normalized total variation of the concentration field within Box C"""
-    dic["boxc"] = np.array([fip in (4, 12) for fip in dic["fipnum"]])
-    dic["boxc_x"] = list(np.roll(dic["boxc"], 1))
-    dic["boxc_y"] = list(np.roll(dic["boxc"], -dic["gxyz"][0]))
-    dic["boxc_z"] = list(np.roll(dic["boxc"], -dic["gxyz"][0] * dic["gxyz"][1]))
-    dic["boxc"] = [i for i, fip in enumerate(dic["fipnum"]) if fip in (4, 12)]
-    dic["boxc_z"] = [i for i, val in enumerate(dic["boxc_z"]) if val == 1]
-    dic["boxc_y"] = [i for i, val in enumerate(dic["boxc_y"]) if val == 1]
-    dic["boxc_x"] = [i for i, val in enumerate(dic["boxc_x"]) if val == 1]
-    dic = max_xcw(dic)
-    for j in range(dic["no_skip_rst"] + 1, dic["norst"]):
-        sgas = list(dic["sgas"][j])
-        rhow = list(dic[f"{dic['watDen']}"][j])
-        r_s = list(dic[f"{dic['r_s']}"][j])
-        co2_d = [
-            rss * rho * (1.0 - sga) * por * GAS_DEN_REF / WAT_DEN_REF
-            for (rss, rho, sga, por) in zip(r_s, rhow, sgas, dic["porva"])
-        ]
-        h2o_l = [
-            (1 - sga) * rho * por for (sga, rho, por) in zip(sgas, rhow, dic["porva"])
-        ]
-        dic["xcw"] = [co2 / (co2 + h2o) for (co2, h2o) in zip(co2_d, h2o_l)]
-        if dic["xcw_max"] != 0:
-            dic["xcw"] = [xcw / dic["xcw_max"] for xcw in dic["xcw"]]
-        if dic["case"] != "spe11c":
-            dic["m_c"].append(
-                sum(
-                    abs((dic["xcw"][i_x] - dic["xcw"][i]) * dic["dz"][i])
-                    + abs((dic["xcw"][i_z] - dic["xcw"][i]) * dic["dx"][i])
-                    for (i, i_x, i_z) in zip(dic["boxc"], dic["boxc_x"], dic["boxc_z"])
+    dil["boxc"] = np.array([fip in (4, 12) for fip in dil["fipnum"]])
+    dil["boxc_x"] = np.roll(dil["boxc"], 1)
+    dil["boxc_y"] = np.roll(dil["boxc"], -dig["gxyz"][0])
+    dil["boxc_z"] = np.roll(dil["boxc"], -dig["gxyz"][0] * dig["gxyz"][1])
+    dil = max_xcw(dig, dil)
+    for t_n in range(dig["no_skip_rst"] + 1, dig["norst"]):
+        if dig["use"] == "opm":
+            sgas = np.array(OpmRestart(f"{dig['sim']}.UNRST")["SGAS", t_n])
+            rhow = np.array(
+                OpmRestart(f"{dig['sim']}.UNRST")[f"{dig['watDen'].upper()}", t_n]
+            )
+            rss = np.array(
+                OpmRestart(f"{dig['sim']}.UNRST")[f"{dig['r_s'].upper()}", t_n]
+            )
+        else:
+            sgas = np.array(ResdataFile(f"{dig['sim']}.UNRST")["SGAS"][t_n])
+            rhow = np.array(
+                ResdataFile(f"{dig['sim']}.UNRST")[f"{dig['watDen'].upper()}"][t_n]
+            )
+            rss = np.array(
+                ResdataFile(f"{dig['sim']}.UNRST")[f"{dig['r_s'].upper()}"][t_n]
+            )
+        co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
+        h2o_l = (1 - sgas) * rhow * dig["porva"]
+        dil["xcw"] = np.divide(co2_d, co2_d + h2o_l)
+        if dil["xcw_max"] != 0:
+            dil["xcw"] /= dil["xcw_max"]
+        if dig["case"] != "spe11c":
+            dil["m_c"].append(
+                np.sum(
+                    np.abs(
+                        (dil["xcw"][dil["boxc_x"]] - dil["xcw"][dil["boxc"]])
+                        * dil["dz"][dil["boxc"]]
+                    )
+                    + np.abs(
+                        (dil["xcw"][dil["boxc_z"]] - dil["xcw"][dil["boxc"]])
+                        * dil["dx"][dil["boxc"]]
+                    )
                 )
             )
         else:
-            dic["m_c"].append(
-                sum(
-                    abs((dic["xcw"][i_x] - dic["xcw"][i]) * dic["dy"][i] * dic["dz"][i])
-                    + abs(
-                        (dic["xcw"][i_y] - dic["xcw"][i]) * dic["dx"][i] * dic["dz"][i]
+            dil["m_c"].append(
+                np.sum(
+                    np.abs(
+                        (dil["xcw"][dil["boxc_x"]] - dil["xcw"][dil["boxc"]])
+                        * dil["dy"][dil["boxc"]]
+                        * dil["dz"][dil["boxc"]]
                     )
-                    + abs(
-                        (dic["xcw"][i_z] - dic["xcw"][i]) * dic["dx"][i] * dic["dy"][i]
+                    + np.abs(
+                        (dil["xcw"][dil["boxc_y"]] - dil["xcw"][dil["boxc"]])
+                        * dil["dx"][dil["boxc"]]
+                        * dil["dz"][dil["boxc"]]
                     )
-                    for (i, i_x, i_y, i_z) in zip(
-                        dic["boxc"], dic["boxc_x"], dic["boxc_y"], dic["boxc_z"]
+                    + np.abs(
+                        (dil["xcw"][dil["boxc_z"]] - dil["xcw"][dil["boxc"]])
+                        * dil["dx"][dil["boxc"]]
+                        * dil["dy"][dil["boxc"]]
                     )
                 )
             )
-    return dic
+    return dil
 
 
-def write_sparse_data(dic):
+def write_sparse_data(dig, dil):
     """Routine to write the sparse data"""
-    for name in dic["names"]:
-        if dic["load"] == "summary":
-            if name == "m_c":
-                interp = interp1d(
-                    dic["times"],
-                    [0.0] + dic[f"{name}"],
-                    fill_value="extrapolate",
-                )
-            elif "pop" in name:
-                interp = interp1d(
-                    dic["times_summary"],
-                    dic[f"{name}"],
-                    fill_value="extrapolate",
-                )
-            else:
-                interp = interp1d(
-                    dic["times_summary"],
-                    [0.0] + list(dic[f"{name}"]),
-                    fill_value="extrapolate",
-                )
+    for name in dil["names"] + ["m_c"]:
+        if name == "m_c":
+            interp = interp1d(
+                dig["times"],
+                [0.0] + dil[f"{name}"],
+                fill_value="extrapolate",
+            )
+        elif "pop" in name:
+            interp = interp1d(
+                dig["times_summary"],
+                dil[f"{name}"],
+                fill_value="extrapolate",
+            )
         else:
-            if name == "m_c":
-                interp = interp1d(
-                    dic["times"],
-                    [0.0] + dic[f"{name}"],
-                    fill_value="extrapolate",
-                )
-            else:
-                interp = interp1d(
-                    dic["times"],
-                    dic[f"{name}"],
-                    fill_value="extrapolate",
-                )
-        dic[f"{name}"] = interp(dic["times_data"])
+            interp = interp1d(
+                dig["times_summary"],
+                [0.0] + list(dil[f"{name}"]),
+                fill_value="extrapolate",
+            )
+        dil[f"{name}"] = interp(dil["times_data"])
     text = [
         "# t [s], p1 [Pa], p2 [Pa], mobA [kg], immA [kg], dissA [kg], sealA [kg], "
         + "<same for B>, MC [m^2], sealTot [kg]"
     ]
-    if dic["case"] != "spe11a":
+    if dig["case"] != "spe11a":
         text[-1] += ", boundTot [kg]"
-    for j, time in enumerate(dic["times_data"]):
+    for j, time in enumerate(dil["times_data"]):
         text.append(
-            f"{time:.3e},{dic['pop1'][j]:.3e},{dic['pop2'][j]:.3e}"
-            f",{dic['moba'][j]:.3e},{dic['imma'][j]:.3e},{dic['dissb'][j]:.3e}"
-            f",{dic['seala'][j]:.3e},{dic['mobb'][j]:.3e},{dic['immb'][j]:.3e}"
-            f",{dic['dissb'][j]:.3e},{dic['sealb'][j]:.3e},{dic['m_c'][j]:.3e}"
-            f",{dic['sealt'][j]:.3e}"
+            f"{time:.3e},{dil['pop1'][j]:.3e},{dil['pop2'][j]:.3e}"
+            f",{dil['moba'][j]:.3e},{dil['imma'][j]:.3e},{dil['dissb'][j]:.3e}"
+            f",{dil['seala'][j]:.3e},{dil['mobb'][j]:.3e},{dil['immb'][j]:.3e}"
+            f",{dil['dissb'][j]:.3e},{dil['sealb'][j]:.3e},{dil['m_c'][j]:.3e}"
+            f",{dil['sealt'][j]:.3e}"
         )
-        if dic["case"] != "spe11a":
-            text[-1] += f",{dic['boundtot'][j]:.3e}"
+        if dig["case"] != "spe11a":
+            text[-1] += f",{dil['boundtot'][j]:.3e}"
     with open(
-        f"{dic['where']}/{dic['case']}_time_series.csv", "w", encoding="utf8"
+        f"{dig['where']}/{dig['case']}_time_series.csv", "w", encoding="utf8"
     ) as file:
         file.write("\n".join(text))
 
 
-def max_xcw(dic):
+def max_xcw(dig, dil):
     """Get the maximum CO2 mass fraction in the liquid phase"""
-    dic["xcw_max"] = 0
-    for j in range(dic["no_skip_rst"], dic["norst"]):
-        sgas = list(dic["sgas"][j])
-        rhow = list(dic[f"{dic['watDen']}"][j])
-        r_s = list(dic[f"{dic['r_s']}"][j])
-        co2_d = [
-            rss * rho * (1.0 - sga) * por * GAS_DEN_REF / WAT_DEN_REF
-            for (rss, rho, sga, por) in zip(r_s, rhow, sgas, dic["porva"])
-        ]
-        h2o_l = [
-            (1 - sga) * rho * por for (sga, rho, por) in zip(sgas, rhow, dic["porva"])
-        ]
-        xcw = [co2 / (co2 + h2o) for (co2, h2o) in zip(co2_d, h2o_l)]
-        xcw_max = max(xcw[i] for i in dic["boxc"])
-        dic["xcw_max"] = max(xcw_max, dic["xcw_max"])
-    return dic
+    dil["xcw_max"] = 0
+    for t_n in range(dig["no_skip_rst"], dig["norst"]):
+        if dig["use"] == "opm":
+            sgas = np.array(OpmRestart(f"{dig['sim']}.UNRST")["SGAS", t_n])
+            rhow = np.array(
+                OpmRestart(f"{dig['sim']}.UNRST")[f"{dig['watDen'].upper()}", t_n]
+            )
+            rss = np.array(
+                OpmRestart(f"{dig['sim']}.UNRST")[f"{dig['r_s'].upper()}", t_n]
+            )
+        else:
+            sgas = np.array(ResdataFile(f"{dig['sim']}.UNRST")["SGAS"][t_n])
+            rhow = np.array(
+                ResdataFile(f"{dig['sim']}.UNRST")[f"{dig['watDen'].upper()}"][t_n]
+            )
+            rss = np.array(
+                ResdataFile(f"{dig['sim']}.UNRST")[f"{dig['r_s'].upper()}"][t_n]
+            )
+        co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
+        h2o_l = (1 - sgas) * rhow * dig["porva"]
+        xcw = np.divide(co2_d, co2_d + h2o_l)
+        xcw_max = np.max(xcw[dil["boxc"]])
+        dil["xcw_max"] = max(xcw_max, dil["xcw_max"])
+    return dil
 
 
-def dense_data(dic):
-    """Write the quantities with the benchmark format"""
-    rstno = []
-    for time in dic["dense_t"]:
-        rstno.append(dic["times"].index(time))
-    for i, j, k in zip(["x", "y", "z"], dic["dims"], dic["nxyz"]):
-        ind = np.linspace(0, j, k + 1)
-        dic[f"ref{i}cent"] = 0.5 * (ind[1:] + ind[:-1])
-        dic[f"ref{i}grid"] = []
-    for k in dic["refzcent"]:
-        for j in dic["refycent"]:
-            for i in dic["refxcent"]:
-                dic["refxgrid"].append(i)
-                dic["refygrid"].append(j)
-                dic["refzgrid"].append(k)
+def get_centers(dig, dil):
+    """Centers from the simulation grid"""
     for i in ["x", "y", "z"]:
-        dic[f"ref{i}grid"] = np.array(dic[f"ref{i}grid"])
-    ind, dic["cell_ind"] = 0, [0] * dic["nocellst"]
-    # This is very slow, it needs to be fixed
-    for i, j, k in zip(dic["simxcent"], dic["simycent"], np.flip(dic["simzcent"])):
-        dic["cell_ind"][ind] = pd.Series(
-            (dic["refxgrid"] - i) ** 2
-            + (dic["refygrid"] - j) ** 2
-            + (dic["refzgrid"] - k) ** 2
+        dil[f"sim{i}cent"] = [0.0] * dig["nocellst"]
+    if dig["use"] == "opm":
+        # opm.io.ecl.EGrid.xyz_from_ijk is returning nan values, that's why we do this
+        with open(f"{dig['path']}/deck/centers.txt", "r", encoding="utf8") as file:
+            for j, row in enumerate(csv.reader(file)):
+                dil["simxcent"][j] = float(row[0])
+                dil["simycent"][j] = float(row[1])
+                dil["simzcent"][j] = dig["dims"][2] - float(row[2])
+        dil["satnum"] = list(OpmFile(f"{dig['sim']}.INIT")["SATNUM"])
+    else:
+        for cell in Grid(f"{dig['sim']}.EGRID").cells():
+            (
+                dil["simxcent"][cell.global_index],
+                dil["simycent"][cell.global_index],
+                dil["simzcent"][cell.global_index],
+            ) = (
+                cell.coordinate[0],
+                cell.coordinate[1],
+                dig["dims"][2] - cell.coordinate[2],
+            )
+        dil["satnum"] = list(ResdataFile(f"{dig['sim']}.INIT").iget_kw("SATNUM")[0])
+    return dil
+
+
+def dense_data(dig):
+    """Write the quantities with the benchmark format"""
+    dil = {"rstno": []}
+    for time in dig["dense_t"]:
+        dil["rstno"].append(dig["times"].index(time))
+    dil = get_centers(dig, dil)
+    dil["nrstno"] = len(dil["rstno"])
+    for i, j, k in zip(["x", "y", "z"], dig["dims"], dig["nxyz"]):
+        ind = np.linspace(0, j, k + 1)
+        dil[f"ref{i}cent"] = 0.5 * (ind[1:] + ind[:-1])
+        dil[f"ref{i}grid"] = np.zeros(dig["nocellsr"])
+    ind = 0
+    for k in dil["refzcent"]:
+        for j in dil["refycent"]:
+            for i in dil["refxcent"]:
+                dil["refxgrid"][ind] = i
+                dil["refygrid"][ind] = j
+                dil["refzgrid"][ind] = k
+                ind += 1
+    ind, dil["cell_ind"] = 0, np.zeros(dig["nocellst"], dtype=int)
+    for i, j, k in zip(dil["simxcent"], dil["simycent"], np.flip(dil["simzcent"])):
+        dil["cell_ind"][ind] = pd.Series(
+            (dil["refxgrid"] - i) ** 2
+            + (dil["refygrid"] - j) ** 2
+            + (dil["refzgrid"] - k) ** 2
         ).argmin()
         ind += 1
-    dic["porv_array"] = np.array(dic["porv"])
-    if max(dic["satnum"]) < 7:
-        dic = handle_inactive_mapping(dic)
+    if max(dil["satnum"]) < 7:
+        dil = handle_inactive_mapping(dig, dil)
     names = ["pressure", "sgas", "xco2", "xh20", "gden", "wden", "tco2"]
-    if dic["case"] != "spe11a":
+    if dig["case"] != "spe11a":
         names += ["temp"]
-    for i, rst in enumerate(rstno):
-        print(f"Processing dense data {i+1} out of {len(rstno)}")
-        t_n = rst + dic["no_skip_rst"]
-        for name in names:
-            dic[f"{name}_array"] = np.array([0.0] * dic["nocellst"])
-        co2_g = [
-            sga * rho * por
-            for (sga, rho, por) in zip(
-                dic["sgas"][t_n], dic["gas_den"][t_n], dic["porva"]
-            )
-        ]
-        co2_d = [
-            rss * rho * (1.0 - sga) * por * GAS_DEN_REF / WAT_DEN_REF
-            for (rss, rho, sga, por) in zip(
-                dic[f"{dic['r_s']}"][t_n],
-                dic[f"{dic['watDen']}"][t_n],
-                dic["sgas"][t_n],
-                dic["porva"],
-            )
-        ]
-        h2o_l = [
-            (1 - sga) * rho * por
-            for (sga, rho, por) in zip(
-                dic["sgas"][t_n], dic[f"{dic['watDen']}"][t_n], dic["porva"]
-            )
-        ]
-        dic["pressure_array"][dic["actind"]] = [
-            1e5 * pres for pres in dic["pressure"][t_n]
-        ]
-        dic["sgas_array"][dic["actind"]] = dic["sgas"][t_n]
-        dic["gden_array"][dic["actind"]] = [
-            den if gas > 0 else 0
-            for den, gas in zip(dic["gas_den"][t_n], dic["sgas"][t_n])
-        ]
-        dic["wden_array"][dic["actind"]] = dic[f"{dic['watDen']}"][t_n]
-        dic["xco2_array"][dic["actind"]] = [
-            co2 / (co2 + h2o) for (co2, h2o) in zip(co2_d, h2o_l)
-        ]
-        dic["xh20_array"][dic["actind"]] = 0 * dic["xco2_array"][dic["actind"]]
-        dic["tco2_array"][dic["actind"]] = [
-            co2d + co2g for (co2d, co2g) in zip(co2_d, co2_g)
-        ]
-        if dic["case"] != "spe11a":
-            dic["temp_array"][dic["actind"]] = dic["temp"][t_n]
-            h2o_v = [
-                rvv * rho * sga * por * WAT_DEN_REF / GAS_DEN_REF
-                for (rvv, rho, sga, por) in zip(
-                    dic[f"{dic['r_v']}"][t_n],
-                    dic["gas_den"][t_n],
-                    dic["sgas"][t_n],
-                    dic["porva"],
-                )
-            ]
-            dic["xh20_array"][dic["actind"]] = [
-                h2o / (h2o + co2) if (h2o + co2) > 0 else 0.0
-                for (h2o, co2) in zip(h2o_v, co2_g)
-            ]
-        dic = map_to_report_grid(dic, names)
-        write_dense_data(dic, i)
+    for i, rst in enumerate(dil["rstno"]):
+        print(f"Processing dense data {i+1} out of {dil['nrstno']}")
+        t_n = rst + dig["no_skip_rst"]
+        dil = generate_arrays(dig, dil, names, t_n)
+        dil = map_to_report_grid(dig, dil, names)
+        write_dense_data(dig, dil, i)
 
 
-def handle_inactive_mapping(dic):
+def generate_arrays(dig, dil, names, t_n):
+    """Numpy arrays for the dense data"""
+    for name in names:
+        dil[f"{name}_array"] = np.zeros(dig["nocellst"])
+    if dig["use"] == "opm":
+        sgas = np.array(OpmRestart(f"{dig['sim']}.UNRST")["SGAS", t_n])
+        rhog = np.array(OpmRestart(f"{dig['sim']}.UNRST")["GAS_DEN", t_n])
+        pres = np.array(OpmRestart(f"{dig['sim']}.UNRST")["PRESSURE", t_n])
+        rhow = np.array(
+            OpmRestart(f"{dig['sim']}.UNRST")[f"{dig['watDen'].upper()}", t_n]
+        )
+        rss = np.array(OpmRestart(f"{dig['sim']}.UNRST")[f"{dig['r_s'].upper()}", t_n])
+        if dig["case"] != "spe11a":
+            rvv = np.array(
+                OpmRestart(f"{dig['sim']}.UNRST")[f"{dig['r_v'].upper()}", t_n]
+            )
+            dil["temp_array"][dig["actind"]] = np.array(
+                OpmRestart(f"{dig['sim']}.UNRST")["TEMP", t_n]
+            )
+    else:
+        sgas = np.array(ResdataFile(f"{dig['sim']}.UNRST")["SGAS"][t_n])
+        rhog = np.array(ResdataFile(f"{dig['sim']}.UNRST")["GAS_DEN"][t_n])
+        pres = np.array(ResdataFile(f"{dig['sim']}.UNRST")["PRESSURE"][t_n])
+        rhow = np.array(
+            ResdataFile(f"{dig['sim']}.UNRST")[f"{dig['watDen'].upper()}"][t_n]
+        )
+        rss = np.array(ResdataFile(f"{dig['sim']}.UNRST")[f"{dig['r_s'].upper()}"][t_n])
+        if dig["case"] != "spe11a":
+            rvv = np.array(
+                ResdataFile(f"{dig['sim']}.UNRST")[f"{dig['r_v'].upper()}"][t_n]
+            )
+            dil["temp_array"][dig["actind"]] = np.array(
+                ResdataFile(f"{dig['sim']}.UNRST")["TEMP"][t_n]
+            )
+    co2_g = sgas * rhog * dig["porva"]
+    co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
+    h2o_l = (1 - sgas) * rhow * dig["porva"]
+    dil["pressure_array"][dig["actind"]] = 1e5 * pres
+    dil["sgas_array"][dig["actind"]] = sgas
+    dil["gden_array"][dig["actind"]] = rhog * (sgas > 0.0)
+    dil["wden_array"][dig["actind"]] = rhow
+    dil["xco2_array"][dig["actind"]] = np.divide(co2_d, co2_d + h2o_l)
+    dil["tco2_array"][dig["actind"]] = co2_d + co2_g
+    if dig["case"] != "spe11a":
+        h2o_v = rvv * rhog * sgas * dig["porva"] * WAT_DEN_REF / GAS_DEN_REF
+        dil = compute_xh20(dig, dil, h2o_v, co2_g)
+    return dil
+
+
+def compute_xh20(dig, dil, h2o_v, co2_g):
+    """Compute the mass fraction of water in vapour"""
+    mgas = h2o_v + co2_g
+    xh20 = 0.0 * h2o_v
+    inds = mgas > 0.0
+    xh20[inds] = np.divide(h2o_v[inds], mgas[inds])
+    dil["xh20_array"][dig["actind"]] = xh20
+    return dil
+
+
+def handle_inactive_mapping(dig, dil):
     """Set to inf the inactive grid centers in the reporting grid"""
-    var_array = np.array([np.nan] * dic["nocellst"])
-    var_array[dic["actind"]] = dic["sgas"][0]
-    for ii in range(dic["nocellsr"]):
-        inds = [iii == ii for iii in dic["cell_ind"]]
-        if np.isnan(sum(var_array[inds])):
-            dic["refxgrid"][ii] = np.inf
-            dic["refygrid"][ii] = np.inf
-            dic["refzgrid"][ii] = np.inf
-    ind, dic["cell_ind"] = 0, [0] * dic["nocellst"]
-    for i, j, k in zip(dic["simxcent"], dic["simycent"], np.flip(dic["simzcent"])):
-        dic["cell_ind"][ind] = pd.Series(
-            (dic["refxgrid"] - i) ** 2
-            + (dic["refygrid"] - j) ** 2
-            + (dic["refzgrid"] - k) ** 2
+    var_array = np.empty(dig["nocellst"]) * np.nan
+    var_array[dig["actind"]] = 0.0
+    for i in np.unique(dil["cell_ind"]):
+        inds = i == dil["cell_ind"]
+        if np.isnan(np.sum(var_array[inds])):
+            dil["refxgrid"][i] = np.inf
+            dil["refygrid"][i] = np.inf
+            dil["refzgrid"][i] = np.inf
+    ind, dil["cell_ind"] = 0, np.zeros(dig["nocellst"], dtype=int)
+    for i, j, k in zip(dil["simxcent"], dil["simycent"], np.flip(dil["simzcent"])):
+        dil["cell_ind"][ind] = pd.Series(
+            (dil["refxgrid"] - i) ** 2
+            + (dil["refygrid"] - j) ** 2
+            + (dil["refzgrid"] - k) ** 2
         ).argmin()
         ind += 1
-    return dic
+    return dil
 
 
-def map_to_report_grid(dic, names):
+def map_to_report_grid(dig, dil, names):
     """Map the simulation grid to the reporting grid"""
     for name in names:
-        dic[f"{name}_refg"] = [np.nan] * dic["nocellsr"]
-        for ii in range(dic["nocellsr"]):
-            inds = [iii == ii for iii in dic["cell_ind"]]
-            p_v = sum(dic["porv_array"][inds])
+        dil[f"{name}_refg"] = np.empty(dig["nocellsr"]) * np.nan
+        for i in np.unique(dil["cell_ind"]):
+            inds = i == dil["cell_ind"]
+            p_v = np.sum(dig["porv"][inds])
             if p_v > 0:
                 if name == "tco2":
-                    dic[f"{name}_refg"][ii] = sum(dic[f"{name}_array"][inds])
+                    dil[f"{name}_refg"][i] = np.sum(dil[f"{name}_array"][inds])
                 else:
-                    dic[f"{name}_refg"][ii] = (
-                        sum(dic[f"{name}_array"][inds] * dic["porv_array"][inds]) / p_v
+                    dil[f"{name}_refg"][i] = (
+                        np.sum(dil[f"{name}_array"][inds] * dig["porv"][inds]) / p_v
                     )
-    return dic
+    return dil
 
 
-def write_dense_data(dic, i):
+def write_dense_data(dig, dil, i):
     """Map the quantities to the cells"""
-    if dic["case"] == "spe11a":
-        name_t = f"{round(dic['dense_t'][i]/3600)}h"
+    if dig["case"] == "spe11a":
+        name_t = f"{round(dig['dense_t'][i]/3600)}h"
         text = [
             "# x [m], z [m], pressure [Pa], gas saturation [-], "
             + "mass fraction of CO2 in liquid [-], mass fraction of H20 in vapor [-], "
             + "phase mass density gas [kg/m3], phase mass density water [kg/m3], "
             + "total mass CO2 [kg]"
         ]
-    elif dic["case"] == "spe11b":
-        name_t = f"{round(dic['dense_t'][i]/SECONDS_IN_YEAR)}y"
+    elif dig["case"] == "spe11b":
+        name_t = f"{round(dig['dense_t'][i]/SECONDS_IN_YEAR)}y"
         text = [
             "# x [m], z [m], pressure [Pa], gas saturation [-], "
             + "mass fraction of CO2 in liquid [-], mass fraction of H20 in vapor [-], "
@@ -906,7 +806,7 @@ def write_dense_data(dic, i):
             + "total mass CO2 [kg], temperature [C]"
         ]
     else:
-        name_t = f"{round(dic['dense_t'][i]/SECONDS_IN_YEAR)}y"
+        name_t = f"{round(dig['dense_t'][i]/SECONDS_IN_YEAR)}y"
         text = [
             "# x [m], y [m], z [m], pressure [Pa], gas saturation [-], "
             + "mass fraction of CO2 in liquid [-], mass fraction of H20 in vapor [-], "
@@ -914,40 +814,40 @@ def write_dense_data(dic, i):
             + "total mass CO2 [kg], temperature [C]"
         ]
     idz = 0
-    for zcord in dic["refzcent"]:
+    for zcord in dil["refzcent"]:
         idxy = 0
-        for ycord in dic["refycent"]:
-            for xcord in dic["refxcent"]:
+        for ycord in dil["refycent"]:
+            for xcord in dil["refxcent"]:
                 idc = (
-                    dic["nxyz"][0] * dic["nxyz"][1] * (dic["nxyz"][2] - idz - 1) + idxy
+                    dig["nxyz"][0] * dig["nxyz"][1] * (dig["nxyz"][2] - idz - 1) + idxy
                 )
-                if dic["case"] == "spe11a":
+                if dig["case"] == "spe11a":
                     text.append(
-                        f"{xcord:.3e}, {zcord:.3e}, {dic['pressure_refg'][idc] :.3e}, "
-                        + f"{dic['sgas_refg'][idc] :.3e}, {dic['xco2_refg'][idc] :.3e}, "
-                        + f"{dic['xh20_refg'][idc] :.3e}, {dic['gden_refg'][idc] :.3e}, "
-                        + f"{dic['wden_refg'][idc] :.3e}, {dic['tco2_refg'][idc] :.3e}"
+                        f"{xcord:.3e}, {zcord:.3e}, {dil['pressure_refg'][idc] :.3e}, "
+                        + f"{dil['sgas_refg'][idc] :.3e}, {dil['xco2_refg'][idc] :.3e}, "
+                        + f"{dil['xh20_refg'][idc] :.3e}, {dil['gden_refg'][idc] :.3e}, "
+                        + f"{dil['wden_refg'][idc] :.3e}, {dil['tco2_refg'][idc] :.3e}"
                     )
-                elif dic["case"] == "spe11b":
+                elif dig["case"] == "spe11b":
                     text.append(
-                        f"{xcord:.3e}, {zcord:.3e}, {dic['pressure_refg'][idc] :.3e}, "
-                        + f"{dic['sgas_refg'][idc] :.3e}, {dic['xco2_refg'][idc] :.3e}, "
-                        + f"{dic['xh20_refg'][idc] :.3e}, {dic['gden_refg'][idc] :.3e}, "
-                        + f"{dic['wden_refg'][idc] :.3e}, {dic['tco2_refg'][idc] :.3e}, "
-                        + f"{dic['temp_refg'][idc] :.3e}"
+                        f"{xcord:.3e}, {zcord:.3e}, {dil['pressure_refg'][idc] :.3e}, "
+                        + f"{dil['sgas_refg'][idc] :.3e}, {dil['xco2_refg'][idc] :.3e}, "
+                        + f"{dil['xh20_refg'][idc] :.3e}, {dil['gden_refg'][idc] :.3e}, "
+                        + f"{dil['wden_refg'][idc] :.3e}, {dil['tco2_refg'][idc] :.3e}, "
+                        + f"{dil['temp_refg'][idc] :.3e}"
                     )
                 else:
                     text.append(
                         f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, "
-                        + f"{dic['pressure_refg'][idc] :.3e}, {dic['sgas_refg'][idc] :.3e}, "
-                        + f"{dic['xco2_refg'][idc] :.3e}, {dic['xh20_refg'][idc] :.3e}, "
-                        + f"{dic['gden_refg'][idc] :.3e}, {dic['wden_refg'][idc] :.3e}, "
-                        + f"{dic['tco2_refg'][idc] :.3e}, {dic['temp_refg'][idc] :.3e}"
+                        + f"{dil['pressure_refg'][idc] :.3e}, {dil['sgas_refg'][idc] :.3e}, "
+                        + f"{dil['xco2_refg'][idc] :.3e}, {dil['xh20_refg'][idc] :.3e}, "
+                        + f"{dil['gden_refg'][idc] :.3e}, {dil['wden_refg'][idc] :.3e}, "
+                        + f"{dil['tco2_refg'][idc] :.3e}, {dil['temp_refg'][idc] :.3e}"
                     )
                 idxy += 1
         idz += 1
     with open(
-        f"{dic['where']}/{dic['case']}_spatial_map_{name_t}.csv", "w", encoding="utf8"
+        f"{dig['where']}/{dig['case']}_spatial_map_{name_t}.csv", "w", encoding="utf8"
     ) as file:
         file.write("\n".join(text))
 

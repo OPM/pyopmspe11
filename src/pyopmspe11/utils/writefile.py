@@ -159,12 +159,3 @@ def opm_files(dic):
         file.write(f"{inj_t}\n")
         file.write(f"{skip_unrst}\n")
         file.write(" ".join(times))
-    text = []
-    for row in dic["safu"]:
-        text.append(f"{row[1]} ")
-    with open(
-        f"{dic['exe']}/{dic['fol']}/deck/snimm.txt",
-        "w",
-        encoding="utf8",
-    ) as file:
-        file.write("\n".join(text))

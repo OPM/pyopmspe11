@@ -25,9 +25,6 @@ def pyopmspe11():
     dic["pat"] = os.path.dirname(__file__)[:-5]  # Path to the pyopmspe11 folder
     dic["compare"] = cmdargs["compare"].strip()  # Make common figures for comparison
     dic["use"] = cmdargs["use"].strip()  # OPM or resdata python package
-    dic["load"] = cmdargs[
-        "load"
-    ].strip()  # Summary or restart data for the sparse data interpolation
     dic["resolution"] = cmdargs[
         "resolution"
     ].strip()  # Spatial resolution to write the data
@@ -146,13 +143,6 @@ def load_parser():
         "--use",
         default="resdata",
         help="Using the 'opm' or 'resdata' python package (resdata by default).",
-    )
-    parser.add_argument(
-        "-l",
-        "--load",
-        default="summary",
-        help="Use the summary or restart for the interpolation in the sparse data "
-        "('summary' by default).",
     )
     parser.add_argument(
         "-w",
