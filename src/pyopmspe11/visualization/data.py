@@ -145,59 +145,69 @@ def read_times(dig):
 
 def read_resdata(dig):
     """Using resdata"""
-    if ResdataFile(f"{dig['sim']}.UNRST").has_kw("WAT_DEN"):
+    dig["unrst"] = ResdataFile(f"{dig['sim']}.UNRST")
+    dig["init"] = ResdataFile(f"{dig['sim']}.INIT")
+    dig["egrid"] = Grid(f"{dig['sim']}.EGRID")
+    dig["smspec"] = Summary(f"{dig['sim']}.SMSPEC")
+    if dig["unrst"].has_kw("WAT_DEN"):
         dig["watDen"], dig["r_s"], dig["r_v"] = "wat_den", "rsw", "rvw"
+        dig["bpr"] = "BWPR"
     else:
         dig["watDen"], dig["r_s"], dig["r_v"] = "oil_den", "rs", "rv"
-    dig["smspec"] = Summary(f"{dig['sim']}.SMSPEC")
-    dig["porv"] = np.array(ResdataFile(f"{dig['sim']}.INIT").iget_kw("PORV")[0])
-    dig["actnum"] = list(Grid(f"{dig['sim']}.EGRID").export_actnum())
+        dig["bpr"] = "BPR"
+    dig["porv"] = np.array(dig["init"].iget_kw("PORV")[0])
+    dig["actnum"] = list(dig["egrid"].export_actnum())
     dig["actind"] = list(i for i, act in enumerate(dig["actnum"]) if act == 1)
     dig["porva"] = np.array(
         [porv for (porv, act) in zip(dig["porv"], dig["actnum"]) if act == 1]
     )
     dig["nocellst"], dig["nocellsa"] = len(dig["actnum"]), sum(dig["actnum"])
-    dig["norst"] = ResdataFile(f"{dig['sim']}.UNRST").num_report_steps()
+    dig["norst"] = dig["unrst"].num_report_steps()
     dig["times_summary"] = [0.0]
     dig["times_summary"] += list(
         86400.0 * dig["smspec"]["TIME"].values - dig["time_initial"]
     )
     dig["gxyz"] = [
-        Grid(f"{dig['sim']}.EGRID").nx,
-        Grid(f"{dig['sim']}.EGRID").ny,
-        Grid(f"{dig['sim']}.EGRID").nz,
+        dig["egrid"].nx,
+        dig["egrid"].ny,
+        dig["egrid"].nz,
     ]
     return dig
 
 
 def read_opm(dig):
     """Using opm"""
+    dig["unrst"] = OpmRestart(f"{dig['sim']}.UNRST")
+    dig["init"] = OpmFile(f"{dig['sim']}.INIT")
+    dig["egrid"] = OpmGrid(f"{dig['sim']}.EGRID")
+    dig["smspec"] = OpmSummary(f"{dig['sim']}.SMSPEC")
     dig = opm_files(dig)
     dig["actind"] = list(i for i, porv in enumerate(dig["porv"]) if porv > 0)
     dig["porva"] = np.array([porv for porv in dig["porv"] if porv > 0])
     dig["nocellst"], dig["nocellsa"] = (
         len(dig["porv"]),
-        OpmGrid(f"{dig['sim']}.EGRID").active_cells,
+        dig["egrid"].active_cells,
     )
     dig["times_summary"] = [0.0]
     dig["times_summary"] += list(86400.0 * dig["smspec"]["TIME"] - dig["time_initial"])
     dig["gxyz"] = [
-        OpmGrid(f"{dig['sim']}.EGRID").dimension[0],
-        OpmGrid(f"{dig['sim']}.EGRID").dimension[1],
-        OpmGrid(f"{dig['sim']}.EGRID").dimension[2],
+        dig["egrid"].dimension[0],
+        dig["egrid"].dimension[1],
+        dig["egrid"].dimension[2],
     ]
     return dig
 
 
 def opm_files(dig):
     """Extract the data from the opm output files"""
-    dig["norst"] = len(OpmRestart(f"{dig['sim']}.UNRST").report_steps)
-    if OpmRestart(f"{dig['sim']}.UNRST").count("WAT_DEN", 0):
+    dig["norst"] = len(dig["unrst"].report_steps)
+    if dig["unrst"].count("WAT_DEN", 0):
         dig["watDen"], dig["r_s"], dig["r_v"] = "wat_den", "rsw", "rvw"
+        dig["bpr"] = "BWPR"
     else:
         dig["watDen"], dig["r_s"], dig["r_v"] = "oil_den", "rs", "rv"
-    dig["smspec"] = OpmSummary(f"{dig['sim']}.SMSPEC")
-    dig["porv"] = np.array(OpmFile(f"{dig['sim']}.INIT")["PORV"])
+        dig["bpr"] = "BPR"
+    dig["porv"] = np.array(dig["init"]["PORV"])
     return dig
 
 
@@ -239,16 +249,11 @@ def performance(dig):
         [86400 * infostep[1] * infostep[11] for infostep in dil["infosteps"]]
     )
     if dig["use"] == "opm":
-        fgip = OpmSummary(f"{dig['sim']}.SMSPEC")["FGIP"]
-        times = (
-            86400.0 * OpmSummary(f"{dig['sim']}.SMSPEC")["TIME"] - dig["time_initial"]
-        )
+        fgip = dig["smspec"]["FGIP"]
+        times = 86400.0 * dig["smspec"]["TIME"] - dig["time_initial"]
     else:
-        fgip = Summary(f"{dig['sim']}.SMSPEC")["FGIP"].values
-        times = (
-            86400.0 * Summary(f"{dig['sim']}.SMSPEC")["TIME"].values
-            - dig["time_initial"]
-        )
+        fgip = dig["smspec"]["FGIP"].values
+        times = 86400.0 * dig["smspec"]["TIME"].values - dig["time_initial"]
     interp_fgip = interp1d(
         times,
         GAS_DEN_REF * fgip,
@@ -294,26 +299,25 @@ def create_from_summary(dig, dil):
     """Use the summary arrays for the sparse data interpolation"""
     ind, names, i_jk = 0, [], []
     for key in dig["smspec"].keys():
-        if key[0:4] == "BGPR" and "," in key[5:]:
+        if key[0 : len(dig["bpr"])] == dig["bpr"] and "," in key[len(dig["bpr"]) + 1 :]:
             names.append(key)
-            i_jk.append(np.genfromtxt(StringIO(key[5:]), delimiter=",", dtype=int)[0])
+            i_jk.append(
+                np.genfromtxt(
+                    StringIO(key[len(dig["bpr"]) + 1 :]), delimiter=",", dtype=int
+                )[0]
+            )
             ind += 1
             if ind == 2:
                 break
     sort = sorted(range(len(i_jk)), key=i_jk.__getitem__)
     if dig["use"] == "opm":
-        dil["pop1"] = [
-            OpmRestart(f"{dig['sim']}.UNRST")["PRESSURE", 0][dil["fipnum"].index(8)]
-            * 1.0e5
-        ] + list(
-            dig["smspec"][names[sort[0]]] * 1.0e5
-        )  # Pa
-        dil["pop2"] = [
-            OpmRestart(f"{dig['sim']}.UNRST")["PRESSURE", 0][dil["fipnum"].index(9)]
-            * 1.0e5
-        ] + list(
-            dig["smspec"][names[sort[1]]] * 1.0e5
-        )  # Pa
+        pop1 = dig["unrst"]["PRESSURE", 0][dil["fipnum"].index(8)]
+        pop2 = dig["unrst"]["PRESSURE", 0][dil["fipnum"].index(9)]
+        if dig["unrst"].count("PCGW", 0):
+            pop1 -= dig["unrst"]["PCGW", 0][dil["fipnum"].index(8)]
+            pop2 -= dig["unrst"]["PCGW", 0][dil["fipnum"].index(9)]
+        dil["pop1"] = [pop1 * 1.0e5] + list(dig["smspec"][names[sort[0]]] * 1.0e5)  # Pa
+        dil["pop2"] = [pop2 * 1.0e5] + list(dig["smspec"][names[sort[1]]] * 1.0e5)  # Pa
         for i in [2, 4, 5, 8]:
             dil["moba"] += dig["smspec"][f"RGCDM:{i}"] * KMOL_TO_KG
             dil["imma"] += dig["smspec"][f"RGCDI:{i}"] * KMOL_TO_KG
@@ -358,16 +362,15 @@ def create_from_summary(dig, dil):
 
 def resdata_summary(dig, dil, names, sort):
     """Using resdata"""
-    dil["pop1"] = [
-        ResdataFile(f"{dig['sim']}.UNRST")["PRESSURE"][0][dil["fipnum"].index(8)]
-        * 1.0e5
-    ] + list(
+    pop1 = dig["unrst"]["PRESSURE"][0][dil["fipnum"].index(8)]
+    pop2 = dig["unrst"]["PRESSURE"][0][dil["fipnum"].index(9)]
+    if dig["unrst"].has_kw("PCGW"):
+        pop1 -= dig["unrst"]["PCGW"][0][dil["fipnum"].index(8)]
+        pop2 -= dig["unrst"]["PCGW"][0][dil["fipnum"].index(9)]
+    dil["pop1"] = [pop1 * 1.0e5] + list(
         dig["smspec"][names[sort[0]]].values * 1.0e5
     )  # Pa
-    dil["pop2"] = [
-        ResdataFile(f"{dig['sim']}.UNRST")["PRESSURE"][0][dil["fipnum"].index(9)]
-        * 1.0e5
-    ] + list(
+    dil["pop2"] = [pop2 * 1.0e5] + list(
         dig["smspec"][names[sort[1]]].values * 1.0e5
     )  # Pa
     for i in [2, 4, 5, 8]:
@@ -451,15 +454,13 @@ def sparse_data(dig):
         )
     }
     if dig["use"] == "opm":
-        dil["fipnum"] = list(OpmFile(f"{dig['sim']}.INIT")["FIPNUM"])
+        dil["fipnum"] = list(dig["init"]["FIPNUM"])
         for name in ["dx", "dy", "dz"]:
-            dil[f"{name}"] = np.array(OpmFile(f"{dig['sim']}.INIT")[name.upper()])
+            dil[f"{name}"] = np.array(dig["init"][name.upper()])
     else:
-        dil["fipnum"] = list(ResdataFile(f"{dig['sim']}.INIT").iget_kw("FIPNUM")[0])
+        dil["fipnum"] = list(dig["init"].iget_kw("FIPNUM")[0])
         for name in ["dx", "dy", "dz"]:
-            dil[f"{name}"] = np.array(
-                ResdataFile(f"{dig['sim']}.INIT").iget_kw(name.upper())[0]
-            )
+            dil[f"{name}"] = np.array(dig["init"].iget_kw(name.upper())[0])
     dil["names"] = [
         "pop1",
         "pop2",
@@ -495,21 +496,13 @@ def compute_m_c(dig, dil):
     dil = max_xcw(dig, dil)
     for t_n in range(dig["no_skip_rst"] + 1, dig["norst"]):
         if dig["use"] == "opm":
-            sgas = np.array(OpmRestart(f"{dig['sim']}.UNRST")["SGAS", t_n])
-            rhow = np.array(
-                OpmRestart(f"{dig['sim']}.UNRST")[f"{dig['watDen'].upper()}", t_n]
-            )
-            rss = np.array(
-                OpmRestart(f"{dig['sim']}.UNRST")[f"{dig['r_s'].upper()}", t_n]
-            )
+            sgas = np.array(dig["unrst"]["SGAS", t_n])
+            rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}", t_n])
+            rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}", t_n])
         else:
-            sgas = np.array(ResdataFile(f"{dig['sim']}.UNRST")["SGAS"][t_n])
-            rhow = np.array(
-                ResdataFile(f"{dig['sim']}.UNRST")[f"{dig['watDen'].upper()}"][t_n]
-            )
-            rss = np.array(
-                ResdataFile(f"{dig['sim']}.UNRST")[f"{dig['r_s'].upper()}"][t_n]
-            )
+            sgas = np.array(dig["unrst"]["SGAS"][t_n])
+            rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}"][t_n])
+            rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}"][t_n])
         co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
         h2o_l = (1 - sgas) * rhow * dig["porva"]
         dil["xcw"] = np.divide(co2_d, co2_d + h2o_l)
@@ -600,21 +593,13 @@ def max_xcw(dig, dil):
     dil["xcw_max"] = 0
     for t_n in range(dig["no_skip_rst"], dig["norst"]):
         if dig["use"] == "opm":
-            sgas = np.array(OpmRestart(f"{dig['sim']}.UNRST")["SGAS", t_n])
-            rhow = np.array(
-                OpmRestart(f"{dig['sim']}.UNRST")[f"{dig['watDen'].upper()}", t_n]
-            )
-            rss = np.array(
-                OpmRestart(f"{dig['sim']}.UNRST")[f"{dig['r_s'].upper()}", t_n]
-            )
+            sgas = np.array(dig["unrst"]["SGAS", t_n])
+            rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}", t_n])
+            rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}", t_n])
         else:
-            sgas = np.array(ResdataFile(f"{dig['sim']}.UNRST")["SGAS"][t_n])
-            rhow = np.array(
-                ResdataFile(f"{dig['sim']}.UNRST")[f"{dig['watDen'].upper()}"][t_n]
-            )
-            rss = np.array(
-                ResdataFile(f"{dig['sim']}.UNRST")[f"{dig['r_s'].upper()}"][t_n]
-            )
+            sgas = np.array(dig["unrst"]["SGAS"][t_n])
+            rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}"][t_n])
+            rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}"][t_n])
         co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
         h2o_l = (1 - sgas) * rhow * dig["porva"]
         xcw = np.divide(co2_d, co2_d + h2o_l)
@@ -634,9 +619,9 @@ def get_centers(dig, dil):
                 dil["simxcent"][j] = float(row[0])
                 dil["simycent"][j] = float(row[1])
                 dil["simzcent"][j] = dig["dims"][2] - float(row[2])
-        dil["satnum"] = list(OpmFile(f"{dig['sim']}.INIT")["SATNUM"])
+        dil["satnum"] = list(dig["init"]["SATNUM"])
     else:
-        for cell in Grid(f"{dig['sim']}.EGRID").cells():
+        for cell in dig["egrid"].cells():
             (
                 dil["simxcent"][cell.global_index],
                 dil["simycent"][cell.global_index],
@@ -646,7 +631,7 @@ def get_centers(dig, dil):
                 cell.coordinate[1],
                 dig["dims"][2] - cell.coordinate[2],
             )
-        dil["satnum"] = list(ResdataFile(f"{dig['sim']}.INIT").iget_kw("SATNUM")[0])
+        dil["satnum"] = list(dig["init"].iget_kw("SATNUM")[0])
     return dil
 
 
@@ -695,35 +680,27 @@ def generate_arrays(dig, dil, names, t_n):
     for name in names:
         dil[f"{name}_array"] = np.zeros(dig["nocellst"])
     if dig["use"] == "opm":
-        sgas = np.array(OpmRestart(f"{dig['sim']}.UNRST")["SGAS", t_n])
-        rhog = np.array(OpmRestart(f"{dig['sim']}.UNRST")["GAS_DEN", t_n])
-        pres = np.array(OpmRestart(f"{dig['sim']}.UNRST")["PRESSURE", t_n])
-        rhow = np.array(
-            OpmRestart(f"{dig['sim']}.UNRST")[f"{dig['watDen'].upper()}", t_n]
-        )
-        rss = np.array(OpmRestart(f"{dig['sim']}.UNRST")[f"{dig['r_s'].upper()}", t_n])
+        sgas = np.array(dig["unrst"]["SGAS", t_n])
+        rhog = np.array(dig["unrst"]["GAS_DEN", t_n])
+        pres = np.array(dig["unrst"]["PRESSURE", t_n])
+        if dig["unrst"].count("PCGW", t_n):
+            pres -= np.array(dig["unrst"]["PCGW", t_n])
+        rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}", t_n])
+        rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}", t_n])
         if dig["case"] != "spe11a":
-            rvv = np.array(
-                OpmRestart(f"{dig['sim']}.UNRST")[f"{dig['r_v'].upper()}", t_n]
-            )
-            dil["temp_array"][dig["actind"]] = np.array(
-                OpmRestart(f"{dig['sim']}.UNRST")["TEMP", t_n]
-            )
+            rvv = np.array(dig["unrst"][f"{dig['r_v'].upper()}", t_n])
+            dil["temp_array"][dig["actind"]] = np.array(dig["unrst"]["TEMP", t_n])
     else:
-        sgas = np.array(ResdataFile(f"{dig['sim']}.UNRST")["SGAS"][t_n])
-        rhog = np.array(ResdataFile(f"{dig['sim']}.UNRST")["GAS_DEN"][t_n])
-        pres = np.array(ResdataFile(f"{dig['sim']}.UNRST")["PRESSURE"][t_n])
-        rhow = np.array(
-            ResdataFile(f"{dig['sim']}.UNRST")[f"{dig['watDen'].upper()}"][t_n]
-        )
-        rss = np.array(ResdataFile(f"{dig['sim']}.UNRST")[f"{dig['r_s'].upper()}"][t_n])
+        sgas = np.array(dig["unrst"]["SGAS"][t_n])
+        rhog = np.array(dig["unrst"]["GAS_DEN"][t_n])
+        pres = np.array(dig["unrst"]["PRESSURE"][t_n])
+        if dig["unrst"].has_kw("PCGW"):
+            pres -= np.array(dig["unrst"]["PCGW"][t_n])
+        rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}"][t_n])
+        rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}"][t_n])
         if dig["case"] != "spe11a":
-            rvv = np.array(
-                ResdataFile(f"{dig['sim']}.UNRST")[f"{dig['r_v'].upper()}"][t_n]
-            )
-            dil["temp_array"][dig["actind"]] = np.array(
-                ResdataFile(f"{dig['sim']}.UNRST")["TEMP"][t_n]
-            )
+            rvv = np.array(dig["unrst"][f"{dig['r_v'].upper()}"][t_n])
+            dil["temp_array"][dig["actind"]] = np.array(dig["unrst"]["TEMP"][t_n])
     co2_g = sgas * rhog * dig["porva"]
     co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
     h2o_l = (1 - sgas) * rhow * dig["porva"]

@@ -20,7 +20,7 @@ corner-point      #Type of grid (cartesian, tensor, or corner-point)
 (max(0, (s_w - swi) / (1 - swi))) ** 1.5                                                        #Wetting rel perm saturation function [-]
 (max(0, (1 - s_w - sni) / (1 - sni))) ** 1.5                                                    #Non-wetting rel perm saturation function [-]
 penmax * math.erf(pen * ((s_w-swi) / (1.-swi)) ** (-(1.0 / 1.5)) * math.pi**0.5 / (penmax * 2)) #Capillary pressure saturation function [Pa]
-(np.exp(np.flip(np.linspace(0, 5.0, npoints))) - 1) / (np.exp(5.0) - 1)                         #Points to evaluate the saturation functions (s_w) [-]
+1 - np.linspace(0, 1.0, npoints)                                                                #Points to evaluate the saturation functions (s_w) [-]
 
 """Properties sat functions"""
 """swi [-], sni [-], pen [Pa], penmax [Pa], npoints [-]"""

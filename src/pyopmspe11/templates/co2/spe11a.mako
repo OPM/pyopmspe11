@@ -140,8 +140,8 @@ RPTRST
 % if dic['model'] == 'immiscible': 
 'BASIC=2' FLOWS FLORES DEN/
 % else:
-'BASIC=2' DEN/
-%endif
+'BASIC=2' DEN ${'PCGW' if dic["co2store"] == "gaswater" else ''}/
+% endif
 
 % if dic['model'] == 'complete':
 % if dic["co2store"] == "gasoil":
@@ -175,7 +175,7 @@ WGIR
 /
 WGIT
 /
-BGPR
+${'BPR' if dic["co2store"] == "gasoil" else 'BWPR'}
 % for sensor in dic["sensorijk"]: 
 ${sensor[0]+1} ${sensor[1]+1} ${sensor[2]+1} /
 % endfor
@@ -187,8 +187,8 @@ RPTRST
 % if dic['model'] == 'immiscible': 
 'BASIC=2' FLOWS FLORES DEN/
 % else:
-'BASIC=2' DEN/
-%endif
+'BASIC=2' DEN ${'PCGW' if dic["co2store"] == "gaswater" else ''}/
+% endif
 
 % if sum(dic['radius']) > 0:
 WELSPECS
