@@ -185,7 +185,7 @@ RPTRST
 % if dic['model'] == 'immiscible': 
 'BASIC=2' FLOWS FLORES DEN/
 % else:
-'BASIC=2' DEN ${'PCGW' if dic["co2store"] == "gaswater" else ''}/
+'BASIC=2' DEN RESIDUAL ${'PCGW' if dic["co2store"] == "gaswater" else ''}/
 % endif
 
 % if dic['model'] == 'complete' and dic["flow_version"] != "2023.10":
