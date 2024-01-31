@@ -212,7 +212,7 @@ def opm_files(dig):
 
 
 def performance(dig):
-    """Write the performance within the benchmark format SECONDS_IN_YEAR"""
+    """Write the performance within the benchmark format"""
     dil = {"infosteps": []}
     dil["times_data"] = np.linspace(
         0, dig["times"][-1], round(dig["times"][-1] / dig["sparse_t"]) + 1
@@ -248,6 +248,7 @@ def performance(dig):
     dil["tsteps"] = np.array(
         [86400 * infostep[1] * infostep[11] for infostep in dil["infosteps"]]
     )
+    dil["alltsteps"] = np.array([86400 * infostep[1] for infostep in dil["infosteps"]])
     if dig["use"] == "opm":
         fgip = dig["smspec"]["FGIP"]
         times = 86400.0 * dig["smspec"]["TIME"] - dig["time_initial"]
@@ -289,6 +290,30 @@ def performance(dig):
         )
     with open(
         f"{dig['where']}/{dig['case']}_performance_time_series.csv",
+        "w",
+        encoding="utf8",
+    ) as file:
+        file.write("\n".join(dil["text"]))
+    dil["text"] = []
+    dil["text"].append(
+        "# t [s], tstep [s], fsteps [-], mass [kg], dof [-], nliter [-], "
+        + "nres [-], liniter [-], runtime [s], tlinsol [s]"
+    )
+    for j, time in enumerate(infotimes):
+        dil["text"].append(
+            f"{time:.3e}, "
+            + f"{dil['alltsteps'][j]:.3e}, "
+            + f"{dil['fsteps'][j]:.3e}, "
+            + f"{interp_fgip(time):.3e}, "
+            + f"{dig['dof'] * dig['nocellsa']:.3e}, "
+            + f"{dil['nliters'][j]:.3e}, "
+            + f"{dil['nress'][j]:.3e}, "
+            + f"{dil['liniters'][j]:.3e}, "
+            + f"{dil['runtimes'][j]:.3e}, "
+            + f"{dil['tlinsols'][j]:.3e}"
+        )
+    with open(
+        f"{dig['where']}/{dig['case']}_performance_time_series_detailed.csv",
         "w",
         encoding="utf8",
     ) as file:
@@ -708,11 +733,21 @@ def generate_arrays(dig, dil, names, t_n):
     dil["sgas_array"][dig["actind"]] = sgas
     dil["gden_array"][dig["actind"]] = rhog * (sgas > 0.0)
     dil["wden_array"][dig["actind"]] = rhow
-    dil["xco2_array"][dig["actind"]] = np.divide(co2_d, co2_d + h2o_l)
     dil["tco2_array"][dig["actind"]] = co2_d + co2_g
+    dil = compute_xco2(dig, dil, co2_d, h2o_l)
     if dig["case"] != "spe11a":
         h2o_v = rvv * rhog * sgas * dig["porva"] * WAT_DEN_REF / GAS_DEN_REF
         dil = compute_xh20(dig, dil, h2o_v, co2_g)
+    return dil
+
+
+def compute_xco2(dig, dil, co2_d, h2o_l):
+    """Compute the mass fraction of CO2 in liquid"""
+    mliq = co2_d + h2o_l
+    xco2 = 0.0 * co2_d
+    inds = mliq > 0.0
+    xco2[inds] = np.divide(co2_d[inds], mliq[inds])
+    dil["xco2_array"][dig["actind"]] = xco2
     return dil
 
 

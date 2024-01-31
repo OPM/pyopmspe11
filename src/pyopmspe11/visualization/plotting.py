@@ -144,60 +144,55 @@ def plot_results(dic):
 
 def performance(dic):
     """time solver plots"""
-    csv = np.genfromtxt(
-        f"{dic['exe']}/{dic['folders'][0]}/data/{dic['case']}_performance_time_series.csv",
-        delimiter=",",
-        skip_header=1,
-    )
-    times = [csv[i][0] for i in range(csv.shape[0])]
-    dic["fig"] = plt.figure(figsize=(40, 75))
-    plots = [
-        "tstep",
-        "fsteps",
-        "mass",
-        "dof",
-        "nliter",
-        "nres",
-        "liniter",
-        "runtime",
-        "tlinsol",
-    ]
-    ylabels = ["s", "\\#", "kg", "\\#", "\\#", "\\#", "\\#", "s", "s"]
-    for k, (plot, ylabel) in enumerate(zip(plots, ylabels)):
-        axis = dic["fig"].add_subplot(9, 5, k + 1)
-        for nfol, fol in enumerate(dic["folders"]):
-            csv = np.genfromtxt(
-                f"{dic['exe']}/{fol}/data/{dic['case']}_performance_time_series.csv",
-                delimiter=",",
-                skip_header=1,
-            )
-            labels = [
-                f"sum={sum((csv[i][1] for i in range(csv.shape[0]))):.3e}",
-                f"sum={sum((csv[i][2] for i in range(csv.shape[0]))):.3e}",
-                f"max={max((csv[i][3] for i in range(csv.shape[0]))):.3e}",
-                f"max={csv[-1][4]:.3e}",
-                f"sum={sum((csv[i][5] for i in range(csv.shape[0]))):.3e}",
-                f"sum={sum((csv[i][6] for i in range(csv.shape[0]))):.3e}",
-                f"sum={sum((csv[i][7] for i in range(csv.shape[0]))):.3e}",
-                f"sum={sum((csv[i][8] for i in range(csv.shape[0]))):.3e}",
-                f"sum={sum((csv[i][9] for i in range(csv.shape[0]))):.3e}",
-            ]
-            times = [csv[i][0] / dic["tscale"] for i in range(csv.shape[0])]
-            labels[k] += f" ({fol})"
-            axis.step(
-                times,
-                [csv[i][k + 1] for i in range(csv.shape[0])],
-                lw=2,
-                color=dic["colors"][nfol],
-                label=labels[k],
-            )
-            axis.set_title(plot + f", {dic['case']}")
-            axis.set_ylabel(ylabel)
-            axis.set_xlabel(f"Time [{dic['tlabel']}]")
-            axis.legend()
-    dic["fig"].savefig(
-        f"{dic['where']}/{dic['case']}_performance.png", bbox_inches="tight"
-    )
+    for kind in ["", "_detailed"]:
+        dic["fig"] = plt.figure(figsize=(40, 75))
+        plots = [
+            "tstep",
+            "fsteps",
+            "mass",
+            "dof",
+            "nliter",
+            "nres",
+            "liniter",
+            "runtime",
+            "tlinsol",
+        ]
+        ylabels = ["s", "\\#", "kg", "\\#", "\\#", "\\#", "\\#", "s", "s"]
+        for k, (plot, ylabel) in enumerate(zip(plots, ylabels)):
+            axis = dic["fig"].add_subplot(9, 5, k + 1)
+            for nfol, fol in enumerate(dic["folders"]):
+                csv = np.genfromtxt(
+                    f"{dic['exe']}/{fol}/data/{dic['case']}_performance_time_series{kind}.csv",
+                    delimiter=",",
+                    skip_header=1,
+                )
+                labels = [
+                    f"sum={sum((csv[i][1] for i in range(csv.shape[0]))):.3e}",
+                    f"sum={sum((csv[i][2] for i in range(csv.shape[0]))):.3e}",
+                    f"max={max((csv[i][3] for i in range(csv.shape[0]))):.3e}",
+                    f"max={csv[-1][4]:.3e}",
+                    f"sum={sum((csv[i][5] for i in range(csv.shape[0]))):.3e}",
+                    f"sum={sum((csv[i][6] for i in range(csv.shape[0]))):.3e}",
+                    f"sum={sum((csv[i][7] for i in range(csv.shape[0]))):.3e}",
+                    f"sum={sum((csv[i][8] for i in range(csv.shape[0]))):.3e}",
+                    f"sum={sum((csv[i][9] for i in range(csv.shape[0]))):.3e}",
+                ]
+                times = [csv[i][0] / dic["tscale"] for i in range(csv.shape[0])]
+                labels[k] += f" ({fol})"
+                axis.step(
+                    times,
+                    [csv[i][k + 1] for i in range(csv.shape[0])],
+                    lw=2,
+                    color=dic["colors"][nfol],
+                    label=labels[k],
+                )
+                axis.set_title(plot + f", {dic['case']}")
+                axis.set_ylabel(ylabel)
+                axis.set_xlabel(f"Time [{dic['tlabel']}]")
+                axis.legend()
+        dic["fig"].savefig(
+            f"{dic['where']}/{dic['case']}_performance{kind}.png", bbox_inches="tight"
+        )
 
 
 def sparse_data(dic):
