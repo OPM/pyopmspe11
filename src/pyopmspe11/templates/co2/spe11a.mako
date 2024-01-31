@@ -92,9 +92,9 @@ BCCON
 /
 % endif
 
-% if dic["version"] == "master" and dic["dispersion"] > 0 and dic["flow_version"] != "2023.10":
-DISPERC 
-${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*${dic["dispersion"]} /
+% if dic["version"] == "master" and sum(dic["dispersion"]) > 0 and dic["flow_version"] != "2023.10":
+INCLUDE
+'DISPERC.INC' /
 % endif
 
 % if dic["spe11aBC"] > 0:
@@ -113,10 +113,10 @@ INCLUDE
 
 % if dic['model'] == 'complete' and (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
 % if dic["co2store"] == "gaswater":
-DIFFCWAT
+DIFFAWAT
 ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
 
-DIFFCGAS
+DIFFAGAS
 ${dic["diffusion"][1]} ${dic["diffusion"][1]} /
 % else:
 DIFFC

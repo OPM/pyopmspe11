@@ -11,7 +11,7 @@ cartesian         #Type of grid (cartesian or corner-point)
 25                #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
 20 20             #Temperature bottom and top rig [C]
 1.2 110000 1      #Datum [m], pressure at the datum [Pa], and multiplier for the permeability in the z direction [-] 
-0 0 0             #Diffusion (in liquid and gas) [m^2/s] and dispersion [m] (dispersion requires a Flow version newer than 17-11-2023)
+0 0               #Diffusion (in liquid and gas) [m^2/s]
 0 0               #Rock specific heat and density (for spe11b/c)
 0 0 0             #Added pore volume on top boundary (for spe11a [if 0, free flow bc]), pore volume on lateral boundaries, and width of buffer cell [m] (for spe11b/c)
 0 0               #Elevation of the parabola [m] (for spe11c) 
@@ -33,14 +33,14 @@ SWI6 0.10 SNI6 0.1 PEN6    1 PENMAX6 9.5e4 NPOINTS6 200000
 SWI7    0 SNI7   0 PEN7    0 PENMAX7 9.5e4 NPOINTS7      2
 
 """Properties rock"""
-"""K [mD], phi [-]"""
-PERM1 44529.9988 PORO1 0.44
-PERM2 506624.985 PORO2 0.43
-PERM3 1013249.97 PORO3 0.44
-PERM4 2026499.95 PORO4 0.45
-PERM5 4052999.88 PORO5 0.43
-PERM6 10132499.7 PORO6 0.46
-PERM7          0 PORO7    0
+"""K [mD], phi [-], disp [m] (dispersion requires a Flow version newer than 17-11-2023)"""
+PERM1 44529.9988 PORO1 0.44 DISP1 0
+PERM2 506624.985 PORO2 0.43 DISP2 0
+PERM3 1013249.97 PORO3 0.44 DISP3 0
+PERM4 2026499.95 PORO4 0.45 DISP4 0
+PERM5 4052999.88 PORO5 0.43 DISP5 0
+PERM6 10132499.7 PORO6 0.46 DISP6 0
+PERM7          0 PORO7    0 DISP7 0
 
 """Wells position"""
 """radius (0 to use the SOURCE keyword instead of well keywords, this requires a Flow version newer than 23-01-2024), x, y, and z position [m] (final positions as well for spe11c)"""

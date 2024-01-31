@@ -101,6 +101,9 @@ def structured_handling_spe11a(dic):
             )
             dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
             dic["poro"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1])
+            dic["disperc"].append(
+                f"{dic['dispersion'][int(dic['ids_gmsh'][fgl][0])-1]}"
+            )
             centers.append(
                 str([dic["xmx_center"][i], dic["ymy_center"][0], dic["zmz_center"][k]])[
                     1:-1
@@ -160,6 +163,9 @@ def structured_handling_spe11bc(dic):
             dic["thconr"].append(
                 f"{dic['rockCond'][int(dic['ids_gmsh'][fgl][0])-1][0]}"
             )
+            dic["disperc"].append(
+                f"{dic['dispersion'][int(dic['ids_gmsh'][fgl][0])-1]}"
+            )
             if i == 0 and (
                 int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
             ):
@@ -172,7 +178,7 @@ def structured_handling_spe11bc(dic):
                 dic["poro"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1])
             centers.append(str([dic["xmx_center"][i], dic["ymy_center"][0], z_c])[1:-1])
         for j in range(dic["noCells"][1] - 1):
-            for names in ["satnum", "poro", "permx", "thconr"]:
+            for names in ["satnum", "poro", "permx", "disperc", "thconr"]:
                 dic[f"{names}"].extend(dic[f"{names}"][-dic["noCells"][0] :])
             for i_i in range(dic["noCells"][0]):
                 sensor1.append(
@@ -253,6 +259,7 @@ def corner_point_handling_spe11a(dic):
         dic = boxes(dic, dic["xyz"][0], dic["xyz"][2], dic["ijk"][0], dic["satnum"][-1])
         dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
         dic["poro"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1])
+        dic["disperc"].append(f"{dic['dispersion'][int(dic['ids_gmsh'][fgl][0])-1]}")
         centers.append(str([dic["xyz"][0], dic["ymy_center"][0], dic["xyz"][2]])[1:-1])
     dic["pop1"] = pd.Series(sensor1).argmin()
     dic["pop2"] = pd.Series(sensor2).argmin()
@@ -355,6 +362,7 @@ def corner_point_handling_spe11bc(dic):
         dic["satnum"].append(dic["ids_gmsh"][fgl][0])
         dic = boxes(dic, dic["xyz"][0], z_c, dic["ijk"][0], dic["satnum"][-1])
         dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
+        dic["disperc"].append(f"{dic['dispersion'][int(dic['ids_gmsh'][fgl][0])-1]}")
         dic["thconr"].append(f"{dic['rockCond'][int(dic['ids_gmsh'][fgl][0])-1][0]}")
         if dic["ijk"][0] == 0 and (
             int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
@@ -369,7 +377,7 @@ def corner_point_handling_spe11bc(dic):
         centers.append(str([dic["xyz"][0], dic["ymy_center"][0], z_c])[1:-1])
         if dic["ijk"][0] > 0 and dic["ijk"][0] == dic["noCells"][0] - 1:
             for j in range(dic["noCells"][1] - 1):
-                for names in ["satnum", "poro", "permx", "thconr"]:
+                for names in ["satnum", "poro", "permx", "disperc", "thconr"]:
                     dic[f"{names}"].extend(dic[f"{names}"][-dic["noCells"][0] :])
                 for i_i in range(dic["noCells"][0]):
                     z_c = ztemp[i_i]
@@ -514,7 +522,7 @@ def positions(dic):
     """
     dic["sensorijk"] = [[] for _ in range(len(dic["sensors"]))]
     dic = getfacies(dic)
-    for names in ["satnum", "poro", "permx", "thconr", "fipnum"]:
+    for names in ["satnum", "poro", "permx", "thconr", "fipnum", "disperc"]:
         dic[f"{names}"] = []
     if dic["grid"] == "corner-point":
         if dic["use"] == "opm":

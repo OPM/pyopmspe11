@@ -11,7 +11,7 @@ corner-point      #Type of grid (cartesian, tensor, or corner-point)
 2,2,1,1,2,1,3,2,6,2,3,2,2,8,4,8,8,1 #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
 70 40             #Temperature bottom and top rig [C]            
 300 3e7 0.1       #Datum [m], pressure at the datum [Pa], and multiplier for the permeability in the z direction [-] 
-1e-9 2e-8 0       #Diffusion (in liquid and gas) [m^2/s] and dispersion [m] (dispersion requires a Flow version newer than 17-11-2023)
+1e-9 2e-8         #Diffusion (in liquid and gas) [m^2/s]
 8.5e-1 2500       #Rock specific heat and density (for spe11b/c)
 0 5e4 1           #Added pore volume on top boundary (for spe11a [if 0, free flow bc]), pore volume on lateral boundaries, and width of buffer cell [m] (for spe11b/c)
 0 0               #Elevation of the parabola and back [m] (for spe11c)  
@@ -33,14 +33,14 @@ SWI6 0.10 SNI6 0.1 PEN6   2560.18 PENMAX6 3e7 NPOINTS6 100
 SWI7    0 SNI7   0 PEN7         0 PENMAX7 3e7 NPOINTS7   2 
 
 """Properties rock"""
-"""K [mD], phi [-], thconr [W m-1 K-1]"""
-PERM1 0.10132 PORO1 0.10 THCONR1 1.90
-PERM2 101.324 PORO2 0.20 THCONR2 1.25
-PERM3 202.650 PORO3 0.20 THCONR3 1.25
-PERM4 506.625 PORO4 0.20 THCONR4 1.25
-PERM5 1013.25 PORO5 0.25 THCONR5 0.92
-PERM6 2026.50 PORO6 0.35 THCONR6 0.26
-PERM7    1e-5 PORO7 1e-6 THCONR7 2.00
+"""K [mD], phi [-], disp [m] (dispersion requires a Flow version newer than 17-11-2023), thconr [W m-1 K-1]"""
+PERM1 0.10132 PORO1 0.10 DISP1 10 THCONR1 1.90
+PERM2 101.324 PORO2 0.20 DISP2 10 THCONR2 1.25
+PERM3 202.650 PORO3 0.20 DISP3 10 THCONR3 1.25
+PERM4 506.625 PORO4 0.20 DISP4 10 THCONR4 1.25
+PERM5 1013.25 PORO5 0.25 DISP5 10 THCONR5 0.92
+PERM6 2026.50 PORO6 0.35 DISP6 10 THCONR6 0.26
+PERM7    1e-5 PORO7 1e-6 DISP7  0 THCONR7 2.00
 
 """Wells radius and position"""
 """radius (0 to use the SOURCE keyword instead of well keywords, this requires a Flow version newer than 23-01-2024), x, y, and z position [m] (final positions as well for spe11c)"""
