@@ -68,11 +68,11 @@ def pyopmspe11():
         # Write used opm related files
         opm_files(dic)
 
-    if dic["mode"] in ["all", "flow", "deck_flow", "deck_flow_data"]:
+    if dic["mode"] in ["all", "flow", "deck_flow", "flow_data", "deck_flow_data"]:
         # Run the simulations
         simulations(dic, dic["fol"].upper(), "flow")
 
-    if dic["mode"] in ["all", "data", "deck_flow_data", "data_plot"]:
+    if dic["mode"] in ["all", "data", "flow_data", "deck_flow_data", "data_plot"]:
         # Write the data
         if not os.path.exists(f"{dic['exe']}/{dic['fol']}/data"):
             os.system(f"mkdir {dic['exe']}/{dic['fol']}/data")
@@ -103,8 +103,8 @@ def load_parser():
         help="Run the whole framework ('all'), only create decks ('deck'), "
         "only run flow ('flow'), only write benchmark data ('data'), "
         "only create plots ('plot'), deck and run ('deck_flow'), "
-        "data and plot (data_plot), or deck, run, and data "
-        "(deck_flow_data) ('deck_flow' by default).",
+        "data and plot ('data_plot'), run and data ('flow_data'),  or deck, "
+        "run, and data ('deck_flow_data') ('deck_flow' by default).",
     )
     parser.add_argument(
         "-c",
