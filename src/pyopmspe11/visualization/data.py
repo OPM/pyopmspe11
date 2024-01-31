@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
+# pylint: disable=C0302
 
 """"
 Script to write the benchmark data
@@ -72,8 +73,9 @@ def main():
         "-g",
         "--generate",
         default="sparse",
-        help="Write only the 'dense', 'performance', 'sparse', 'dense_performance', "
-        "'dense_sparse', 'performance_sparse', or 'all'",
+        help="Write only the 'dense', 'sparse', 'performance', 'performance-spatial', "
+        "'dense_performance', 'performance_sparse', 'dense_performance-spatial', "
+        "'dense_sparse', or 'all'",
     )
     parser.add_argument(
         "-u",
@@ -119,7 +121,14 @@ def main():
         performance(dig)
     if dig["mode"] in ["all", "sparse", "dense_sparse", "performance_sparse"]:
         sparse_data(dig)
-    if dig["mode"] in ["all", "dense", "dense_performance", "dense_sparse"]:
+    if dig["mode"] in [
+        "all",
+        "performance-spatial",
+        "dense",
+        "dense_performance",
+        "dense_sparse",
+        "dense_performance-spatial",
+    ]:
         if isinstance(dig["dense_t"], float):
             dig["dense_t"] = [
                 i * dig["dense_t"]
@@ -530,7 +539,11 @@ def compute_m_c(dig, dil):
             rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}"][t_n])
         co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
         h2o_l = (1 - sgas) * rhow * dig["porva"]
-        dil["xcw"] = np.divide(co2_d, co2_d + h2o_l)
+        mliq = co2_d + h2o_l
+        xco2 = 0.0 * co2_d
+        inds = mliq > 0.0
+        xco2[inds] = np.divide(co2_d[inds], mliq[inds])
+        dil["xcw"] = xco2
         if dil["xcw_max"] != 0:
             dil["xcw"] /= dil["xcw_max"]
         if dig["case"] != "spe11c":
@@ -627,7 +640,10 @@ def max_xcw(dig, dil):
             rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}"][t_n])
         co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
         h2o_l = (1 - sgas) * rhow * dig["porva"]
-        xcw = np.divide(co2_d, co2_d + h2o_l)
+        mliq = co2_d + h2o_l
+        xcw = 0.0 * co2_d
+        inds = mliq > 0.0
+        xcw[inds] = np.divide(co2_d[inds], mliq[inds])
         xcw_max = np.max(xcw[dil["boxc"]])
         dil["xcw_max"] = max(xcw_max, dil["xcw_max"])
     return dil
@@ -689,15 +705,174 @@ def dense_data(dig):
         ind += 1
     if max(dil["satnum"]) < 7:
         dil = handle_inactive_mapping(dig, dil)
-    names = ["pressure", "sgas", "xco2", "xh20", "gden", "wden", "tco2"]
-    if dig["case"] != "spe11a":
-        names += ["temp"]
+    if dig["mode"] == "all" or dig["mode"][:5] == "dense":
+        names = ["pressure", "sgas", "xco2", "xh20", "gden", "wden", "tco2"]
+        if dig["case"] != "spe11a":
+            names += ["temp"]
+        for i, rst in enumerate(dil["rstno"]):
+            print(f"Processing dense data {i+1} out of {dil['nrstno']}")
+            t_n = rst + dig["no_skip_rst"]
+            dil = generate_arrays(dig, dil, names, t_n)
+            dil = map_to_report_grid(dig, dil, names)
+            write_dense_data(dig, dil, i)
+    if dig["mode"] in ["all", "performance-spatial", "dense_performance-spatial"]:
+        handle_performance_spatial(dig, dil)
+
+
+def handle_performance_spatial(dig, dil):
+    """Create the performance spatial maps"""
+    dil = static_map_to_report_grid_performance_spatial(dig, dil)
+    names = ["co2mn", "h2omn", "co2mb", "h2omb"]
     for i, rst in enumerate(dil["rstno"]):
-        print(f"Processing dense data {i+1} out of {dil['nrstno']}")
+        print(f"Processing performance spatial {i+1} out of {dil['nrstno']}")
+        for name in names:
+            dil[f"{name}_array"] = np.zeros(dig["nocellst"])
         t_n = rst + dig["no_skip_rst"]
-        dil = generate_arrays(dig, dil, names, t_n)
-        dil = map_to_report_grid(dig, dil, names)
-        write_dense_data(dig, dil, i)
+        if t_n > 0:
+            # RESIDUAL not included in the SOLUTION deck section (substract 1)
+            dil = generate_arrays_performance_spatial(dig, dil, t_n - 1)
+        dil = map_to_report_grid_performance_spatial(
+            dig, dil, names, dil["latest_dts"][i]
+        )
+        write_dense_data_performance_spatial(dig, dil, i)
+
+
+def static_map_to_report_grid_performance_spatial(dig, dil):
+    """Map the no dynamic quantities to the reporting grid"""
+    dil["latest_dts"], infotimes, tsteps = [], [], []
+    with open(
+        f"{dig['path']}/flow/{dig['path'].upper()}.INFOSTEP", "r", encoding="utf8"
+    ) as file:
+        for j, row in enumerate(csv.reader(file)):
+            if j > 0:
+                infotimes.append(86400.0 * float((row[0].strip()).split()[0]))
+                tsteps.append(86400.0 * float((row[0].strip()).split()[1]))
+    for time in dig["dense_t"][:-1]:
+        ind = infotimes.index(time + dig["time_initial"])
+        if ind > 0:
+            dil["latest_dts"].append(tsteps[ind - 1])
+        else:
+            dil["latest_dts"].append(0.0)
+    dil["latest_dts"].append(tsteps[-1])
+    for name in ["cvol", "arat"]:
+        dil[f"{name}_array"] = np.zeros(dig["nocellst"])
+        dil[f"{name}_refg"] = np.empty(dig["nocellsr"]) * np.nan
+    if dig["use"] == "opm":
+        dil["cvol_array"][dig["actind"]] = np.divide(
+            dig["porva"], np.array(dig["init"]["PORO"])
+        )
+        dil["arat_array"][dig["actind"]] = np.divide(
+            np.array(dig["init"]["DZ"]), np.array(dig["init"]["DX"])
+        )
+    else:
+        dil["cvol_array"][dig["actind"]] = np.divide(
+            dig["porva"], np.array(dig["init"].iget_kw("PORO")[0])
+        )
+        dil["arat_array"][dig["actind"]] = np.divide(
+            np.array(dig["init"].iget_kw("DZ")[0]),
+            np.array(dig["init"].iget_kw("DX")[0]),
+        )
+    for i in np.unique(dil["cell_ind"]):
+        inds = i == dil["cell_ind"]
+        p_v = np.sum(dig["porv"][inds])
+        if p_v > 0:
+            dil["cvol_refg"][i] = np.mean(dil["cvol_array"][inds])
+            dil["arat_refg"][i] = np.mean(dil["arat_array"][inds])
+    return dil
+
+
+def generate_arrays_performance_spatial(dig, dil, t_n):
+    """Numpy arrays for the performance spatial data"""
+    if dig["use"] == "opm":
+        dil["co2mb_array"][dig["actind"]] = np.array(dig["unrst"]["RES_GAS", t_n + 1])
+        if dig["unrst"].count("RES_WAT", t_n + 1):
+            dil["h2omb_array"][dig["actind"]] = np.array(
+                dig["unrst"]["RES_WAT", t_n + 1]
+            )
+        else:
+            dil["h2omb_array"][dig["actind"]] = np.array(
+                dig["unrst"]["RES_OIL", t_n + 1]
+            )
+    else:
+        dil["co2mb_array"][dig["actind"]] = np.array(dig["unrst"]["RES_GAS"][t_n])
+        if dig["unrst"].has_kw("RES_WAT"):
+            dil["h2omb_array"][dig["actind"]] = np.array(dig["unrst"]["RES_WAT"][t_n])
+        else:
+            dil["h2omb_array"][dig["actind"]] = np.array(dig["unrst"]["RES_OIL"][t_n])
+    dil["co2mn_array"][dig["actind"]] = np.divide(
+        np.abs(dil["co2mb_array"][dig["actind"]]), dig["porva"]
+    )
+    dil["h2omn_array"][dig["actind"]] = np.divide(
+        np.abs(dil["h2omb_array"][dig["actind"]]), dig["porva"]
+    )
+    return dil
+
+
+def map_to_report_grid_performance_spatial(dig, dil, names, d_t):
+    """Map the simulation grid to the reporting grid"""
+    for name in names:
+        dil[f"{name}_refg"] = np.empty(dig["nocellsr"]) * np.nan
+    for i in np.unique(dil["cell_ind"]):
+        inds = i == dil["cell_ind"]
+        p_v = np.sum(dig["porv"][inds])
+        if p_v > 0:
+            dil["co2mn_refg"][i] = d_t * np.max(dil["co2mn_array"][inds])
+            dil["h2omn_refg"][i] = d_t * np.max(dil["h2omn_array"][inds])
+            dil["co2mb_refg"][i] = d_t * np.sum(dil["co2mb_array"][inds]) / p_v
+            dil["h2omb_refg"][i] = d_t * np.sum(dil["h2omb_array"][inds]) / p_v
+    return dil
+
+
+def write_dense_data_performance_spatial(dig, dil, i):
+    """Generate the cvs"""
+    if dig["case"] == "spe11a":
+        name_t = f"{round(dig['dense_t'][i]/3600)}h"
+    else:
+        name_t = f"{round(dig['dense_t'][i]/SECONDS_IN_YEAR)}y"
+    if dig["case"] != "spe11c":
+        text = [
+            "# x [m], z [m], cvol [m^3], arat [-], CO2 max_norm_res [-], "
+            + "H2O max_norm_res [-], CO2 mb_error [-], H2O mb_error [-], "
+            + "post_est [-]"
+        ]
+    else:
+        text = [
+            "# x [m], y [m], z [m], cvol [m^3], arat [-], CO2 max_norm_res [-], "
+            + "H2O max_norm_res [-], CO2 mb_error [-], H2O mb_error [-], "
+            + "post_est [-]"
+        ]
+    idz = 0
+    for zcord in dil["refzcent"]:
+        idxy = 0
+        for ycord in dil["refycent"]:
+            for xcord in dil["refxcent"]:
+                idc = (
+                    dig["nxyz"][0] * dig["nxyz"][1] * (dig["nxyz"][2] - idz - 1) + idxy
+                )
+                if dig["case"] != "spe11c":
+                    text.append(
+                        f"{xcord:.3e}, {zcord:.3e}, "
+                        + f"{dil['cvol_refg'][idc] :.3e}, {dil['arat_refg'][idc] :.3e}, "
+                        + f"{dil['co2mn_refg'][idc] :.3e}, {dil['h2omn_refg'][idc] :.3e}, "
+                        + f"{dil['co2mb_refg'][idc] :.3e}, {dil['h2omb_refg'][idc] :.3e}, "
+                        + f"{np.nan}"
+                    )
+                else:
+                    text.append(
+                        f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, "
+                        + f"{dil['cvol_refg'][idc] :.3e}, {dil['arrat_refg'][idc] :.3e}, "
+                        + f"{dil['co2mn_refg'][idc] :.3e}, {dil['h2omn_refg'][idc] :.3e}, "
+                        + f"{dil['co2mb_refg'][idc] :.3e}, {dil['h2omb_refg'][idc] :.3e}, "
+                        + f"{np.nan}"
+                    )
+                idxy += 1
+        idz += 1
+    with open(
+        f"{dig['where']}/{dig['case']}_performance_spatial_map_{name_t}.csv",
+        "w",
+        encoding="utf8",
+    ) as file:
+        file.write("\n".join(text))
 
 
 def generate_arrays(dig, dil, names, t_n):

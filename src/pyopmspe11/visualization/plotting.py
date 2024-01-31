@@ -57,8 +57,9 @@ def main():
         "-g",
         "--generate",
         default="sparse",
-        help="Plot only the 'dense', 'sparse', 'performance', 'dense_performance', "
-        "'performance_sparse', 'dense_sparse', or 'all'",
+        help="Plot only the 'dense', 'sparse', 'performance', 'performance-spatial', "
+        "'dense_performance', 'dense_sparse', 'performance_sparse', "
+        "'dense_performance-spatial', or 'all'",
     )
     cmdargs = vars(parser.parse_known_args()[0])
     dic = {"folders": [cmdargs["folder"].strip()]}
@@ -138,7 +139,14 @@ def plot_results(dic):
     if dic["compare"]:
         return
     plt.rcParams.update({"axes.grid": False})
-    if dic["generate"] in ["all", "dense", "dense_performance", "dense_sparse"]:
+    if dic["generate"] in [
+        "all",
+        "dense",
+        "performance-spatial",
+        "dense_performance",
+        "dense_sparse",
+        "dense_performance-spatial",
+    ]:
         dense_data(dic)
 
 
@@ -257,21 +265,19 @@ def sparse_data(dic):
     )
 
 
-def dense_data(dic):
-    """2D spatial maps"""
-    dic["quantities"] = ["pressure", "sgas", "xco2", "xh20", "gden", "wden", "tco2"]
-    dic["units"] = ["[Pa]", "[-]", "[-]", "[-]", r"[kg/m$^3$]", r"[kg/m$^3$]", "[kg]"]
-    if dic["case"] != "spe11a":
-        dic["quantities"] += ["temp"]
-        dic["units"] += ["C"]
+def generate_grid(dic):
+    """Create the grid and load the times"""
     dic["files"] = [
         f
         for f in os.listdir(f"{dic['exe']}/{dic['folders'][0]}/data")
         if f.endswith(f"{dic['tlabel']}.csv")
     ]
-    dic["times"] = np.array([int(file[19:-5]) for file in dic["files"]])
+    dic["times"] = np.array(
+        [int(file[19:-5]) for file in dic["files"] if len(file) < 30]
+    )
+    if dic["times"].size == 0:
+        dic["times"] = np.array([int(file[31:-5]) for file in dic["files"]])
     dic["sort_ind"] = np.argsort(dic["times"])
-    dic["files"] = [dic["files"][i] for i in dic["sort_ind"]]
     dic["times"] = [dic["times"][i] for i in dic["sort_ind"]]
     csv = np.genfromtxt(
         f"{dic['exe']}/{dic['folders'][0]}/data/{dic['files'][0]}",
@@ -291,89 +297,146 @@ def dense_data(dic):
         0, dic["height"], round(dic["height"] / (2.0 * csv[0][dic["dims"] - 1])) + 1
     )
     dic["xmsh"], dic["zmsh"] = np.meshgrid(dic["xmx"], dic["zmz"][::-1])
-    for k, quantity in enumerate(dic["quantities"]):
-        if dic["case"] != "spe11a":
-            dic["fig"] = plt.figure(figsize=(50, 3 * len(dic["times"])))
+    if dic["generate"] in ["all", "dense_performance-spatial"]:
+        dic["kinds"] = ["", "_performance"]
+    elif dic["generate"][:5] == "dense":
+        dic["kinds"] = [""]
+    else:
+        dic["kinds"] = ["_performance"]
+    dic["cmaps"] = [
+        "seismic",
+        "jet",
+        "viridis",
+        "viridis_r",
+        "PuOr",
+        "PuOr_r",
+        "turbo",
+        "coolwarm",
+    ]
+    return dic
+
+
+def dense_data(dic):
+    """2D spatial maps"""
+    dic = generate_grid(dic)
+    for kind in dic["kinds"]:
+        if kind == "":
+            dic["quantities"] = [
+                "pressure",
+                "sgas",
+                "xco2",
+                "xh20",
+                "gden",
+                "wden",
+                "tco2",
+            ]
+            dic["units"] = [
+                "[Pa]",
+                "[-]",
+                "[-]",
+                "[-]",
+                r"[kg/m$^3$]",
+                r"[kg/m$^3$]",
+                "[kg]",
+            ]
+            if dic["case"] != "spe11a":
+                dic["quantities"] += ["temp"]
+                dic["units"] += ["C"]
         else:
-            dic["fig"] = plt.figure(figsize=(45, 6.5 * len(dic["times"])))
-        dic["plot"] = []
-        csv = np.genfromtxt(
-            f"{dic['exe']}/{dic['folders'][0]}/data/{dic['files'][0]}",
-            delimiter=",",
-            skip_header=1,
-        )
-        quan = np.array([csv[i][dic["dims"] + k] for i in range(csv.shape[0])])
-        dic["minc"], dic["maxc"] = (
-            quan[~np.isnan(quan)].min(),
-            quan[~np.isnan(quan)].max(),
-        )
-        for tmap in dic["times"]:
+            dic["quantities"] = [
+                "cvol",
+                "arat",
+                "CO2 max_norm_res",
+                "H2O max_norm_res",
+                "CO2 mb_error",
+                "H2O mb_error",
+            ]
+            dic["units"] = [r"[m$^3$]", "[-]", "[-]", "[-]", "[-]", "[-]"]
+        for k, quantity in enumerate(dic["quantities"]):
+            if dic["case"] != "spe11a":
+                dic["fig"] = plt.figure(figsize=(50, 3 * len(dic["times"])))
+            else:
+                dic["fig"] = plt.figure(figsize=(45, 6.5 * len(dic["times"])))
+            dic["plot"] = []
             csv = np.genfromtxt(
-                f"{dic['exe']}/{dic['folders'][0]}/data/{dic['case']}_spatial_map_"
-                + f"{tmap}{dic['tlabel']}.csv",
+                f"{dic['exe']}/{dic['folders'][0]}/data/{dic['case']}{kind}_spatial_map_"
+                + f"0{dic['tlabel']}.csv",
                 delimiter=",",
                 skip_header=1,
             )
             quan = np.array([csv[i][dic["dims"] + k] for i in range(csv.shape[0])])
-            dic["minc"] = min(dic["minc"], quan[quan >= 0].min())
-            dic["maxc"] = max(dic["maxc"], quan[quan >= 0].max())
-            dic["plot"].append(np.zeros([len(dic["zmz"]) - 1, len(dic["xmx"]) - 1]))
-            for i in np.arange(0, len(dic["zmz"]) - 1):
-                if dic["case"] != "spe11c":
-                    dic["plot"][-1][-1 - i, :] = quan[
-                        i * (len(dic["xmx"]) - 1) : (i + 1) * (len(dic["xmx"]) - 1)
-                    ]
-                else:
-                    dic["plot"][-1][-1 - i, :] = quan[
-                        (i * (len(dic["ymy"]) - 1) * (len(dic["xmx"]) - 1))
-                        + mt.floor((len(dic["ymy"]) - 1) / 2)
-                        * (len(dic["xmx"]) - 1) : (
-                            (len(dic["xmx"]) - 1)
-                            + i * (len(dic["ymy"]) - 1) * (len(dic["xmx"]) - 1)
+            dic["minc"], dic["maxc"] = (
+                quan[~np.isnan(quan)].min(),
+                quan[~np.isnan(quan)].max(),
+            )
+            for tmap in dic["times"]:
+                csv = np.genfromtxt(
+                    f"{dic['exe']}/{dic['folders'][0]}/data/{dic['case']}{kind}_spatial_map_"
+                    + f"{tmap}{dic['tlabel']}.csv",
+                    delimiter=",",
+                    skip_header=1,
+                )
+                quan = np.array([csv[i][dic["dims"] + k] for i in range(csv.shape[0])])
+                dic["minc"] = min(dic["minc"], quan[quan >= 0].min())
+                dic["maxc"] = max(dic["maxc"], quan[quan >= 0].max())
+                dic["plot"].append(np.zeros([len(dic["zmz"]) - 1, len(dic["xmx"]) - 1]))
+                for i in np.arange(0, len(dic["zmz"]) - 1):
+                    if dic["case"] != "spe11c":
+                        dic["plot"][-1][-1 - i, :] = quan[
+                            i * (len(dic["xmx"]) - 1) : (i + 1) * (len(dic["xmx"]) - 1)
+                        ]
+                    else:
+                        dic["plot"][-1][-1 - i, :] = quan[
+                            (i * (len(dic["ymy"]) - 1) * (len(dic["xmx"]) - 1))
                             + mt.floor((len(dic["ymy"]) - 1) / 2)
-                            * (len(dic["xmx"]) - 1)
-                        )
-                    ]
-        for j, time in enumerate(dic["times"]):
-            print(f"Plotting {quantity}, time {j+1} out of {len(dic['times'])}")
-            axis = dic["fig"].add_subplot(len(dic["times"]), 3, j + 1)
-            imag = axis.pcolormesh(
-                dic["xmsh"],
-                dic["zmsh"],
-                dic["plot"][j],
-                shading="flat",
-                cmap="jet",
+                            * (len(dic["xmx"]) - 1) : (
+                                (len(dic["xmx"]) - 1)
+                                + i * (len(dic["ymy"]) - 1) * (len(dic["xmx"]) - 1)
+                                + mt.floor((len(dic["ymy"]) - 1) / 2)
+                                * (len(dic["xmx"]) - 1)
+                            )
+                        ]
+            for j, time in enumerate(dic["times"]):
+                print(f"Plotting {quantity}, time {j+1} out of {len(dic['times'])}")
+                axis = dic["fig"].add_subplot(len(dic["times"]), 3, j + 1)
+                imag = axis.pcolormesh(
+                    dic["xmsh"],
+                    dic["zmsh"],
+                    dic["plot"][j],
+                    shading="flat",
+                    cmap=dic["cmaps"][k],
+                )
+                axis.set_title(
+                    f"{time}{dic['tlabel']}, {quantity} "
+                    + dic["units"][k]
+                    + f", {dic['case']} ({dic['folders'][0]})"
+                )
+                axis.axis("scaled")
+                axis.set_xlabel("x [m]")
+                axis.set_ylabel("z [m]")
+                divider = make_axes_locatable(axis)
+                vect = np.linspace(
+                    dic["minc"],
+                    dic["maxc"],
+                    5,
+                    endpoint=True,
+                )
+                dic["fig"].colorbar(
+                    imag,
+                    cax=divider.append_axes("right", size="5%", pad=0.05),
+                    orientation="vertical",
+                    ticks=vect,
+                    format=lambda x, _: f"{x:.2e}",
+                )
+                imag.set_clim(
+                    dic["minc"],
+                    dic["maxc"],
+                )
+            dic["fig"].savefig(
+                f"{dic['where']}/{dic['case']}_{quantity}_2Dmaps.png",
+                bbox_inches="tight",
             )
-            axis.set_title(
-                f"{time}{dic['tlabel']}, {quantity} "
-                + dic["units"][k]
-                + f", {dic['case']} ({dic['folders'][0]})"
-            )
-            axis.axis("scaled")
-            axis.set_xlabel("x [m]")
-            axis.set_ylabel("z [m]")
-            divider = make_axes_locatable(axis)
-            vect = np.linspace(
-                dic["minc"],
-                dic["maxc"],
-                5,
-                endpoint=True,
-            )
-            dic["fig"].colorbar(
-                imag,
-                cax=divider.append_axes("right", size="5%", pad=0.05),
-                orientation="vertical",
-                ticks=vect,
-                format=lambda x, _: f"{x:.2e}",
-            )
-            imag.set_clim(
-                dic["minc"],
-                dic["maxc"],
-            )
-        dic["fig"].savefig(
-            f"{dic['where']}/{dic['case']}_{quantity}_2Dmaps.png", bbox_inches="tight"
-        )
-        plt.close()
+            plt.close()
 
 
 if __name__ == "__main__":
