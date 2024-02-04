@@ -653,25 +653,14 @@ def get_centers(dig, dil):
     """Centers from the simulation grid"""
     for i in ["x", "y", "z"]:
         dil[f"sim{i}cent"] = [0.0] * dig["nocellst"]
+    with open(f"{dig['path']}/deck/centers.txt", "r", encoding="utf8") as file:
+        for j, row in enumerate(csv.reader(file)):
+            dil["simxcent"][j] = float(row[0])
+            dil["simycent"][j] = float(row[1])
+            dil["simzcent"][j] = dig["dims"][2] - float(row[2])
     if dig["use"] == "opm":
-        # opm.io.ecl.EGrid.xyz_from_ijk is returning nan values, that's why we do this
-        with open(f"{dig['path']}/deck/centers.txt", "r", encoding="utf8") as file:
-            for j, row in enumerate(csv.reader(file)):
-                dil["simxcent"][j] = float(row[0])
-                dil["simycent"][j] = float(row[1])
-                dil["simzcent"][j] = dig["dims"][2] - float(row[2])
         dil["satnum"] = list(dig["init"]["SATNUM"])
     else:
-        for cell in dig["egrid"].cells():
-            (
-                dil["simxcent"][cell.global_index],
-                dil["simycent"][cell.global_index],
-                dil["simzcent"][cell.global_index],
-            ) = (
-                cell.coordinate[0],
-                cell.coordinate[1],
-                dig["dims"][2] - cell.coordinate[2],
-            )
         dil["satnum"] = list(dig["init"].iget_kw("SATNUM")[0])
     return dil
 
@@ -696,7 +685,7 @@ def dense_data(dig):
                 dil["refzgrid"][ind] = k
                 ind += 1
     ind, dil["cell_ind"] = 0, np.zeros(dig["nocellst"], dtype=int)
-    for i, j, k in zip(dil["simxcent"], dil["simycent"], np.flip(dil["simzcent"])):
+    for i, j, k in zip(dil["simxcent"], dil["simycent"], dil["simzcent"]):
         dil["cell_ind"][ind] = pd.Series(
             (dil["refxgrid"] - i) ** 2
             + (dil["refygrid"] - j) ** 2
@@ -747,8 +736,9 @@ def static_map_to_report_grid_performance_spatial(dig, dil):
             if j > 0:
                 infotimes.append(86400.0 * float((row[0].strip()).split()[0]))
                 tsteps.append(86400.0 * float((row[0].strip()).split()[1]))
+    infotimes = np.array(infotimes)
     for time in dig["dense_t"][:-1]:
-        ind = infotimes.index(time + dig["time_initial"])
+        ind = pd.Series(np.abs(infotimes - (time + dig["time_initial"]))).argmin()
         if ind > 0:
             dil["latest_dts"].append(tsteps[ind - 1])
         else:
@@ -846,9 +836,7 @@ def write_dense_data_performance_spatial(dig, dil, i):
         idxy = 0
         for ycord in dil["refycent"]:
             for xcord in dil["refxcent"]:
-                idc = (
-                    dig["nxyz"][0] * dig["nxyz"][1] * (dig["nxyz"][2] - idz - 1) + idxy
-                )
+                idc = -dig["nxyz"][0] * dig["nxyz"][1] * (dig["nxyz"][2] - idz) + idxy
                 if dig["case"] != "spe11c":
                     text.append(
                         f"{xcord:.3e}, {zcord:.3e}, "
@@ -860,7 +848,7 @@ def write_dense_data_performance_spatial(dig, dil, i):
                 else:
                     text.append(
                         f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, "
-                        + f"{dil['cvol_refg'][idc] :.3e}, {dil['arrat_refg'][idc] :.3e}, "
+                        + f"{dil['cvol_refg'][idc] :.3e}, {dil['arat_refg'][idc] :.3e}, "
                         + f"{dil['co2mn_refg'][idc] :.3e}, {dil['h2omn_refg'][idc] :.3e}, "
                         + f"{dil['co2mb_refg'][idc] :.3e}, {dil['h2omb_refg'][idc] :.3e}, "
                         + f"{np.nan}"
@@ -947,7 +935,7 @@ def handle_inactive_mapping(dig, dil):
             dil["refygrid"][i] = np.inf
             dil["refzgrid"][i] = np.inf
     ind, dil["cell_ind"] = 0, np.zeros(dig["nocellst"], dtype=int)
-    for i, j, k in zip(dil["simxcent"], dil["simycent"], np.flip(dil["simzcent"])):
+    for i, j, k in zip(dil["simxcent"], dil["simycent"], dil["simzcent"]):
         dil["cell_ind"][ind] = pd.Series(
             (dil["refxgrid"] - i) ** 2
             + (dil["refygrid"] - j) ** 2
@@ -1005,9 +993,7 @@ def write_dense_data(dig, dil, i):
         idxy = 0
         for ycord in dil["refycent"]:
             for xcord in dil["refxcent"]:
-                idc = (
-                    dig["nxyz"][0] * dig["nxyz"][1] * (dig["nxyz"][2] - idz - 1) + idxy
-                )
+                idc = -dig["nxyz"][0] * dig["nxyz"][1] * (dig["nxyz"][2] - idz) + idxy
                 if dig["case"] == "spe11a":
                     text.append(
                         f"{xcord:.3e}, {zcord:.3e}, {dil['pressure_refg'][idc] :.3e}, "

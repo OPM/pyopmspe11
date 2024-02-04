@@ -324,11 +324,12 @@ def corner_point_handling_spe11bc(dic):
         dic (dict): Global dictionary with new added parameters
 
     """
-    well1, well2, sensor1, sensor2, xtemp, centers = [], [], [], [], [], []
+    well1, well2, sensor1, sensor2, xtemp, ztemp, centers = [], [], [], [], [], [], []
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
     for i in range(dic["no_cells"]):
         dic = get_cell_info(dic, i)
         xtemp.append(dic["xyz"][0])
+        ztemp.append(dic["xyz"][2])
         fgl = pd.Series(
             ((dic["cxc1"] - dic["xyz"][0]) ** 2 + (dic["czc1"] - dic["xyz"][2]) ** 2)
         ).argmin()
@@ -371,7 +372,7 @@ def corner_point_handling_spe11bc(dic):
                 for names in ["satnum", "poro", "permx", "thconr"]:
                     dic[f"{names}"].extend(dic[f"{names}"][-dic["noCells"][0] :])
                 for i_i in range(dic["noCells"][0]):
-                    z_c = dic["xyz"][2]
+                    z_c = ztemp[i_i]
                     if dic["spe11"] == "spe11c":
                         z_c -= map_z(dic, j + 1)
                     dic = boxes(
@@ -384,7 +385,7 @@ def corner_point_handling_spe11bc(dic):
                     centers.append(
                         str([xtemp[i_i], dic["ymy_center"][j + 1], z_c])[1:-1]
                     )
-            xtemp = []
+            xtemp, ztemp = [], []
     dic["pop1"] = pd.Series(sensor1).argmin()
     dic["pop2"] = pd.Series(sensor2).argmin()
     dic["well1"] = pd.Series(well1).argmin()
@@ -429,10 +430,23 @@ def locate_wells_sensors(dic):
         dic["wellijk"][1][1] = wji
         dic["wellijkf"][0][1] = wjf
         dic["wellijkf"][1][1] = wjf
-        dic["wellkh"] = [
-            dic["wellijk"][0][2]
-            for _ in range(dic["wellijk"][0][1], dic["wellijkf"][0][1] + 1)
-        ]
+        dic["wellkh"] = []
+        z_centers = []
+        for k in range(dic["noCells"][2]):
+            dic = get_cell_info(dic, well1ijk[0] + k * dic["noCells"][0])
+            z_centers.append(dic["xyz"][2])
+        for j in range(dic["wellijk"][0][1], dic["wellijkf"][0][1] + 1):
+            midpoints = z_centers - map_z(dic, j - 1)
+            dic["wellkh"].append(
+                pd.Series(
+                    abs(
+                        dic["wellCoord"][0][2]
+                        - map_z(dic, dic["wellijk"][0][1] - 1)
+                        - midpoints
+                    )
+                ).argmin()
+                + 1
+            )
     dic["fipnum"][
         dic["sensorijk"][0][0]
         + dic["sensorijk"][0][1] * dic["noCells"][0]
@@ -591,7 +605,7 @@ def wells(dic):
                 )
             if j == 0:
                 well_coord = dic["wellCoord"][j][2]
-                midpoints = dic["zmz_center"] - map_z(dic, dic["wellijk"][j][1])
+                midpoints = dic["zmz_center"] - map_z(dic, dic["wellijk"][j][1] - 1)
                 dic["wellijk"][j].append(
                     pd.Series(abs(well_coord - midpoints)).argmin() + 1
                 )
@@ -604,12 +618,12 @@ def wells(dic):
     if dic["spe11"] == "spe11c":
         dic["wellkh"] = []
         for j in range(dic["wellijk"][0][1], dic["wellijkf"][0][1] + 1):
-            midpoints = dic["zmz_center"] - map_z(dic, j)
+            midpoints = dic["zmz_center"] - map_z(dic, j - 1)
             dic["wellkh"].append(
                 pd.Series(
                     abs(
                         dic["wellCoord"][0][2]
-                        - map_z(dic, dic["wellijk"][0][1])
+                        - map_z(dic, dic["wellijk"][0][1] - 1)
                         - midpoints
                     )
                 ).argmin()
@@ -633,8 +647,8 @@ def map_z(dic, j):
     z_pos = (
         -dic["elevation"]
         + dic["elevation"]
-        * (1.0 - (dic["ymy_center"][j - 1] / (0.5 * dic["dims"][1]) - 1) ** 2.0)
-        - dic["ymy_center"][j - 1] * dic["backElevation"] / dic["dims"][1]
+        * (1.0 - (dic["ymy_center"][j] / (0.5 * dic["dims"][1]) - 1) ** 2.0)
+        - dic["ymy_center"][j] * dic["backElevation"] / dic["dims"][1]
     )
     return z_pos
 
