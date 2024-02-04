@@ -316,48 +316,61 @@ def generate_grid(dic):
     return dic
 
 
+def handle_kind(dic, kind):
+    """Identify between dense and performance-spatial"""
+    if kind == "":
+        dic["quantities"] = [
+            "pressure",
+            "sgas",
+            "xco2",
+            "xh20",
+            "gden",
+            "wden",
+            "tco2",
+        ]
+        dic["units"] = [
+            "[Pa]",
+            "[-]",
+            "[-]",
+            "[-]",
+            r"[kg/m$^3$]",
+            r"[kg/m$^3$]",
+            "[kg]",
+        ]
+        if dic["case"] != "spe11a":
+            dic["quantities"] += ["temp"]
+            dic["units"] += ["C"]
+    else:
+        dic["quantities"] = [
+            "cvol",
+            "arat",
+            "CO2 max_norm_res",
+            "H2O max_norm_res",
+            "CO2 mb_error",
+            "H2O mb_error",
+        ]
+        dic["units"] = [r"[m$^3$]", "[-]", "[-]", "[-]", "[-]", "[-]"]
+    return dic
+
+
+def ini_quantity_plot(dic):
+    """Initialize the figure"""
+    if dic["case"] != "spe11a":
+        dic["fig"] = plt.figure(figsize=(50, 3 * len(dic["times"])))
+    else:
+        dic["fig"] = plt.figure(figsize=(45, 6.5 * len(dic["times"])))
+    for name in ["plot", "min", "max", "sum"]:
+        dic[f"{name}"] = []
+    return dic
+
+
 def dense_data(dic):
     """2D spatial maps"""
     dic = generate_grid(dic)
     for kind in dic["kinds"]:
-        if kind == "":
-            dic["quantities"] = [
-                "pressure",
-                "sgas",
-                "xco2",
-                "xh20",
-                "gden",
-                "wden",
-                "tco2",
-            ]
-            dic["units"] = [
-                "[Pa]",
-                "[-]",
-                "[-]",
-                "[-]",
-                r"[kg/m$^3$]",
-                r"[kg/m$^3$]",
-                "[kg]",
-            ]
-            if dic["case"] != "spe11a":
-                dic["quantities"] += ["temp"]
-                dic["units"] += ["C"]
-        else:
-            dic["quantities"] = [
-                "cvol",
-                "arat",
-                "CO2 max_norm_res",
-                "H2O max_norm_res",
-                "CO2 mb_error",
-                "H2O mb_error",
-            ]
-            dic["units"] = [r"[m$^3$]", "[-]", "[-]", "[-]", "[-]", "[-]"]
+        dic = handle_kind(dic, kind)
         for k, quantity in enumerate(dic["quantities"]):
-            if dic["case"] != "spe11a":
-                dic["fig"] = plt.figure(figsize=(50, 3 * len(dic["times"])))
-            else:
-                dic["fig"] = plt.figure(figsize=(45, 6.5 * len(dic["times"])))
-            dic["plot"] = []
+            dic = ini_quantity_plot(dic)
             csv = np.genfromtxt(
                 f"{dic['exe']}/{dic['folders'][0]}/data/{dic['case']}{kind}_spatial_map_"
                 + f"0{dic['tlabel']}.csv",
@@ -377,8 +390,12 @@ def dense_data(dic):
                     skip_header=1,
                 )
                 quan = np.array([csv[i][dic["dims"] + k] for i in range(csv.shape[0])])
-                dic["minc"] = min(dic["minc"], quan[quan >= 0].min())
-                dic["maxc"] = max(dic["maxc"], quan[quan >= 0].max())
+                dic["min"].append(quan[quan >= 0].min())
+                dic["max"].append(quan[quan >= 0].max())
+                if quantity == "tco2":
+                    dic["sum"].append(quan[quan >= 0].sum())
+                dic["minc"] = min(dic["minc"], dic["min"][-1])
+                dic["maxc"] = max(dic["maxc"], dic["max"][-1])
                 dic["plot"].append(np.zeros([len(dic["zmz"]) - 1, len(dic["xmx"]) - 1]))
                 for i in np.arange(0, len(dic["zmz"]) - 1):
                     if dic["case"] != "spe11c":
@@ -406,11 +423,20 @@ def dense_data(dic):
                     shading="flat",
                     cmap=dic["cmaps"][k],
                 )
-                axis.set_title(
-                    f"{time}{dic['tlabel']}, {quantity} "
-                    + dic["units"][k]
-                    + f", {dic['case']} ({dic['folders'][0]})"
-                )
+                if quantity == "tco2":
+                    axis.set_title(
+                        f"{time}{dic['tlabel']}, {quantity} "
+                        + dic["units"][k]
+                        + f"(sum={dic['sum'][j]:.1E})"
+                        + f", {dic['case']} ({dic['folders'][0]})"
+                    )
+                else:
+                    axis.set_title(
+                        f"{time}{dic['tlabel']}, {quantity} "
+                        + dic["units"][k]
+                        + f"(min={dic['min'][j]:.1E}, max={dic['max'][j]:.1E})"
+                        + f", {dic['case']} ({dic['folders'][0]})"
+                    )
                 axis.axis("scaled")
                 axis.set_xlabel("x [m]")
                 axis.set_ylabel("z [m]")
