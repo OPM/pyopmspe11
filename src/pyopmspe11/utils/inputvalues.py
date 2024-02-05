@@ -6,6 +6,7 @@ Utiliy functions to set the requiried input values by pyopmspe11.
 """
 
 import csv
+import sys
 from io import StringIO
 from subprocess import PIPE, Popen
 import numpy as np
@@ -104,7 +105,14 @@ def readthefirstpart(lol, dic):
     row = list((lol[13][0].strip()).split())
     # Diffusion (in liquid and gas) [m^2/s] to [m^2/day]
     dic["diffusion"] = [float(row[0]) * 86400, float(row[1]) * 86400]
-    dic["dispersion"] = float(row[2])  # Dispersion [m]
+    if len(row) > 2:
+        print(
+            "Dispersion is now set per facie (Lines 37 to 43 in the configuration "
+            + "file), not anymore in Line 14, e.g., see https://github.com/OPM/pyopm"
+            + "spe11/blob/main/examples/finner_grids/spe11b.txt. Please update the "
+            + "configuration file and try again to run pyopmspe11."
+        )
+        sys.exit()
     row = list((lol[14][0].strip()).split())
     # Rock specific heat and density (for spe11b/c)
     dic["rockExtra"] = [float(row[0]), float(row[1])]
@@ -142,7 +150,7 @@ def readthesecondpart(lol, dic):
         lol[dic["index"] + 3][0]
     )  # Capillary pressure saturation function [Pa]
     dic["index"] += 7
-    for name in ["rock", "safu", "rockCond"]:
+    for name in ["rock", "safu", "dispersion", "rockCond"]:
         dic[name] = []
     dic["tabdims"] = 1
     for i in range(dic["noSands"]):  # Saturation function values
@@ -166,13 +174,13 @@ def readthesecondpart(lol, dic):
                 row[3],
             ]
         )
+        dic["dispersion"].append(float(row[5]))
         if dic["spe11"] != "spe11a":
             dic["rockCond"].append(
                 [
-                    float(row[5]) * 86400.0 / 1e3,
+                    float(row[7]) * 86400.0 / 1e3,
                 ]
             )
-
     dic["index"] += 3 + dic["noSands"]
     column = []
     columnf = []
@@ -233,7 +241,7 @@ def check_deck(dic):
                 + "deck.\nEither select the co2store gasoil implementation or build "
                 + "flow from the master GitHub branches.\n"
             )
-        if dic["dispersion"] > 0:
+        if sum(dic["dispersion"]) > 0:
             print(
                 "\nDispersion is not supported in flow 2023.10.\nThen dispersion is "
                 + "not included in the generated deck.\nBuild flow from the master "

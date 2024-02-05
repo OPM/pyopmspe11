@@ -104,9 +104,9 @@ BCCON
 /
 % endif
 
-% if dic["version"] == "master" and dic["dispersion"] > 0 and dic["flow_version"] != "2023.10":
-DISPERC 
-${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*${dic["dispersion"]} /
+% if dic["version"] == "master" and sum(dic["dispersion"]) > 0 and dic["flow_version"] != "2023.10":
+INCLUDE
+'DISPERC.INC' /
 % endif
 ----------------------------------------------------------------------------
 PROPS
@@ -117,10 +117,10 @@ INCLUDE
 % if dic['model'] == 'complete':
 % if dic["co2store"] == "gaswater":
 % if dic["flow_version"] != "2023.10" and (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
-DIFFCWAT
+DIFFAWAT
 ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
 
-DIFFCGAS
+DIFFAGAS
 ${dic["diffusion"][1]} ${dic["diffusion"][1]} /
 % endif
 % else:

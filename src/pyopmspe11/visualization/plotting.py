@@ -337,9 +337,11 @@ def handle_kind(dic, kind):
             r"[kg/m$^3$]",
             "[kg]",
         ]
+        dic["allplots"] = [-1, -1, -1, -1, -1, -1, -1]
         if dic["case"] != "spe11a":
             dic["quantities"] += ["temp"]
             dic["units"] += ["C"]
+            dic["allplots"] += [-1]
     else:
         dic["quantities"] = [
             "cvol",
@@ -350,15 +352,16 @@ def handle_kind(dic, kind):
             "H2O mb_error",
         ]
         dic["units"] = [r"[m$^3$]", "[-]", "[-]", "[-]", "[-]", "[-]"]
+        dic["allplots"] = [0, 0, -1, -1, -1, -1]
     return dic
 
 
 def ini_quantity_plot(dic):
     """Initialize the figure"""
     if dic["case"] != "spe11a":
-        dic["fig"] = plt.figure(figsize=(50, 3 * len(dic["times"])))
+        dic["fig"] = plt.figure(figsize=(50, 3 * len(dic["ptimes"])))
     else:
-        dic["fig"] = plt.figure(figsize=(45, 6.5 * len(dic["times"])))
+        dic["fig"] = plt.figure(figsize=(45, 6.5 * len(dic["ptimes"])), dpi=80)
     for name in ["plot", "min", "max", "sum"]:
         dic[f"{name}"] = []
     return dic
@@ -370,6 +373,7 @@ def dense_data(dic):
     for kind in dic["kinds"]:
         dic = handle_kind(dic, kind)
         for k, quantity in enumerate(dic["quantities"]):
+            dic["ptimes"] = dic["times"][: dic["allplots"][k]] + [dic["times"][-1]]
             dic = ini_quantity_plot(dic)
             csv = np.genfromtxt(
                 f"{dic['exe']}/{dic['folders'][0]}/data/{dic['case']}{kind}_spatial_map_"
@@ -382,7 +386,7 @@ def dense_data(dic):
                 quan[~np.isnan(quan)].min(),
                 quan[~np.isnan(quan)].max(),
             )
-            for tmap in dic["times"]:
+            for tmap in dic["ptimes"]:
                 csv = np.genfromtxt(
                     f"{dic['exe']}/{dic['folders'][0]}/data/{dic['case']}{kind}_spatial_map_"
                     + f"{tmap}{dic['tlabel']}.csv",
@@ -413,9 +417,9 @@ def dense_data(dic):
                                 * (len(dic["xmx"]) - 1)
                             )
                         ]
-            for j, time in enumerate(dic["times"]):
+            for j, time in enumerate(dic["ptimes"]):
                 print(f"Plotting {quantity}, time {j+1} out of {len(dic['times'])}")
-                axis = dic["fig"].add_subplot(len(dic["times"]), 3, j + 1)
+                axis = dic["fig"].add_subplot(len(dic["ptimes"]), 3, j + 1)
                 imag = axis.pcolormesh(
                     dic["xmsh"],
                     dic["zmsh"],
@@ -431,8 +435,13 @@ def dense_data(dic):
                         + f", {dic['case']} ({dic['folders'][0]})"
                     )
                 else:
+                    if dic["allplots"][k] == -1:
+                        timet = f"{time}{dic['tlabel']}, "
+                    else:
+                        timet = ""
                     axis.set_title(
-                        f"{time}{dic['tlabel']}, {quantity} "
+                        timet
+                        + f"{quantity} "
                         + dic["units"][k]
                         + f"(min={dic['min'][j]:.1E}, max={dic['max'][j]:.1E})"
                         + f", {dic['case']} ({dic['folders'][0]})"
