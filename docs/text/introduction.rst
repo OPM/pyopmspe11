@@ -15,7 +15,7 @@ via a :doc:`configuration file <./configuration_file>`:
 - Set the path to the OPM Flow simulator and simulator flags.
 - Set the grid type (cartesian, tensor, or corner-point grid) and the number of cells.
 - Set the rock and fluid properties.
-- Set the well locations and injection schedule.
+- Set the well or sources locations and injection schedule.
 - After execution. generates the data in the same format as requested in the benchmark.
 - In addition, generates .png figures for quick inspection.
 - Also, generates figures for comparison between runs (i.e., to assess sensitivities).  
@@ -33,12 +33,11 @@ where
 
 - \-i, \-\-input: The base name of the :doc:`configuration file <./configuration_file>` ('input.txt' by default).
 - \-o, \-\-output: The base name of the :doc:`output folder <./output_folder>` ('output' by default).
-- \-m, \-\-mode: Run the whole framework ('all'), only create decks ('deck'), only run flow ('flow'), only write benchmark data ('data'), only create plots ('plot'), deck and run ('deck_flow'), data and plot ('data_plot'), or deck, run, and data (deck_flow_data) ('deck_flow' by default).
-- \-g, \-\-generate: Write only the 'dense', 'sparse', 'performance', 'dense_performance', 'performance_sparse', 'dense_sparse', or 'all' ('performance_sparse' by default).
-- \-r, \-\-resolution: Number of x, y, and z elements to write the data ('100,1,50' by default).
-- \-t, \-\-time: Time interval for the spatial maps (spe11a [h]; spe11b/c [y]) ('24' by default).
+- \-m, \-\-mode: Run the whole framework ('all'), only create decks ('deck'), only run flow ('flow'), only write benchmark data ('data'), only create plots ('plot'), deck and run ('deck_flow'), data and plot ('data_plot'), run and data ('flow_data'), or deck, run, and data ('deck_flow_data') ('deck_flow' by default).
+- \-g, \-\-generate: Write only the 'dense', 'sparse', 'performance', 'performance-spatial', 'dense_performance', 'dense_sparse', 'performance_sparse', 'dense_performance-spatial', or 'all' ('performance_sparse') by default.
+- \-r, \-\-resolution: Number of x, y, and z elements to map the simulation results to the dense report data ('8,1,5' by default).
+- \-t, \-\-time: If one number, time step for the spatial maps (spe11a [h]; spe11b/c [y]) ('5' by default); otherwise, times separated by commas.
 - \-u, \-\-use: Using the 'opm' or 'resdata' python package ('resdata' by default).
-- \-l, \-\-load: Use the summary or restart for the interpolation in the sparse data ('summary' by default).
 - \-w, \-\-write: Time interval for the sparse and performance data (spe11a [h]; spe11b/c [y]) ('0.1' by default).
 - \-c, \-\-compare: Generate a common plot for the current folders for 'spe11a', 'spe11b', or 'spe11c' ('' by default).
     

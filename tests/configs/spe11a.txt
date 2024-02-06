@@ -14,7 +14,7 @@ cartesian         #Type of grid (cartesian or corner-point)
 0 0               #Diffusion (in liquid and gas) [m^2/s]
 0 0               #Rock specific heat and density (for spe11b/c)
 0 0 0             #Added pore volume on top boundary (for spe11a [if 0, free flow bc]), pore volume on lateral boundaries, and width of buffer cell [m] (for spe11b/c)
-0 0               #Elevation of the parabola [m] (for spe11c) 
+0 0               #Elevation of the parabola and back boundary [m] (for spe11c) 
 
 """Set the saturation functions"""
 (max(0, (s_w - swi) / (1 - swi))) ** 2                                                        #Wetting rel perm saturation function [-]

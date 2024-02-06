@@ -2,12 +2,12 @@
 Output folder
 =============
 
-The following screenshot shows the generated files in the selected output folder after 
+The following screenshot shows an example of generated files in the selected output folder after 
 executing **pyopmspe11**.
 
 .. figure:: figs/output.png
 
-    Generated files after executing **pyopmspe11**.
+    Generated files in the :doc:`hello world <./examples>` example.
 
 The simulation results are saved in the **flow** folder, and
 `ResInsight <https://resinsight.org>`_ can be used for the visualization.

@@ -98,7 +98,7 @@ via a <a class="reference internal" href="configuration_file.html"><span class="
 <li><p>Set the path to the OPM Flow simulator and simulator flags.</p></li>
 <li><p>Set the grid type (cartesian, tensor, or corner-point grid) and the number of cells.</p></li>
 <li><p>Set the rock and fluid properties.</p></li>
-<li><p>Set the well locations and injection schedule.</p></li>
+<li><p>Set the well or sources locations and injection schedule.</p></li>
 <li><p>After execution. generates the data in the same format as requested in the benchmark.</p></li>
 <li><p>In addition, generates .png figures for quick inspection.</p></li>
 <li><p>Also, generates figures for comparison between runs (i.e., to assess sensitivities).</p></li>
@@ -114,12 +114,11 @@ via a <a class="reference internal" href="configuration_file.html"><span class="
 <ul class="simple">
 <li><p>-i, --input: The base name of the <a class="reference internal" href="configuration_file.html"><span class="doc">configuration file</span></a> (‘input.txt’ by default).</p></li>
 <li><p>-o, --output: The base name of the <a class="reference internal" href="output_folder.html"><span class="doc">output folder</span></a> (‘output’ by default).</p></li>
-<li><p>-m, --mode: Run the whole framework (‘all’), only create decks (‘deck’), only run flow (‘flow’), only write benchmark data (‘data’), only create plots (‘plot’), deck and run (‘deck_flow’), data and plot (‘data_plot’), or deck, run, and data (deck_flow_data) (‘deck_flow’ by default).</p></li>
-<li><p>-g, --generate: Write only the ‘dense’, ‘sparse’, ‘performance’, ‘dense_performance’, ‘performance_sparse’, ‘dense_sparse’, or ‘all’ (‘performance_sparse’ by default).</p></li>
-<li><p>-r, --resolution: Number of x, y, and z elements to write the data (‘100,1,50’ by default).</p></li>
-<li><p>-t, --time: Time interval for the spatial maps (spe11a [h]; spe11b/c [y]) (‘24’ by default).</p></li>
+<li><p>-m, --mode: Run the whole framework (‘all’), only create decks (‘deck’), only run flow (‘flow’), only write benchmark data (‘data’), only create plots (‘plot’), deck and run (‘deck_flow’), data and plot (‘data_plot’), run and data (‘flow_data’), or deck, run, and data (‘deck_flow_data’) (‘deck_flow’ by default).</p></li>
+<li><p>-g, --generate: Write only the ‘dense’, ‘sparse’, ‘performance’, ‘performance-spatial’, ‘dense_performance’, ‘dense_sparse’, ‘performance_sparse’, ‘dense_performance-spatial’, or ‘all’ (‘performance_sparse’) by default.</p></li>
+<li><p>-r, --resolution: Number of x, y, and z elements to map the simulation results to the dense report data (‘8,1,5’ by default).</p></li>
+<li><p>-t, --time: If one number, time step for the spatial maps (spe11a [h]; spe11b/c [y]) (‘5’ by default); otherwise, times separated by commas.</p></li>
 <li><p>-u, --use: Using the ‘opm’ or ‘resdata’ python package (‘resdata’ by default).</p></li>
-<li><p>-l, --load: Use the summary or restart for the interpolation in the sparse data (‘summary’ by default).</p></li>
 <li><p>-w, --write: Time interval for the sparse and performance data (spe11a [h]; spe11b/c [y]) (‘0.1’ by default).</p></li>
 <li><p>-c, --compare: Generate a common plot for the current folders for ‘spe11a’, ‘spe11b’, or ‘spe11c’ (’’ by default).</p></li>
 </ul>

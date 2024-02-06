@@ -129,7 +129,8 @@ def load_parser():
         "-r",
         "--resolution",
         default="8,1,5",
-        help="Number of x, y, and z elements to write the data ('8,1,5' by default).",
+        help="Number of x, y, and z elements to map the simulation results to the "
+        "dense report data ('8,1,5' by default).",
     )
     parser.add_argument(
         "-g",
@@ -137,13 +138,13 @@ def load_parser():
         default="performance_sparse",
         help="Write only the 'dense', 'sparse', 'performance', 'performance-spatial', "
         "'dense_performance', 'dense_sparse', 'performance_sparse', "
-        "'dense_performance-spatial', or 'all'",
+        "'dense_performance-spatial', or 'all' ('performance_sparse') by default",
     )
     parser.add_argument(
         "-u",
         "--use",
         default="resdata",
-        help="Using the 'opm' or 'resdata' python package (resdata by default).",
+        help="Using the 'opm' or 'resdata' python package ('resdata' by default).",
     )
     parser.add_argument(
         "-w",
