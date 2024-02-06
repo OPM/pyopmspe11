@@ -208,7 +208,7 @@ COMPDAT
 % endif
 % if dic["spe11aBC"] == 0:
 BCPROP
-1 'FREE' /
+1 DIRICHLET ${'WATER' if dic["co2store"] == "gaswater" else 'OIL'} 1* ${(dic['pressure']+dic["safu"][0][2])/1.E5 if dic["co2store"] == "gaswater" else dic['pressure']/1.E5} /
 /
 % endif
 

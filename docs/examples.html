@@ -90,28 +90,30 @@
 <h2>Hello world<a class="headerlink" href="#hello-world" title="Link to this heading"></a></h2>
 <p>The <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/hello_world">examples/hello_world</a> folder contains configuration files
 with low grid resolution and shorter injetion times (for initial testing of the framework). For example, by executing:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.txt<span class="w"> </span>-o<span class="w"> </span>spe11b<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-r<span class="w"> </span><span class="m">50</span>,1,20<span class="w"> </span>-w<span class="w"> </span><span class="m">1</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.txt<span class="w"> </span>-o<span class="w"> </span>spe11b<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-r<span class="w"> </span><span class="m">50</span>,1,15<span class="w"> </span>-w<span class="w"> </span><span class="m">1</span>
 </pre></div>
 </div>
-<p>the following is the figure generated related to the temperature in the domain over time:</p>
+<p>The following is one of the figures generated related to the CO2 mass in the domain over time (i.e., the simulations results from
+the corner-point grid mapped to the equidistance reporting grid of 50 x 15 as defined by the -r flag):</p>
 <figure class="align-default">
-<img alt="_images/spe11b_temp_2Dmaps.png" src="_images/spe11b_temp_2Dmaps.png" />
+<img alt="_images/spe11b_tco2_2Dmaps.png" src="_images/spe11b_tco2_2Dmaps.png" />
 </figure>
-<p>Let us now tight the mass balance tolerance by adding the flag --tolerance-mb=1e-7 in line 2 of the configuration file (1e-6 is the default one).
-Then we run the simulations and we save the results in a different output folder:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.txt<span class="w"> </span>-o<span class="w"> </span>stricter_mb<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-r<span class="w"> </span><span class="m">50</span>,1,20<span class="w"> </span>-w<span class="w"> </span><span class="m">1</span>
+<p>Let us now change the grid type from corner-point to tensor in line 7 of the configuration file.
+Then, we run the simulations and we save the results in a different output folder:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.txt<span class="w"> </span>-o<span class="w"> </span>tensor<span class="w"> </span>-m<span class="w"> </span>deck_flow_data<span class="w"> </span>-g<span class="w"> </span>performance_sparse<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-r<span class="w"> </span><span class="m">50</span>,1,15<span class="w"> </span>-w<span class="w"> </span><span class="m">1</span>
 </pre></div>
 </div>
-<p>Then, to visualize the comparison between both runs, this can be achived by executing:</p>
+<p>Here we have just set the framework to generate the deck, run the simulations, and generate the performance and sparse data.
+Then, to visualize the comparison between both runs, this can be achived by executing:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-c<span class="w"> </span>spe11b
 </pre></div>
 </div>
-<p>The following are the comparison figures generated in the compare folder:</p>
-<figure class="align-default">
-<img alt="_images/spe11b_sparse_data.png" src="_images/spe11b_sparse_data.png" />
-</figure>
+<p>The following are some of the figures generated in the compare folder:</p>
 <figure class="align-default">
 <img alt="_images/spe11b_performance.png" src="_images/spe11b_performance.png" />
+</figure>
+<figure class="align-default">
+<img alt="_images/spe11b_sparse_data.png" src="_images/spe11b_sparse_data.png" />
 </figure>
 <p>This example uses a very coarser grid to run fast. See the following section for finer grids.</p>
 </section>
@@ -131,7 +133,7 @@ where you can also see some of the preliminary simulation results using OPM Flow
 <span class="l l-Scalar l-Scalar-Plain">¨ The solver time step is the maximum value allowed by the simulator</span>
 </pre></div>
 </div>
-<p>Then <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples">examples/finner_grids</a> folder contains configuration files
+<p>The <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples">examples/finner_grids</a> folder contains configuration files
 with grid size of the same order as requested for reporting the spatial data in the benchmark, as well as the required injection schedules. For example, by executing:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.txt<span class="w"> </span>-o<span class="w"> </span>spe11b_finner<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">840</span>,1,120<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span>
 </pre></div>

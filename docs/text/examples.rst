@@ -11,29 +11,31 @@ with low grid resolution and shorter injetion times (for initial testing of the 
 
 .. code-block:: bash
 
-    pyopmspe11 -i spe11b.txt -o spe11b -m all -g all -t 5 -r 50,1,20 -w 1
+    pyopmspe11 -i spe11b.txt -o spe11b -m all -g all -t 5 -r 50,1,15 -w 1
 
-the following is the figure generated related to the temperature in the domain over time:
+The following is one of the figures generated related to the CO2 mass in the domain over time (i.e., the simulations results from
+the corner-point grid mapped to the equidistance reporting grid of 50 x 15 as defined by the -r flag):
 
-.. figure:: figs/spe11b_temp_2Dmaps.png
+.. figure:: figs/spe11b_tco2_2Dmaps.png
 
-Let us now tight the mass balance tolerance by adding the flag \-\-tolerance-mb=1e-7 in line 2 of the configuration file (1e-6 is the default one).
-Then we run the simulations and we save the results in a different output folder:
+Let us now change the grid type from corner-point to tensor in line 7 of the configuration file.
+Then, we run the simulations and we save the results in a different output folder:
 
 .. code-block:: bash
 
-    pyopmspe11 -i spe11b.txt -o stricter_mb -m all -g all -t 5 -r 50,1,20 -w 1
+    pyopmspe11 -i spe11b.txt -o tensor -m deck_flow_data -g performance_sparse -t 5 -r 50,1,15 -w 1
 
+Here we have just set the framework to generate the deck, run the simulations, and generate the performance and sparse data.
 Then, to visualize the comparison between both runs, this can be achived by executing:
 
 .. code-block:: bash
 
     pyopmspe11 -c spe11b
 
-The following are the comparison figures generated in the compare folder:
+The following are some of the figures generated in the compare folder:
 
-.. figure:: figs/spe11b_sparse_data.png
 .. figure:: figs/spe11b_performance.png
+.. figure:: figs/spe11b_sparse_data.png
 
 This example uses a very coarser grid to run fast. See the following section for finer grids.
 
@@ -57,7 +59,7 @@ where you can also see some of the preliminary simulation results using OPM Flow
     * spe11b and spe11c have an extra layer [1 m] of grid cells on the left and right boundaries to include the buffer volume  
     ¨ The solver time step is the maximum value allowed by the simulator
 
-Then `examples/finner_grids <https://github.com/OPM/pyopmspe11/blob/main/examples>`_ folder contains configuration files
+The `examples/finner_grids <https://github.com/OPM/pyopmspe11/blob/main/examples>`_ folder contains configuration files
 with grid size of the same order as requested for reporting the spatial data in the benchmark, as well as the required injection schedules. For example, by executing:
 
 .. code-block:: bash
