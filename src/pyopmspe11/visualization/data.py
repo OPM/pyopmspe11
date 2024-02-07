@@ -747,7 +747,7 @@ def handle_inactive_mapping(dig, dil):
     """Set to inf the inactive grid centers in the reporting grid"""
     var_array = np.empty(dig["noxz"]) * np.nan
     var_array[dig["actind"]] = 0.0
-    for i in np.unique(dil["cell_ind"]):
+    for i in range(dig["nocellst"]):
         inds = i == dil["cell_ind"]
         if np.isnan(np.sum(var_array[inds])):
             dil["refxgrid"][i] = np.inf
@@ -815,7 +815,7 @@ def static_map_to_report_grid_performance_spatial(dig, dil):
             np.array(dig["init"].iget_kw("DZ")[0]),
             np.array(dig["init"].iget_kw("DX")[0]),
         )
-    for i in np.unique(dil["cell_ind"]):
+    for i in range(dig["nocellst"]):
         inds = i == dil["cell_ind"]
         p_v = np.sum(dig["porv"][inds])
         if p_v > 0:
@@ -855,7 +855,7 @@ def map_to_report_grid_performance_spatial(dig, dil, names, d_t):
     """Map the simulation grid to the reporting grid"""
     for name in names:
         dil[f"{name}_refg"] = np.empty(dig["nocellsr"]) * np.nan
-    for i in np.unique(dil["cell_ind"]):
+    for i in range(dig["nocellst"]):
         inds = i == dil["cell_ind"]
         p_v = np.sum(dig["porv"][inds])
         if p_v > 0:
@@ -920,6 +920,7 @@ def generate_arrays(dig, dil, names, t_n):
     """Numpy arrays for the dense data"""
     for name in names:
         dil[f"{name}_array"] = np.zeros(dig["nocellst"])
+        dil[f"{name}_refg"] = np.empty(dig["nocellsr"]) * np.nan
     if dig["use"] == "opm":
         sgas = np.array(dig["unrst"]["SGAS", t_n])
         rhog = np.array(dig["unrst"]["GAS_DEN", t_n])
@@ -979,12 +980,11 @@ def compute_xh20(dig, dil, h2o_v, co2_g):
 
 def map_to_report_grid(dig, dil, names):
     """Map the simulation grid to the reporting grid"""
-    for name in names:
-        dil[f"{name}_refg"] = np.empty(dig["nocellsr"]) * np.nan
-        for i in np.unique(dil["cell_ind"]):
-            inds = i == dil["cell_ind"]
-            p_v = np.sum(dig["porv"][inds])
-            if p_v > 0:
+    for i in range(dig["nocellst"]):
+        inds = i == dil["cell_ind"]
+        p_v = np.sum(dig["porv"][inds])
+        if p_v > 0:
+            for name in names:
                 if name == "tco2":
                     dil[f"{name}_refg"][i] = np.sum(dil[f"{name}_array"][inds])
                 else:
