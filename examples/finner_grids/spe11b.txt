@@ -1,5 +1,5 @@
 """Set the full path to the flow executable and flags"""
-mpirun -np 70 flow --tolerance-mb=1e-7 --linear-solver=cprw --newton-min-iterations=1 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations
+mpirun -np 70 flow --linear-solver=cprw --newton-min-iterations=1 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations
 
 """Set the model parameters"""
 spe11b master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)

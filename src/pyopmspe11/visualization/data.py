@@ -181,6 +181,7 @@ def read_resdata(dig):
         dig["egrid"].ny,
         dig["egrid"].nz,
     ]
+    dig["noxz"] = dig["egrid"].nx * dig["egrid"].nz
     return dig
 
 
@@ -204,6 +205,7 @@ def read_opm(dig):
         dig["egrid"].dimension[1],
         dig["egrid"].dimension[2],
     ]
+    dig["noxz"] = dig["egrid"].dimension[0] * dig["egrid"].dimension[2]
     return dig
 
 
@@ -651,12 +653,11 @@ def max_xcw(dig, dil):
 
 def get_centers(dig, dil):
     """Centers from the simulation grid"""
-    for i in ["x", "y", "z"]:
-        dil[f"sim{i}cent"] = [0.0] * dig["nocellst"]
+    for i in ["x", "z"]:
+        dil[f"sim{i}cent"] = [0.0] * dig["noxz"]
     with open(f"{dig['path']}/deck/centers.txt", "r", encoding="utf8") as file:
         for j, row in enumerate(csv.reader(file)):
             dil["simxcent"][j] = float(row[0])
-            dil["simycent"][j] = float(row[1])
             dil["simzcent"][j] = dig["dims"][2] - float(row[2])
     if dig["use"] == "opm":
         dil["satnum"] = list(dig["init"]["SATNUM"])
@@ -666,7 +667,12 @@ def get_centers(dig, dil):
 
 
 def dense_data(dig):
-    """Write the quantities with the benchmark format"""
+    """
+    Write the quantities with the benchmark format for the dense data.
+    Still plenty of room to improve here the performance and memory
+    usage. However, this current implementation can handle cases with
+    ca. 15 000 000 cells in a reasonable time (ca. hours).
+    """
     dil = {"rstno": []}
     for time in dig["dense_t"]:
         dil["rstno"].append(dig["times"].index(time))
@@ -675,25 +681,24 @@ def dense_data(dig):
     for i, j, k in zip(["x", "y", "z"], dig["dims"], dig["nxyz"]):
         ind = np.linspace(0, j, k + 1)
         dil[f"ref{i}cent"] = 0.5 * (ind[1:] + ind[:-1])
-        dil[f"ref{i}grid"] = np.zeros(dig["nocellsr"])
+    dil["refxgrid"] = np.zeros(dig["nxyz"][0] * dig["nxyz"][2])
+    dil["refzgrid"] = np.zeros(dig["nxyz"][0] * dig["nxyz"][2])
     ind = 0
     for k in dil["refzcent"]:
-        for j in dil["refycent"]:
-            for i in dil["refxcent"]:
-                dil["refxgrid"][ind] = i
-                dil["refygrid"][ind] = j
-                dil["refzgrid"][ind] = k
-                ind += 1
-    ind, dil["cell_ind"] = 0, np.zeros(dig["nocellst"], dtype=int)
-    for i, j, k in zip(dil["simxcent"], dil["simycent"], dil["simzcent"]):
+        for i in dil["refxcent"]:
+            dil["refxgrid"][ind] = i
+            dil["refzgrid"][ind] = k
+            ind += 1
+    ind, dil["cell_ind"] = 0, np.zeros(dig["noxz"], dtype=int)
+    for i, k in zip(dil["simxcent"], dil["simzcent"]):
         dil["cell_ind"][ind] = pd.Series(
-            (dil["refxgrid"] - i) ** 2
-            + (dil["refygrid"] - j) ** 2
-            + (dil["refzgrid"] - k) ** 2
+            np.abs(dil["refxgrid"] - i) + np.abs(dil["refzgrid"] - k)
         ).argmin()
         ind += 1
-    if max(dil["satnum"]) < 7:
+    if max(dil["satnum"]) < 7 and dig["case"] == "spe11a":
         dil = handle_inactive_mapping(dig, dil)
+    if dig["case"] == "spe11c":
+        dil = handle_yaxis_mapping(dig, dil)
     if dig["mode"] == "all" or dig["mode"][:5] == "dense":
         names = ["pressure", "sgas", "xco2", "xh20", "gden", "wden", "tco2"]
         if dig["case"] != "spe11a":
@@ -706,6 +711,54 @@ def dense_data(dig):
             write_dense_data(dig, dil, i)
     if dig["mode"] in ["all", "performance-spatial", "dense_performance-spatial"]:
         handle_performance_spatial(dig, dil)
+
+
+def handle_yaxis_mapping(dig, dil):
+    """Extend the indices accounting for the y direction"""
+    simycent = [0.0] * dig["gxyz"][1]
+    with open(f"{dig['path']}/deck/ycenters.txt", "r", encoding="utf8") as file:
+        for j, row in enumerate(csv.reader(file)):
+            simycent[j] = float(row[0])
+    indy = [pd.Series(np.abs(dil["refycent"] - y_c)).argmin() for y_c in simycent]
+    tmp_inds = np.zeros(dig["nocellst"], dtype=int)
+    mults = np.zeros(dig["gxyz"][0], dtype=int)
+    for indz in range(dig["gxyz"][2]):
+        i_i = dig["gxyz"][0] * (dig["gxyz"][2] - indz - 1)
+        i_f = dig["gxyz"][0] * (dig["gxyz"][2] - indz)
+        iii = dig["gxyz"][0] * dig["gxyz"][1] * (dig["gxyz"][2] - 1 - indz)
+        if indz != 0:
+            mults += 1 * (
+                dil["cell_ind"][i_f : i_f + dig["gxyz"][0]]
+                != dil["cell_ind"][i_i : i_i + dig["gxyz"][0]]
+            )
+        values = dil["cell_ind"][i_i : i_i + dig["gxyz"][0]] + mults * (
+            dig["nxyz"][0]
+        ) * (dig["nxyz"][1] - 1)
+        tmp_inds[iii : iii + dig["gxyz"][0]] = values
+        for j, iy in enumerate(indy[1:]):
+            tmp_inds[
+                iii + dig["gxyz"][0] * (j + 1) : iii + dig["gxyz"][0] * (j + 2)
+            ] = (iy * dig["nxyz"][0]) + values
+    dil["cell_ind"] = tmp_inds
+    return dil
+
+
+def handle_inactive_mapping(dig, dil):
+    """Set to inf the inactive grid centers in the reporting grid"""
+    var_array = np.empty(dig["noxz"]) * np.nan
+    var_array[dig["actind"]] = 0.0
+    for i in np.unique(dil["cell_ind"]):
+        inds = i == dil["cell_ind"]
+        if np.isnan(np.sum(var_array[inds])):
+            dil["refxgrid"][i] = np.inf
+            dil["refzgrid"][i] = np.inf
+    ind, dil["cell_ind"] = 0, np.zeros(dig["nocellst"], dtype=int)
+    for i, k in zip(dil["simxcent"], dil["simzcent"]):
+        dil["cell_ind"][ind] = pd.Series(
+            np.abs(dil["refxgrid"] - i) + np.abs(dil["refzgrid"] - k)
+        ).argmin()
+        ind += 1
+    return dil
 
 
 def handle_performance_spatial(dig, dil):
@@ -921,27 +974,6 @@ def compute_xh20(dig, dil, h2o_v, co2_g):
     inds = mgas > 0.0
     xh20[inds] = np.divide(h2o_v[inds], mgas[inds])
     dil["xh20_array"][dig["actind"]] = xh20
-    return dil
-
-
-def handle_inactive_mapping(dig, dil):
-    """Set to inf the inactive grid centers in the reporting grid"""
-    var_array = np.empty(dig["nocellst"]) * np.nan
-    var_array[dig["actind"]] = 0.0
-    for i in np.unique(dil["cell_ind"]):
-        inds = i == dil["cell_ind"]
-        if np.isnan(np.sum(var_array[inds])):
-            dil["refxgrid"][i] = np.inf
-            dil["refygrid"][i] = np.inf
-            dil["refzgrid"][i] = np.inf
-    ind, dil["cell_ind"] = 0, np.zeros(dig["nocellst"], dtype=int)
-    for i, j, k in zip(dil["simxcent"], dil["simycent"], dil["simzcent"]):
-        dil["cell_ind"][ind] = pd.Series(
-            (dil["refxgrid"] - i) ** 2
-            + (dil["refygrid"] - j) ** 2
-            + (dil["refzgrid"] - k) ** 2
-        ).argmin()
-        ind += 1
     return dil
 
 

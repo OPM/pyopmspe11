@@ -135,23 +135,41 @@ where you can also see some of the preliminary simulation results using OPM Flow
 </div>
 <p>The <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples">examples/finner_grids</a> folder contains configuration files
 with grid size of the same order as requested for reporting the spatial data in the benchmark, as well as the required injection schedules. For example, by executing:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.txt<span class="w"> </span>-o<span class="w"> </span>spe11b_finner<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">840</span>,1,120<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.txt<span class="w"> </span>-o<span class="w"> </span>spe11b_current<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">840</span>,1,120<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.1
 </pre></div>
 </div>
 <p>the following are some of the generated figures:</p>
-<figure class="align-default">
+<figure class="align-default" id="id1">
 <img alt="_images/spe11b_sparse_data_finner.png" src="_images/spe11b_sparse_data_finner.png" />
+<figcaption>
+<p><span class="caption-text">Sparse data.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
 </figure>
-<figure class="align-default">
+<figure class="align-default" id="id2">
 <img alt="_images/spe11b_performance_finner.png" src="_images/spe11b_performance_finner.png" />
+<figcaption>
+<p><span class="caption-text">Performance data.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
 </figure>
-<figure class="align-default">
-<img alt="_images/spe11b_xco2_2Dmaps_finner.png" src="_images/spe11b_xco2_2Dmaps_finner.png" />
+<figure class="align-default" id="id3">
+<img alt="_images/spe11b_performance_detailed_finner.png" src="_images/spe11b_performance_detailed_finner.png" />
+<figcaption>
+<p><span class="caption-text">Detailed performance data.</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
+</figcaption>
 </figure>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>By executing flow –help you get an overview of the available flags in the flow simulator to improve/fix convergence issues
-(i.e., by setting the flag –linear-solver=cprw to change the linear solver).</p>
+<figure class="align-default" id="id4">
+<img alt="_images/spe11b_wden_2Dmaps_finner.png" src="_images/spe11b_wden_2Dmaps_finner.png" />
+<figcaption>
+<p><span class="caption-text">Dense data for the water density.</span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The inputs in this configuration file were set to show the current functionality of pyopmspe11 to generate the benchmark data, i.e.,
+the tolerances are not tight and no tunning was performed. In consequence, the total mass in the simulation (ca. 7.75e7 kg) is less
+than what is specified in the benchmark (ca. 8.27e7 kg). By executing flow –help you get an overview of the available flags in the
+flow simulator to improve/fix convergence and mass issues (i.e., by setting the flag –linear-solver=cprw to change the linear solver,
+by tightening the mb tolerances (–tolerance-mb), etc.).</p>
 </div>
 </section>
 </section>
