@@ -64,14 +64,29 @@ with grid size of the same order as requested for reporting the spatial data in 
 
 .. code-block:: bash
 
-    pyopmspe11 -i spe11b.txt -o spe11b_finner -m all -g all -r 840,1,120 -t 5
+    pyopmspe11 -i spe11b.txt -o spe11b_current -m all -g all -r 840,1,120 -t 5 -w 0.1
 
 the following are some of the generated figures:
 
 .. figure:: figs/spe11b_sparse_data_finner.png
-.. figure:: figs/spe11b_performance_finner.png
-.. figure:: figs/spe11b_xco2_2Dmaps_finner.png
 
-.. tip::
-    By executing flow --help you get an overview of the available flags in the flow simulator to improve/fix convergence issues 
-    (i.e., by setting the flag --linear-solver=cprw to change the linear solver).
+    Sparse data.
+
+.. figure:: figs/spe11b_performance_finner.png
+
+    Performance data.
+
+.. figure:: figs/spe11b_performance_detailed_finner.png
+
+    Detailed performance data.
+
+.. figure:: figs/spe11b_wden_2Dmaps_finner.png
+
+    Dense data for the water density.
+
+.. warning::
+    The inputs in this configuration file were set to show the current functionality of pyopmspe11 to generate the benchmark data, i.e.,
+    the tolerances are not tight and no tunning was performed. In consequence, the total mass in the simulation (ca. 7.75e7 kg) is less
+    than what is specified in the benchmark (ca. 8.27e7 kg). By executing flow --help you get an overview of the available flags in the
+    flow simulator to improve/fix convergence and mass issues (i.e., by setting the flag --linear-solver=cprw to change the linear solver,
+    by tightening the mb tolerances (--tolerance-mb), etc.).

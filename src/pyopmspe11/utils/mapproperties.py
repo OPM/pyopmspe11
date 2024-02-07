@@ -180,7 +180,11 @@ def structured_handling_spe11bc(dic):
                     f"PORV {dic['pvAdded']*dic['dy'][0]*dic['dz'][k]} {dic['noCells'][0]} "
                     + f"{dic['noCells'][0]} 1 1 {k+1} {k+1} /"
                 )
-            centers.append(str([dic["xmx_center"][i], dic["ymy_center"][0], z_c])[1:-1])
+            centers.append(
+                str([dic["xmx_center"][i], dic["ymy_center"][0], dic["zmz_center"][k]])[
+                    1:-1
+                ]
+            )
         for j in range(dic["noCells"][1] - 1):
             for names in ["satnum", "poro", "permx", "disperc", "thconr"]:
                 dic[f"{names}"].extend(dic[f"{names}"][-dic["noCells"][0] :])
@@ -206,9 +210,6 @@ def structured_handling_spe11bc(dic):
                     z_c,
                     i_i,
                     dic["satnum"][-dic["noCells"][0] + i_i],
-                )
-                centers.append(
-                    str([dic["xmx_center"][i_i], dic["ymy_center"][j + 1], z_c])[1:-1]
                 )
                 if i_i == 0 and (
                     int(dic["satnum"][-dic["noCells"][0] + i_i]) != 1
@@ -399,7 +400,7 @@ def corner_point_handling_spe11bc(dic):
                 f"PORV {dic['pvAdded']*dic['d_y'][0]*dic['d_z'][i]} {dic['noCells'][0]} "
                 + f"{dic['noCells'][0]} 1 1 {dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
             )
-        centers.append(str([dic["xyz"][0], dic["ymy_center"][0], z_c])[1:-1])
+        centers.append(str([dic["xyz"][0], dic["ymy_center"][0], dic["xyz"][2]])[1:-1])
         if dic["ijk"][0] > 0 and dic["ijk"][0] == dic["noCells"][0] - 1:
             for j in range(dic["noCells"][1] - 1):
                 for names in ["satnum", "poro", "permx", "disperc", "thconr"]:
@@ -414,9 +415,6 @@ def corner_point_handling_spe11bc(dic):
                         z_c,
                         i_i,
                         dic["satnum"][-dic["noCells"][0] + i_i],
-                    )
-                    centers.append(
-                        str([xtemp[i_i], dic["ymy_center"][j + 1], z_c])[1:-1]
                     )
                     if i_i == 0 and (
                         int(dic["satnum"][-dic["noCells"][0] + i_i]) != 1
@@ -598,6 +596,9 @@ def positions(dic):
             dic = structured_handling_spe11a(dic)
         else:
             dic = structured_handling_spe11bc(dic)
+    np.savetxt(
+        f"{dic['exe']}/{dic['fol']}/deck/ycenters.txt", dic["ymy_center"], fmt="%.8E"
+    )
     return dic
 
 
