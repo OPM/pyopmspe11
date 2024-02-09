@@ -747,7 +747,7 @@ def handle_inactive_mapping(dig, dil):
     """Set to inf the inactive grid centers in the reporting grid"""
     var_array = np.empty(dig["noxz"]) * np.nan
     var_array[dig["actind"]] = 0.0
-    for i in range(dig["nocellst"]):
+    for i in range(dig["nocellsr"]):
         inds = i == dil["cell_ind"]
         if np.isnan(np.sum(var_array[inds])):
             dil["refxgrid"][i] = np.inf
@@ -815,7 +815,7 @@ def static_map_to_report_grid_performance_spatial(dig, dil):
             np.array(dig["init"].iget_kw("DZ")[0]),
             np.array(dig["init"].iget_kw("DX")[0]),
         )
-    for i in range(dig["nocellst"]):
+    for i in range(dig["nocellsr"]):
         inds = i == dil["cell_ind"]
         p_v = np.sum(dig["porv"][inds])
         if p_v > 0:
@@ -855,7 +855,7 @@ def map_to_report_grid_performance_spatial(dig, dil, names, d_t):
     """Map the simulation grid to the reporting grid"""
     for name in names:
         dil[f"{name}_refg"] = np.empty(dig["nocellsr"]) * np.nan
-    for i in range(dig["nocellst"]):
+    for i in range(dig["nocellsr"]):
         inds = i == dil["cell_ind"]
         p_v = np.sum(dig["porv"][inds])
         if p_v > 0:
@@ -980,7 +980,7 @@ def compute_xh20(dig, dil, h2o_v, co2_g):
 
 def map_to_report_grid(dig, dil, names):
     """Map the simulation grid to the reporting grid"""
-    for i in range(dig["nocellst"]):
+    for i in range(dig["nocellsr"]):
         inds = i == dil["cell_ind"]
         p_v = np.sum(dig["porv"][inds])
         if p_v > 0:
