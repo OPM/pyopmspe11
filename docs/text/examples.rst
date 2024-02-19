@@ -90,3 +90,19 @@ the following are some of the generated figures:
     than what is specified in the benchmark (ca. 8.27e7 kg). By executing flow --help you get an overview of the available flags in the
     flow simulator to improve/fix convergence and mass issues (i.e., by setting the flag --linear-solver=cprw to change the linear solver,
     by tightening the mb tolerances (--tolerance-mb), etc.).
+
+The following are simulation results in a 1 m Cartesian grid `(spe11b1m.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11b1m.txt>`_, 
+and the animation in the `main page <https://github.com/OPM/pyopmspe11/blob/main>`_ was generated using these results (the inizialization time of 1000 years was 
+skipped and the results were printed ever 25 years instead of 5 years):
+
+.. code-block:: bash
+
+    pyopmspe11 -i spe11b1m.txt -o spe11b1m -m all -g all -r 840,1,120 -t 25 -w 0.1
+
+.. figure:: figs/spe11b_sparse_data_1m.png
+
+    Sparse data in the 1 m Cartesian grid.
+
+.. figure:: figs/spe11b_performance_1m.png
+
+    Performance data in the 1 m Cartesian grid.
