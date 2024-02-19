@@ -171,6 +171,24 @@ than what is specified in the benchmark (ca. 8.27e7 kg). By executing flow –he
 flow simulator to improve/fix convergence and mass issues (i.e., by setting the flag –linear-solver=cprw to change the linear solver,
 by tightening the mb tolerances (–tolerance-mb), etc.).</p>
 </div>
+<p>The following are simulation results in a 1 m Cartesian grid <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11b1m.txt">(spe11b1m.txt)</a>,
+and the animation in the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main">main page</a> was generated using these results (the inizialization time of 1000 years was
+skipped and the results were printed ever 25 years instead of 5 years):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b1m.txt<span class="w"> </span>-o<span class="w"> </span>spe11b1m<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">840</span>,1,120<span class="w"> </span>-t<span class="w"> </span><span class="m">25</span><span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.1
+</pre></div>
+</div>
+<figure class="align-default" id="id5">
+<img alt="_images/spe11b_sparse_data_1m.png" src="_images/spe11b_sparse_data_1m.png" />
+<figcaption>
+<p><span class="caption-text">Sparse data in the 1 m Cartesian grid.</span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id6">
+<img alt="_images/spe11b_performance_1m.png" src="_images/spe11b_performance_1m.png" />
+<figcaption>
+<p><span class="caption-text">Performance data in the 1 m Cartesian grid.</span><a class="headerlink" href="#id6" title="Link to this image"></a></p>
+</figcaption>
+</figure>
 </section>
 </section>
 
