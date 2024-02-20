@@ -891,21 +891,39 @@ def write_dense_data_performance_spatial(dig, dil, i):
             for xcord in dil["refxcent"]:
                 idc = -dig["nxyz"][0] * dig["nxyz"][1] * (dig["nxyz"][2] - idz) + idxy
                 if dig["case"] != "spe11c":
-                    text.append(
-                        f"{xcord:.3e}, {zcord:.3e}, "
-                        + f"{dil['cvol_refg'][idc] :.3e}, {dil['arat_refg'][idc] :.3e}, "
-                        + f"{dil['co2mn_refg'][idc] :.3e}, {dil['h2omn_refg'][idc] :.3e}, "
-                        + f"{dil['co2mb_refg'][idc] :.3e}, {dil['h2omb_refg'][idc] :.3e}, "
-                        + f"{np.nan}"
-                    )
+                    if np.isnan(dil["cvol_refg"][idc]):
+                        text.append(
+                            f"{xcord:.3e}, {zcord:.3e}, n/a, n/a, n/a, n/a, n/a, "
+                            + "n/a, n/a"
+                        )
+                    else:
+                        text.append(
+                            f"{xcord:.3e}, {zcord:.3e}, "
+                            + f"{dil['cvol_refg'][idc] :.3e}, "
+                            + f"{dil['arat_refg'][idc] :.3e}, "
+                            + f"{dil['co2mn_refg'][idc] :.3e}, "
+                            + f"{dil['h2omn_refg'][idc] :.3e}, "
+                            + f"{dil['co2mb_refg'][idc] :.3e}, "
+                            + f"{dil['h2omb_refg'][idc] :.3e}, "
+                            + "n/a"
+                        )
                 else:
-                    text.append(
-                        f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, "
-                        + f"{dil['cvol_refg'][idc] :.3e}, {dil['arat_refg'][idc] :.3e}, "
-                        + f"{dil['co2mn_refg'][idc] :.3e}, {dil['h2omn_refg'][idc] :.3e}, "
-                        + f"{dil['co2mb_refg'][idc] :.3e}, {dil['h2omb_refg'][idc] :.3e}, "
-                        + f"{np.nan}"
-                    )
+                    if np.isnan(dil["cvol_refg"][idc]):
+                        text.append(
+                            f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, n/a, n/a, n/a, "
+                            + "n/a, n/a, n/a, n/a"
+                        )
+                    else:
+                        text.append(
+                            f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, "
+                            + f"{dil['cvol_refg'][idc] :.3e}, "
+                            + f"{dil['arat_refg'][idc] :.3e}, "
+                            + f"{dil['co2mn_refg'][idc] :.3e}, "
+                            + f"{dil['h2omn_refg'][idc] :.3e}, "
+                            + f"{dil['co2mb_refg'][idc] :.3e}, "
+                            + f"{dil['h2omb_refg'][idc] :.3e}, "
+                            + "n/a"
+                        )
                 idxy += 1
         idz += 1
     with open(
@@ -996,6 +1014,76 @@ def map_to_report_grid(dig, dil, names):
 
 def write_dense_data(dig, dil, i):
     """Map the quantities to the cells"""
+    name_t, text = get_header(dig, i)
+    idz = 0
+    for zcord in dil["refzcent"]:
+        idxy = 0
+        for ycord in dil["refycent"]:
+            for xcord in dil["refxcent"]:
+                idc = -dig["nxyz"][0] * dig["nxyz"][1] * (dig["nxyz"][2] - idz) + idxy
+                if dig["case"] == "spe11a":
+                    if np.isnan(dil["pressure_refg"][idc]):
+                        text.append(
+                            f"{xcord:.3e}, {zcord:.3e}, n/a, n/a, n/a, n/a, n/a, "
+                            + "n/a, n/a"
+                        )
+                    else:
+                        text.append(
+                            f"{xcord:.3e}, {zcord:.3e}, "
+                            + f"{dil['pressure_refg'][idc] :.3e}, "
+                            + f"{dil['sgas_refg'][idc] :.3e}, "
+                            + f"{dil['xco2_refg'][idc] :.3e}, "
+                            + f"{dil['xh20_refg'][idc] :.3e}, "
+                            + f"{dil['gden_refg'][idc] :.3e}, "
+                            + f"{dil['wden_refg'][idc] :.3e}, "
+                            + f"{dil['tco2_refg'][idc] :.3e}"
+                        )
+                elif dig["case"] == "spe11b":
+                    if np.isnan(dil["pressure_refg"][idc]):
+                        text.append(
+                            f"{xcord:.3e}, {zcord:.3e}, "
+                            + "n/a, n/a, n/a, n/a, n/a, n/a, n/a, n/a"
+                        )
+                    else:
+                        text.append(
+                            f"{xcord:.3e}, {zcord:.3e}, "
+                            + f"{dil['pressure_refg'][idc] :.3e}, "
+                            + f"{dil['sgas_refg'][idc] :.3e}, "
+                            + f"{dil['xco2_refg'][idc] :.3e}, "
+                            + f"{dil['xh20_refg'][idc] :.3e}, "
+                            + f"{dil['gden_refg'][idc] :.3e}, "
+                            + f"{dil['wden_refg'][idc] :.3e}, "
+                            + f"{dil['tco2_refg'][idc] :.3e}, "
+                            + f"{dil['temp_refg'][idc] :.3e}"
+                        )
+                else:
+                    if np.isnan(dil["pressure_refg"][idc]):
+                        text.append(
+                            f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, "
+                            + "n/a, n/a, n/a, n/a, n/a, n/a, n/a, n/a"
+                        )
+                    else:
+                        text.append(
+                            f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, "
+                            + f"{dil['pressure_refg'][idc] :.3e}, "
+                            + f"{dil['sgas_refg'][idc] :.3e}, "
+                            + f"{dil['xco2_refg'][idc] :.3e}, "
+                            + f"{dil['xh20_refg'][idc] :.3e}, "
+                            + f"{dil['gden_refg'][idc] :.3e}, "
+                            + f"{dil['wden_refg'][idc] :.3e}, "
+                            + f"{dil['tco2_refg'][idc] :.3e}, "
+                            + f"{dil['temp_refg'][idc] :.3e}"
+                        )
+                idxy += 1
+        idz += 1
+    with open(
+        f"{dig['where']}/{dig['case']}_spatial_map_{name_t}.csv", "w", encoding="utf8"
+    ) as file:
+        file.write("\n".join(text))
+
+
+def get_header(dig, i):
+    """Get the right file header"""
     if dig["case"] == "spe11a":
         name_t = f"{round(dig['dense_t'][i]/3600)}h"
         text = [
@@ -1020,41 +1108,7 @@ def write_dense_data(dig, dil, i):
             + "phase mass density gas [kg/m3], phase mass density water [kg/m3], "
             + "total mass CO2 [kg], temperature [C]"
         ]
-    idz = 0
-    for zcord in dil["refzcent"]:
-        idxy = 0
-        for ycord in dil["refycent"]:
-            for xcord in dil["refxcent"]:
-                idc = -dig["nxyz"][0] * dig["nxyz"][1] * (dig["nxyz"][2] - idz) + idxy
-                if dig["case"] == "spe11a":
-                    text.append(
-                        f"{xcord:.3e}, {zcord:.3e}, {dil['pressure_refg'][idc] :.3e}, "
-                        + f"{dil['sgas_refg'][idc] :.3e}, {dil['xco2_refg'][idc] :.3e}, "
-                        + f"{dil['xh20_refg'][idc] :.3e}, {dil['gden_refg'][idc] :.3e}, "
-                        + f"{dil['wden_refg'][idc] :.3e}, {dil['tco2_refg'][idc] :.3e}"
-                    )
-                elif dig["case"] == "spe11b":
-                    text.append(
-                        f"{xcord:.3e}, {zcord:.3e}, {dil['pressure_refg'][idc] :.3e}, "
-                        + f"{dil['sgas_refg'][idc] :.3e}, {dil['xco2_refg'][idc] :.3e}, "
-                        + f"{dil['xh20_refg'][idc] :.3e}, {dil['gden_refg'][idc] :.3e}, "
-                        + f"{dil['wden_refg'][idc] :.3e}, {dil['tco2_refg'][idc] :.3e}, "
-                        + f"{dil['temp_refg'][idc] :.3e}"
-                    )
-                else:
-                    text.append(
-                        f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, "
-                        + f"{dil['pressure_refg'][idc] :.3e}, {dil['sgas_refg'][idc] :.3e}, "
-                        + f"{dil['xco2_refg'][idc] :.3e}, {dil['xh20_refg'][idc] :.3e}, "
-                        + f"{dil['gden_refg'][idc] :.3e}, {dil['wden_refg'][idc] :.3e}, "
-                        + f"{dil['tco2_refg'][idc] :.3e}, {dil['temp_refg'][idc] :.3e}"
-                    )
-                idxy += 1
-        idz += 1
-    with open(
-        f"{dig['where']}/{dig['case']}_spatial_map_{name_t}.csv", "w", encoding="utf8"
-    ) as file:
-        file.write("\n".join(text))
+    return name_t, text
 
 
 if __name__ == "__main__":
