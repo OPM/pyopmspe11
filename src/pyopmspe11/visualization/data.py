@@ -747,9 +747,11 @@ def handle_inactive_mapping(dig, dil):
     """Set to inf the inactive grid centers in the reporting grid"""
     var_array = np.empty(dig["noxz"]) * np.nan
     var_array[dig["actind"]] = 0.0
+    # For a corner-point grid do not remove the lower right corner
+    safe = np.where(dil["refxcent"] > 2.72)[0]
     for i in range(dig["nocellsr"]):
         inds = i == dil["cell_ind"]
-        if np.isnan(np.sum(var_array[inds])):
+        if np.isnan(np.sum(var_array[inds])) and i not in safe:
             dil["refxgrid"][i] = np.inf
             dil["refzgrid"][i] = np.inf
     ind, dil["cell_ind"] = 0, np.zeros(dig["nocellst"], dtype=int)
