@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
-# pylint: disable=C0302
+# pylint: disable=C0302, R0912, R0914
 
 """"
 Script to write the benchmark data
@@ -10,6 +10,8 @@ import os
 import argparse
 import csv
 from io import StringIO
+from shapely.geometry import Polygon
+from rtree import index
 import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
@@ -36,7 +38,7 @@ KMOL_TO_KG = 1e3 * 0.044
 
 def main():
     """Postprocessing"""
-    parser = argparse.ArgumentParser(description="Main script to porcess the data")
+    parser = argparse.ArgumentParser(description="Main script to process the data")
     parser.add_argument(
         "-p",
         "--path",
@@ -666,35 +668,82 @@ def get_centers(dig, dil):
     return dil
 
 
+def get_corners(dig, dil):
+    """Corners from the simulation grid"""
+    for i in ["x", "z"]:
+        dil[f"sim{i}cent"] = [0.0] * dig["noxz"]
+    with open(f"{dig['path']}/deck/centers.txt", "r", encoding="utf8") as file:
+        for j, row in enumerate(csv.reader(file)):
+            dil["simxcent"][j] = float(row[0])
+            dil["simzcent"][j] = dig["dims"][2] - float(row[2])
+    dil["simpoly"] = []
+    with open(f"{dig['path']}/deck/corners.txt", "r", encoding="utf8") as file:
+        for row in csv.reader(file):
+            dil["simpoly"].append(
+                Polygon(
+                    [
+                        (float(row[0]), float(row[1])),
+                        (float(row[2]), float(row[3])),
+                        (float(row[4]), float(row[5])),
+                        (float(row[6]), float(row[7])),
+                    ]
+                )
+            )
+    if dig["use"] == "opm":
+        dil["satnum"] = list(dig["init"]["SATNUM"])
+    else:
+        dil["satnum"] = list(dig["init"].iget_kw("SATNUM")[0])
+    return dil
+
+
 def dense_data(dig):
     """
     Write the quantities with the benchmark format for the dense data.
-    Still plenty of room to improve here the performance and memory
-    usage. However, this current implementation can handle cases with
-    ca. 15 000 000 cells in a reasonable time (ca. hours).
+    Still plenty of room to improve here the performance and memory usage.
     """
     dil = {"rstno": []}
     for time in dig["dense_t"]:
         dil["rstno"].append(dig["times"].index(time))
-    dil = get_centers(dig, dil)
+    dil = get_corners(dig, dil)
     dil["nrstno"] = len(dil["rstno"])
     for i, j, k in zip(["x", "y", "z"], dig["dims"], dig["nxyz"]):
-        ind = np.linspace(0, j, k + 1)
-        dil[f"ref{i}cent"] = 0.5 * (ind[1:] + ind[:-1])
+        dil[f"ref{i}vert"] = np.linspace(0, j, k + 1)
+        dil[f"ref{i}cent"] = 0.5 * (dil[f"ref{i}vert"][1:] + dil[f"ref{i}vert"][:-1])
     dil["refxgrid"] = np.zeros(dig["nxyz"][0] * dig["nxyz"][2])
     dil["refzgrid"] = np.zeros(dig["nxyz"][0] * dig["nxyz"][2])
-    ind = 0
-    for k in dil["refzcent"]:
-        for i in dil["refxcent"]:
-            dil["refxgrid"][ind] = i
-            dil["refzgrid"][ind] = k
+    dil["refpoly"] = []
+    ind, dil["cell_ind"] = 0, [[] for _ in range(dig["noxz"])]
+    dil["cell_cent"] = [0 for _ in range(dig["noxz"])]
+    idx = index.Index()
+    for k, zcen in enumerate(dil["refzcent"]):
+        for i, xcen in enumerate(dil["refxcent"]):
+            dil["refxgrid"][ind] = xcen
+            dil["refzgrid"][ind] = zcen
+            dil["refpoly"].append(
+                Polygon(
+                    [
+                        (dil["refxvert"][i], dil["refzvert"][k]),
+                        (dil["refxvert"][i + 1], dil["refzvert"][k]),
+                        (dil["refxvert"][i + 1], dil["refzvert"][k + 1]),
+                        (dil["refxvert"][i], dil["refzvert"][k + 1]),
+                    ]
+                )
+            )
+            idx.insert(ind, dil["refpoly"][-1].bounds)
             ind += 1
-    ind, dil["cell_ind"] = 0, np.zeros(dig["noxz"], dtype=int)
-    for i, k in zip(dil["simxcent"], dil["simzcent"]):
-        dil["cell_ind"][ind] = pd.Series(
-            np.abs(dil["refxgrid"] - i) + np.abs(dil["refzgrid"] - k)
+    for k, (simp, xcen, zcen) in enumerate(
+        zip(dil["simpoly"], dil["simxcent"], dil["simzcent"])
+    ):
+        ovrl = list(idx.intersection(simp.bounds))
+        if simp.area > 0:
+            for ind in ovrl:
+                area = simp.intersection(dil["refpoly"][ind]).area / simp.area
+                if area > 0:
+                    dil["cell_ind"][k].append([ind, area])
+        dil["cell_cent"][k] = pd.Series(
+            np.abs(dil["refxgrid"] - xcen) + np.abs(dil["refzgrid"] - zcen)
         ).argmin()
-        ind += 1
+    dig["actindr"] = []
     if max(dil["satnum"]) < 7 and dig["case"] == "spe11a":
         dil = handle_inactive_mapping(dig, dil)
     if dig["case"] == "spe11c":
@@ -702,7 +751,7 @@ def dense_data(dig):
     if dig["mode"] == "all" or dig["mode"][:5] == "dense":
         names = ["pressure", "sgas", "xco2", "xh20", "gden", "wden", "tco2"]
         if dig["case"] != "spe11a":
-            names += ["temp"]
+            names = ["temp"] + names
         for i, rst in enumerate(dil["rstno"]):
             print(f"Processing dense data {i+1} out of {dil['nrstno']}")
             t_n = rst + dig["no_skip_rst"]
@@ -719,52 +768,72 @@ def handle_yaxis_mapping(dig, dil):
     with open(f"{dig['path']}/deck/ycenters.txt", "r", encoding="utf8") as file:
         for j, row in enumerate(csv.reader(file)):
             simycent[j] = float(row[0])
-    indy = [pd.Series(np.abs(dil["refycent"] - y_c)).argmin() for y_c in simycent]
+    indy = np.array(
+        [pd.Series(np.abs(dil["refycent"] - y_c)).argmin() for y_c in simycent]
+    )
+    weights = [1.0 / (np.sum(indy == val)) for val in indy]
     tmp_inds = np.zeros(dig["nocellst"], dtype=int)
+    wei_inds = [[] for _ in range(dig["nocellst"])]
     mults = np.zeros(dig["gxyz"][0], dtype=int)
+    dil["cell_cent"] = np.array(dil["cell_cent"])
     for indz in range(dig["gxyz"][2]):
         i_i = dig["gxyz"][0] * (dig["gxyz"][2] - indz - 1)
         i_f = dig["gxyz"][0] * (dig["gxyz"][2] - indz)
         iii = dig["gxyz"][0] * dig["gxyz"][1] * (dig["gxyz"][2] - 1 - indz)
         if indz != 0:
             mults += 1 * (
-                dil["cell_ind"][i_f : i_f + dig["gxyz"][0]]
-                != dil["cell_ind"][i_i : i_i + dig["gxyz"][0]]
+                dil["cell_cent"][i_f : i_f + dig["gxyz"][0]]
+                != dil["cell_cent"][i_i : i_i + dig["gxyz"][0]]
             )
-        values = dil["cell_ind"][i_i : i_i + dig["gxyz"][0]] + mults * (
+        maps = [
+            [
+                [
+                    col[0] + mults[i] * dig["nxyz"][0] * (dig["nxyz"][1] - 1),
+                    col[1] * weights[0],
+                ]
+                for col in row
+            ]
+            for i, row in enumerate(dil["cell_ind"][i_i : i_i + dig["gxyz"][0]])
+        ]
+        values = dil["cell_cent"][i_i : i_i + dig["gxyz"][0]] + mults * (
             dig["nxyz"][0]
         ) * (dig["nxyz"][1] - 1)
         tmp_inds[iii : iii + dig["gxyz"][0]] = values
+        wei_inds[iii : iii + dig["gxyz"][0]] = maps
         for j, iy in enumerate(indy[1:]):
             tmp_inds[
                 iii + dig["gxyz"][0] * (j + 1) : iii + dig["gxyz"][0] * (j + 2)
             ] = (iy * dig["nxyz"][0]) + values
-    dil["cell_ind"] = tmp_inds
+            wei_inds[
+                iii + dig["gxyz"][0] * (j + 1) : iii + dig["gxyz"][0] * (j + 2)
+            ] = [
+                [
+                    [col[0] + (iy * dig["nxyz"][0]), col[1] * weights[j + 1]]
+                    for col in row
+                ]
+                for i, row in enumerate(maps)
+            ]
+    dil["cell_cent"] = tmp_inds
+    dil["cell_ind"] = wei_inds
     return dil
 
 
 def handle_inactive_mapping(dig, dil):
     """Set to inf the inactive grid centers in the reporting grid"""
-    var_array = np.empty(dig["noxz"]) * np.nan
-    var_array[dig["actind"]] = 0.0
-    # For a corner-point grid do not remove the lower right corner
-    safe = np.where(dil["refxcent"] > 2.72)[0]
-    for i in range(dig["nocellsr"]):
-        inds = i == dil["cell_ind"]
-        if np.isnan(np.sum(var_array[inds])) and i not in safe:
-            dil["refxgrid"][i] = np.inf
-            dil["refzgrid"][i] = np.inf
-    ind, dil["cell_ind"] = 0, np.zeros(dig["nocellst"], dtype=int)
-    for i, k in zip(dil["simxcent"], dil["simzcent"]):
-        dil["cell_ind"][ind] = pd.Series(
-            np.abs(dil["refxgrid"] - i) + np.abs(dil["refzgrid"] - k)
-        ).argmin()
-        ind += 1
+    for i in dig["actind"]:
+        for mask in dil["cell_ind"][i]:
+            dig["actindr"].append(mask[0])
+    dig["actindr"] = list(dict.fromkeys(dig["actindr"]))
+    allc = np.linspace(0, dig["nocellsr"] - 1, dig["nocellsr"], dtype=int)
+    dig["actindr"] = np.delete(allc, dig["actindr"])
     return dil
 
 
 def handle_performance_spatial(dig, dil):
     """Create the performance spatial maps"""
+    dil["counter"] = 1.0 * np.ones(dig["nocellsr"])
+    dil["pv"] = 0.0 * np.ones(dig["nocellsr"])
+    dil["pv"][dig["actindr"]] = 1.0
     dil = static_map_to_report_grid_performance_spatial(dig, dil)
     names = ["co2mn", "h2omn", "co2mb", "h2omb"]
     for i, rst in enumerate(dil["rstno"]):
@@ -801,7 +870,8 @@ def static_map_to_report_grid_performance_spatial(dig, dil):
     dil["latest_dts"].append(tsteps[-1])
     for name in ["cvol", "arat"]:
         dil[f"{name}_array"] = np.zeros(dig["nocellst"])
-        dil[f"{name}_refg"] = np.empty(dig["nocellsr"]) * np.nan
+        dil[f"{name}_refg"] = np.zeros(dig["nocellsr"])
+        dil[f"{name}_refg"][dig["actindr"]] = np.nan
     if dig["use"] == "opm":
         dil["cvol_array"][dig["actind"]] = np.divide(
             dig["porva"], np.array(dig["init"]["PORO"])
@@ -817,12 +887,14 @@ def static_map_to_report_grid_performance_spatial(dig, dil):
             np.array(dig["init"].iget_kw("DZ")[0]),
             np.array(dig["init"].iget_kw("DX")[0]),
         )
-    for i in range(dig["nocellsr"]):
-        inds = i == dil["cell_ind"]
-        p_v = np.sum(dig["porv"][inds])
-        if p_v > 0:
-            dil["cvol_refg"][i] = np.mean(dil["cvol_array"][inds])
-            dil["arat_refg"][i] = np.mean(dil["arat_array"][inds])
+    for i in dig["actind"]:
+        for mask in dil["cell_ind"][i]:
+            dil["cvol_refg"][mask[0]] += dil["cvol_array"][i] * mask[1]
+            dil["arat_refg"][mask[0]] += dil["arat_array"][i] * mask[1]
+            dil["counter"][mask[0]] += 1.0
+            dil["pv"][mask[0]] += dig["porv"][i]
+    dil["cvol_refg"] = np.divide(dil["cvol_refg"], dil["counter"])
+    dil["arat_refg"] = np.divide(dil["arat_refg"], dil["counter"])
     return dil
 
 
@@ -856,15 +928,22 @@ def generate_arrays_performance_spatial(dig, dil, t_n):
 def map_to_report_grid_performance_spatial(dig, dil, names, d_t):
     """Map the simulation grid to the reporting grid"""
     for name in names:
-        dil[f"{name}_refg"] = np.empty(dig["nocellsr"]) * np.nan
-    for i in range(dig["nocellsr"]):
-        inds = i == dil["cell_ind"]
-        p_v = np.sum(dig["porv"][inds])
-        if p_v > 0:
-            dil["co2mn_refg"][i] = d_t * np.max(dil["co2mn_array"][inds])
-            dil["h2omn_refg"][i] = d_t * np.max(dil["h2omn_array"][inds])
-            dil["co2mb_refg"][i] = d_t * np.sum(dil["co2mb_array"][inds]) / p_v
-            dil["h2omb_refg"][i] = d_t * np.sum(dil["h2omb_array"][inds]) / p_v
+        dil[f"{name}_refg"] = np.zeros(dig["nocellsr"])
+        dil[f"{name}_refg"][dig["actindr"]] = np.nan
+    for i in dig["actind"]:
+        for mask in dil["cell_ind"][i]:
+            dil["co2mn_refg"][mask[0]] = max(
+                dil["co2mn_refg"][mask[0]], dil["co2mn_array"][i] * mask[1]
+            )
+            dil["h2omn_refg"][mask[0]] = max(
+                dil["h2omn_refg"][mask[0]], dil["h2omn_array"][i] * mask[1]
+            )
+            dil["co2mb_refg"][mask[0]] += dil["co2mb_array"][i] * mask[1]
+            dil["h2omb_refg"][mask[0]] += dil["h2omb_array"][i] * mask[1]
+    dil["co2mn_refg"] *= d_t
+    dil["h2omn_refg"] *= d_t
+    dil["co2mb_refg"] = d_t * np.divide(dil["co2mb_refg"], dil["pv"])
+    dil["h2omb_refg"] = d_t * np.divide(dil["h2omb_refg"], dil["pv"])
     return dil
 
 
@@ -938,9 +1017,12 @@ def write_dense_data_performance_spatial(dig, dil, i):
 
 def generate_arrays(dig, dil, names, t_n):
     """Numpy arrays for the dense data"""
-    for name in names:
+    for name in names[:-1]:
         dil[f"{name}_array"] = np.zeros(dig["nocellst"])
         dil[f"{name}_refg"] = np.empty(dig["nocellsr"]) * np.nan
+    dil["tco2_array"] = np.zeros(dig["nocellst"])
+    dil["tco2_refg"] = np.zeros(dig["nocellsr"])
+    dil["tco2_refg"][dig["actindr"]] = np.nan
     if dig["use"] == "opm":
         sgas = np.array(dig["unrst"]["SGAS", t_n])
         rhog = np.array(dig["unrst"]["GAS_DEN", t_n])
@@ -1000,17 +1082,11 @@ def compute_xh20(dig, dil, h2o_v, co2_g):
 
 def map_to_report_grid(dig, dil, names):
     """Map the simulation grid to the reporting grid"""
-    for i in range(dig["nocellsr"]):
-        inds = i == dil["cell_ind"]
-        p_v = np.sum(dig["porv"][inds])
-        if p_v > 0:
-            for name in names:
-                if name == "tco2":
-                    dil[f"{name}_refg"][i] = np.sum(dil[f"{name}_array"][inds])
-                else:
-                    dil[f"{name}_refg"][i] = (
-                        np.sum(dil[f"{name}_array"][inds] * dig["porv"][inds]) / p_v
-                    )
+    for i in dig["actind"]:
+        for mask in dil["cell_ind"][i]:
+            dil["tco2_refg"][mask[0]] += dil["tco2_array"][i] * mask[1]
+        for name in names[:-1]:
+            dil[f"{name}_refg"][dil["cell_cent"][i]] = dil[f"{name}_array"][i]
     return dil
 
 
