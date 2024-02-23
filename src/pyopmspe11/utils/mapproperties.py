@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
+# pylint: disable=C0302, R0914
 
 """
 Utiliy function for the grid and finding the wells i,j, and k ids.
@@ -78,7 +79,7 @@ def structured_handling_spe11a(dic):
         dic (dict): Global dictionary with new added parameters
 
     """
-    sensor1, sensor2, centers = [], [], []
+    sensor1, sensor2, centers, corners = [], [], [], []
     for k in range(dic["noCells"][2]):
         for i in range(dic["noCells"][0]):
             fgl = pd.Series(
@@ -109,6 +110,12 @@ def structured_handling_spe11a(dic):
                     1:-1
                 ]
             )
+            corners.append(
+                f"{dic['xmx'][i]}, {dic['dims'][2] -dic['zmz'][k]}, {dic['xmx'][i+1]}, "
+                + f"{dic['dims'][2] -dic['zmz'][k]}, {dic['xmx'][i+1]}, "
+                + f"{dic['dims'][2] -dic['zmz'][k+1]}, {dic['xmx'][i]}, "
+                + f"{dic['dims'][2] -dic['zmz'][k+1]}"
+            )
     dic["pop1"] = pd.Series(sensor1).argmin()
     dic["pop2"] = pd.Series(sensor2).argmin()
     dic["fipnum"][dic["pop1"]] = "8"
@@ -121,6 +128,12 @@ def structured_handling_spe11a(dic):
         encoding="utf8",
     ) as file:
         file.write("\n".join(centers))
+    with open(
+        f"{dic['exe']}/{dic['fol']}/deck/corners.txt",
+        "w",
+        encoding="utf8",
+    ) as file:
+        file.write("\n".join(corners))
     return dic
 
 
@@ -135,7 +148,7 @@ def structured_handling_spe11bc(dic):
         dic (dict): Global dictionary with new added parameters
 
     """
-    sensor1, sensor2, centers = [], [], []
+    sensor1, sensor2, centers, corners = [], [], [], []
     for k in range(dic["noCells"][2]):
         for i in range(dic["noCells"][0]):
             fgl = pd.Series(
@@ -184,6 +197,12 @@ def structured_handling_spe11bc(dic):
                 str([dic["xmx_center"][i], dic["ymy_center"][0], dic["zmz_center"][k]])[
                     1:-1
                 ]
+            )
+            corners.append(
+                f"{dic['xmx'][i]}, {dic['dims'][2] -dic['zmz'][k]}, {dic['xmx'][i+1]}, "
+                + f"{dic['dims'][2] -dic['zmz'][k]}, {dic['xmx'][i+1]}, "
+                + f"{dic['dims'][2] -dic['zmz'][k+1]}, {dic['xmx'][i]}, "
+                + f"{dic['dims'][2] -dic['zmz'][k+1]}"
             )
         for j in range(dic["noCells"][1] - 1):
             for names in ["satnum", "poro", "permx", "disperc", "thconr"]:
@@ -239,6 +258,12 @@ def structured_handling_spe11bc(dic):
         encoding="utf8",
     ) as file:
         file.write("\n".join(centers))
+    with open(
+        f"{dic['exe']}/{dic['fol']}/deck/corners.txt",
+        "w",
+        encoding="utf8",
+    ) as file:
+        file.write("\n".join(corners))
     return dic
 
 
@@ -253,7 +278,7 @@ def corner_point_handling_spe11a(dic):
         dic (dict): Global dictionary with new added parameters
 
     """
-    well1, well2, sensor1, sensor2, centers = [], [], [], [], []
+    well1, well2, sensor1, sensor2, centers, corners = [], [], [], [], [], []
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
     for i in range(dic["no_cells"]):
         dic = get_cell_info(dic, i)
@@ -282,6 +307,7 @@ def corner_point_handling_spe11a(dic):
         dic["poro"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1])
         dic["disperc"].append(f"{dic['dispersion'][int(dic['ids_gmsh'][fgl][0])-1]}")
         centers.append(str([dic["xyz"][0], dic["ymy_center"][0], dic["xyz"][2]])[1:-1])
+        corners.append(dic["corns"])
     dic["pop1"] = pd.Series(sensor1).argmin()
     dic["pop2"] = pd.Series(sensor2).argmin()
     dic["fipnum"][dic["pop1"]] = "8"
@@ -306,6 +332,12 @@ def corner_point_handling_spe11a(dic):
         encoding="utf8",
     ) as file:
         file.write("\n".join(centers))
+    with open(
+        f"{dic['exe']}/{dic['fol']}/deck/corners.txt",
+        "w",
+        encoding="utf8",
+    ) as file:
+        file.write("\n".join(corners))
     return dic
 
 
@@ -324,6 +356,11 @@ def get_cell_info(dic, i):
     if dic["use"] == "opm":
         dic["ijk"] = dic["gridf"].ijk_from_global_index(i)
         vxyz = dic["gridf"].xyz_from_ijk(dic["ijk"][0], dic["ijk"][1], dic["ijk"][2])
+        dic["corns"] = (
+            f"{vxyz[0][0]}, {dic['dims'][2] -vxyz[2][0]}, {vxyz[0][1]}, "
+            + f"{dic['dims'][2] -vxyz[2][1]}, {vxyz[0][5]}, {dic['dims'][2] -vxyz[2][5]},"
+            + f" {vxyz[0][4]}, {dic['dims'][2] - vxyz[2][4]}"
+        )
         pxyz = Polygon(
             [
                 [vxyz[0][0], vxyz[2][0]],
@@ -338,6 +375,12 @@ def get_cell_info(dic, i):
     else:
         dic["xyz"] = dic["gridf"].get_xyz(global_index=i)
         dic["ijk"] = dic["gridf"].get_ijk(global_index=i)
+        vxyz = dic["gridf"].export_corners(dic["gridf"].export_index())[i]
+        dic["corns"] = (
+            f"{vxyz[0]}, {dic['dims'][2] -vxyz[2]}, {vxyz[3]}, "
+            + f"{dic['dims'][2] -vxyz[5]}, {vxyz[15]}, {dic['dims'][2] -vxyz[17]}, "
+            + f"{vxyz[12]}, {dic['dims'][2] - vxyz[14]}"
+        )
     return dic
 
 
@@ -352,7 +395,16 @@ def corner_point_handling_spe11bc(dic):
         dic (dict): Global dictionary with new added parameters
 
     """
-    well1, well2, sensor1, sensor2, xtemp, ztemp, centers = [], [], [], [], [], [], []
+    well1, well2, sensor1, sensor2, xtemp, ztemp, centers, corners = (
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+    )
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
     for i in range(dic["no_cells"]):
         dic = get_cell_info(dic, i)
@@ -401,6 +453,7 @@ def corner_point_handling_spe11bc(dic):
                 + f"{dic['noCells'][0]} 1 1 {dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
             )
         centers.append(str([dic["xyz"][0], dic["ymy_center"][0], dic["xyz"][2]])[1:-1])
+        corners.append(dic["corns"])
         if dic["ijk"][0] > 0 and dic["ijk"][0] == dic["noCells"][0] - 1:
             for j in range(dic["noCells"][1] - 1):
                 for names in ["satnum", "poro", "permx", "disperc", "thconr"]:
@@ -447,6 +500,12 @@ def corner_point_handling_spe11bc(dic):
         encoding="utf8",
     ) as file:
         file.write("\n".join(centers))
+    with open(
+        f"{dic['exe']}/{dic['fol']}/deck/corners.txt",
+        "w",
+        encoding="utf8",
+    ) as file:
+        file.write("\n".join(corners))
     return dic
 
 

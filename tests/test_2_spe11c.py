@@ -23,7 +23,7 @@ def test_spe11b():
             "-g",
             "dense_performance",
             "-r",
-            "24,1,12",
+            "24,3,12",
             "-t",
             "5",
         ],

@@ -1,6 +1,8 @@
 mako
 matplotlib
 pandas
+Pyarrow
 resdata
+rtree
 scipy
 shapely
