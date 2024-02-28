@@ -52,6 +52,8 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#hello-world">Hello world</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#presentation">Presentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#spe11a-in-a-1-mm-cartesian-grid">SPE11A in a 1 mm Cartesian grid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#spe11b-in-a-1-m-cartesian-grid">SPE11B in a 1 m Cartesian grid</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
@@ -133,44 +135,43 @@ where you can also see some of the preliminary simulation results using OPM Flow
 <span class="l l-Scalar l-Scalar-Plain">¨ The solver time step is the maximum value allowed by the simulator</span>
 </pre></div>
 </div>
-<p>The <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples">examples/finner_grids</a> folder contains configuration files
-with grid size of the same order as requested for reporting the spatial data in the benchmark, as well as the required injection schedules. For example, by executing:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.txt<span class="w"> </span>-o<span class="w"> </span>spe11b_current<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">840</span>,1,120<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.1
+<p>The <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids">examples/finner_grids</a> folder contains configuration files
+with grid size of the same order and finner as requested for reporting the spatial data in the benchmark, as well as the required injection schedules.</p>
+</section>
+<section id="spe11a-in-a-1-mm-cartesian-grid">
+<h2>SPE11A in a 1 mm Cartesian grid<a class="headerlink" href="#spe11a-in-a-1-mm-cartesian-grid" title="Link to this heading"></a></h2>
+<p>In a 1 mm Cartesian grid for the spe11a <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11a1mm.txt">(spe11a1mm.txt)</a>, by executing:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11a1mm.txt<span class="w"> </span>-o<span class="w"> </span>spe11a1mm<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">1</span><span class="w"> </span>-r<span class="w"> </span><span class="m">280</span>,1,120<span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.16666666666666666
 </pre></div>
 </div>
 <p>the following are some of the generated figures:</p>
 <figure class="align-default" id="id1">
-<img alt="_images/spe11b_sparse_data_finner.png" src="_images/spe11b_sparse_data_finner.png" />
+<img alt="_images/spe11a_sparse_data.png" src="_images/spe11a_sparse_data.png" />
 <figcaption>
 <p><span class="caption-text">Sparse data.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <figure class="align-default" id="id2">
-<img alt="_images/spe11b_performance_finner.png" src="_images/spe11b_performance_finner.png" />
+<img alt="_images/spe11a_performance.png" src="_images/spe11a_performance.png" />
 <figcaption>
 <p><span class="caption-text">Performance data.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <figure class="align-default" id="id3">
-<img alt="_images/spe11b_performance_detailed_finner.png" src="_images/spe11b_performance_detailed_finner.png" />
+<img alt="_images/spe11a_performance_detailed.png" src="_images/spe11a_performance_detailed.png" />
 <figcaption>
 <p><span class="caption-text">Detailed performance data.</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <figure class="align-default" id="id4">
-<img alt="_images/spe11b_wden_2Dmaps_finner.png" src="_images/spe11b_wden_2Dmaps_finner.png" />
+<img alt="_images/spe11a_tco2_2Dmaps.png" src="_images/spe11a_tco2_2Dmaps.png" />
 <figcaption>
-<p><span class="caption-text">Dense data for the water density.</span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
+<p><span class="caption-text">Dense data for the CO2 mass (in the 1 cm size, tho the simulations are runned at 1 mm size).</span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
 </figcaption>
 </figure>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>The inputs in this configuration file were set to show the current functionality of pyopmspe11 to generate the benchmark data, i.e.,
-the tolerances are not tight and no tunning was performed. In consequence, the total mass in the simulation (ca. 7.75e7 kg) is less
-than what is specified in the benchmark (ca. 8.27e7 kg). By executing flow –help you get an overview of the available flags in the
-flow simulator to improve/fix convergence and mass issues (i.e., by setting the flag –linear-solver=cprw to change the linear solver,
-by tightening the mb tolerances (–tolerance-mb), etc.).</p>
-</div>
+</section>
+<section id="spe11b-in-a-1-m-cartesian-grid">
+<h2>SPE11B in a 1 m Cartesian grid<a class="headerlink" href="#spe11b-in-a-1-m-cartesian-grid" title="Link to this heading"></a></h2>
 <p>The following are simulation results in a 1 m Cartesian grid <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11b1m.txt">(spe11b1m.txt)</a>,
 and the animation in the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main">main page</a> was generated using these results (the inizialization time of 1000 years was
 skipped and the results were printed ever 25 years instead of 5 years):</p>

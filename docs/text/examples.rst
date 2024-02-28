@@ -59,37 +59,40 @@ where you can also see some of the preliminary simulation results using OPM Flow
     * spe11b and spe11c have an extra layer [1 m] of grid cells on the left and right boundaries to include the buffer volume  
     ¨ The solver time step is the maximum value allowed by the simulator
 
-The `examples/finner_grids <https://github.com/OPM/pyopmspe11/blob/main/examples>`_ folder contains configuration files
-with grid size of the same order as requested for reporting the spatial data in the benchmark, as well as the required injection schedules. For example, by executing:
+The `examples/finner_grids <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids>`_ folder contains configuration files
+with grid size of the same order and finner as requested for reporting the spatial data in the benchmark, as well as the required injection schedules. 
+
+===============================
+SPE11A in a 1 mm Cartesian grid 
+===============================
+
+In a 1 mm Cartesian grid for the spe11a `(spe11a1mm.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11a1mm.txt>`_, by executing:
 
 .. code-block:: bash
 
-    pyopmspe11 -i spe11b.txt -o spe11b_current -m all -g all -r 840,1,120 -t 5 -w 0.1
+    pyopmspe11 -i spe11a1mm.txt -o spe11a1mm -m all -g all -t 1 -r 280,1,120 -w 0.16666666666666666
 
 the following are some of the generated figures:
 
-.. figure:: figs/spe11b_sparse_data_finner.png
+.. figure:: figs/spe11a_sparse_data.png
 
     Sparse data.
 
-.. figure:: figs/spe11b_performance_finner.png
+.. figure:: figs/spe11a_performance.png
 
     Performance data.
 
-.. figure:: figs/spe11b_performance_detailed_finner.png
+.. figure:: figs/spe11a_performance_detailed.png
 
     Detailed performance data.
 
-.. figure:: figs/spe11b_wden_2Dmaps_finner.png
+.. figure:: figs/spe11a_tco2_2Dmaps.png
 
-    Dense data for the water density.
+    Dense data for the CO2 mass (in the 1 cm size, tho the simulations are runned at 1 mm size).
 
-.. warning::
-    The inputs in this configuration file were set to show the current functionality of pyopmspe11 to generate the benchmark data, i.e.,
-    the tolerances are not tight and no tunning was performed. In consequence, the total mass in the simulation (ca. 7.75e7 kg) is less
-    than what is specified in the benchmark (ca. 8.27e7 kg). By executing flow --help you get an overview of the available flags in the
-    flow simulator to improve/fix convergence and mass issues (i.e., by setting the flag --linear-solver=cprw to change the linear solver,
-    by tightening the mb tolerances (--tolerance-mb), etc.).
+==============================
+SPE11B in a 1 m Cartesian grid 
+==============================
 
 The following are simulation results in a 1 m Cartesian grid `(spe11b1m.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11b1m.txt>`_, 
 and the animation in the `main page <https://github.com/OPM/pyopmspe11/blob/main>`_ was generated using these results (the inizialization time of 1000 years was 

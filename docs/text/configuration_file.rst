@@ -18,6 +18,11 @@ line as many flags as required (see the OPM Flow documentation `here <https://op
     If you have installed flow with MPI support, then you can run the simulations in
     parallel by adding **mpirun -np N flow ...** where N is the number of cpus.
 
+.. tip::
+    By executing flow --help you get an overview of the available flags in the
+    flow simulator to improve/fix convergence and mass issues (i.e., by setting the flag --linear-solver=cprw to change the linear solver,
+    by tightening the mb tolerances (--tolerance-mb), etc.).
+
 ****************************
 Reservoir-related parameters
 ****************************
