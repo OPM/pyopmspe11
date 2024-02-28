@@ -100,6 +100,12 @@ line as many flags as required (see the OPM Flow documentation <a class="referen
 <p>If you have installed flow with MPI support, then you can run the simulations in
 parallel by adding <strong>mpirun -np N flow …</strong> where N is the number of cpus.</p>
 </div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>By executing flow –help you get an overview of the available flags in the
+flow simulator to improve/fix convergence and mass issues (i.e., by setting the flag –linear-solver=cprw to change the linear solver,
+by tightening the mb tolerances (–tolerance-mb), etc.).</p>
+</div>
 <section id="reservoir-related-parameters">
 <h2>Reservoir-related parameters<a class="headerlink" href="#reservoir-related-parameters" title="Link to this heading"></a></h2>
 <p>The following input lines in the configuration file are:</p>
