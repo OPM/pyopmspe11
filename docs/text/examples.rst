@@ -109,3 +109,23 @@ skipped and the results were printed ever 25 years instead of 5 years):
 .. figure:: figs/spe11b_performance_1m.png
 
     Performance data in the 1 m Cartesian grid.
+
+=============================
+SPE11C in a corner-point grid
+=============================
+
+The following are simulation results in a corner-point grid `(spe11c_cp.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11c_cp.txt>`_ with 21729920 active cells (the inizialization time of 1000 years was skipped):
+
+.. code-block:: bash
+
+    pyopmspe11 -i spe11c_cp.txt -o spe11c_cp -m all -g all -r 168,100,120 -t 0,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000
+
+.. figure:: figs/spe11c_sparse_data.png
+
+    Sparse data in the corner-point grid.
+
+.. figure:: figs/spe11c_performance.png
+
+    Performance data in the corner-point grid.
+
+.. image:: ./figs/spe11c.gif

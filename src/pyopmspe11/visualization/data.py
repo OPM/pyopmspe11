@@ -114,6 +114,7 @@ def main():
     if dig["case"] == "spe11c":
         dig["dims"][1] = 5000.0
     dig["nocellsr"] = dig["nxyz"][0] * dig["nxyz"][1] * dig["nxyz"][2]
+    dig["noxzr"] = dig["nxyz"][0] * dig["nxyz"][2]
     dig = read_times(dig)
     if dig["use"] == "opm":
         dig = read_opm(dig)
@@ -713,7 +714,8 @@ def dense_data(dig):
     dil["refzgrid"] = np.zeros(dig["nxyz"][0] * dig["nxyz"][2])
     dil["refpoly"] = []
     ind, dil["cell_ind"] = 0, [[] for _ in range(dig["noxz"])]
-    dil["cell_cent"] = [0 for _ in range(dig["noxz"])]
+    dil["cell_indc"] = np.zeros(dig["noxz"])
+    dil["cell_cent"] = [0 for _ in range(dig["noxzr"])]
     idx = index.Index()
     for k, zcen in enumerate(dil["refzcent"]):
         for i, xcen in enumerate(dil["refxcent"]):
@@ -731,23 +733,24 @@ def dense_data(dig):
             )
             idx.insert(ind, dil["refpoly"][-1].bounds)
             ind += 1
-    for k, (simp, xcen, zcen) in enumerate(
-        zip(dil["simpoly"], dil["simxcent"], dil["simzcent"])
-    ):
+    for k, simp in enumerate(dil["simpoly"]):
         ovrl = list(idx.intersection(simp.bounds))
         if simp.area > 0:
             for ind in ovrl:
                 area = simp.intersection(dil["refpoly"][ind]).area / simp.area
                 if area > 0:
                     dil["cell_ind"][k].append([ind, area])
+                    dil["cell_indc"][k] = ind
+    for k, (xcen, zcen) in enumerate(zip(dil["refxgrid"], dil["refzgrid"])):
         dil["cell_cent"][k] = pd.Series(
-            np.abs(dil["refxgrid"] - xcen) + np.abs(dil["refzgrid"] - zcen)
+            np.abs(dil["simxcent"] - xcen) + np.abs(dil["simzcent"] - zcen)
         ).argmin()
     dig["actindr"] = []
     if max(dil["satnum"]) < 7 and dig["case"] == "spe11a":
         dil = handle_inactive_mapping(dig, dil)
     if dig["case"] == "spe11c":
-        dil = handle_yaxis_mapping(dig, dil)
+        dil = handle_yaxis_mapping_intensive(dig, dil)
+        dil = handle_yaxis_mapping_extensive(dig, dil)
     if dig["mode"] == "all" or dig["mode"][:5] == "dense":
         names = ["pressure", "sgas", "xco2", "xh20", "gden", "wden", "tco2"]
         if dig["case"] != "spe11a":
@@ -762,8 +765,8 @@ def dense_data(dig):
         handle_performance_spatial(dig, dil)
 
 
-def handle_yaxis_mapping(dig, dil):
-    """Extend the indices accounting for the y direction"""
+def handle_yaxis_mapping_extensive(dig, dil):
+    """Extend the indices accounting for the y direction (extensive quantities)"""
     simycent = [0.0] * dig["gxyz"][1]
     with open(f"{dig['path']}/deck/ycenters.txt", "r", encoding="utf8") as file:
         for j, row in enumerate(csv.reader(file)):
@@ -772,18 +775,16 @@ def handle_yaxis_mapping(dig, dil):
         [pd.Series(np.abs(dil["refycent"] - y_c)).argmin() for y_c in simycent]
     )
     weights = [1.0 / (np.sum(indy == val)) for val in indy]
-    tmp_inds = np.zeros(dig["nocellst"], dtype=int)
     wei_inds = [[] for _ in range(dig["nocellst"])]
     mults = np.zeros(dig["gxyz"][0], dtype=int)
-    dil["cell_cent"] = np.array(dil["cell_cent"])
     for indz in range(dig["gxyz"][2]):
         i_i = dig["gxyz"][0] * (dig["gxyz"][2] - indz - 1)
         i_f = dig["gxyz"][0] * (dig["gxyz"][2] - indz)
         iii = dig["gxyz"][0] * dig["gxyz"][1] * (dig["gxyz"][2] - 1 - indz)
         if indz != 0:
             mults += 1 * (
-                dil["cell_cent"][i_f : i_f + dig["gxyz"][0]]
-                != dil["cell_cent"][i_i : i_i + dig["gxyz"][0]]
+                dil["cell_indc"][i_f : i_f + dig["gxyz"][0]]
+                != dil["cell_indc"][i_i : i_i + dig["gxyz"][0]]
             )
         maps = [
             [
@@ -795,15 +796,8 @@ def handle_yaxis_mapping(dig, dil):
             ]
             for i, row in enumerate(dil["cell_ind"][i_i : i_i + dig["gxyz"][0]])
         ]
-        values = dil["cell_cent"][i_i : i_i + dig["gxyz"][0]] + mults * (
-            dig["nxyz"][0]
-        ) * (dig["nxyz"][1] - 1)
-        tmp_inds[iii : iii + dig["gxyz"][0]] = values
         wei_inds[iii : iii + dig["gxyz"][0]] = maps
         for j, iy in enumerate(indy[1:]):
-            tmp_inds[
-                iii + dig["gxyz"][0] * (j + 1) : iii + dig["gxyz"][0] * (j + 2)
-            ] = (iy * dig["nxyz"][0]) + values
             wei_inds[
                 iii + dig["gxyz"][0] * (j + 1) : iii + dig["gxyz"][0] * (j + 2)
             ] = [
@@ -811,10 +805,40 @@ def handle_yaxis_mapping(dig, dil):
                     [col[0] + (iy * dig["nxyz"][0]), col[1] * weights[j + 1]]
                     for col in row
                 ]
-                for i, row in enumerate(maps)
+                for row in maps
             ]
-    dil["cell_cent"] = tmp_inds
     dil["cell_ind"] = wei_inds
+    return dil
+
+
+def handle_yaxis_mapping_intensive(dig, dil):
+    """Extend the indices accounting for the y direction"""
+    simycent = [0.0] * dig["gxyz"][1]
+    with open(f"{dig['path']}/deck/ycenters.txt", "r", encoding="utf8") as file:
+        for j, row in enumerate(csv.reader(file)):
+            simycent[j] = float(row[0])
+    indy = np.array(
+        [pd.Series(np.abs(simycent - y_c)).argmin() for y_c in dil["refycent"]]
+    )
+    tmp_inds = np.zeros(dig["nocellsr"], dtype=int)
+    mults = np.zeros(dig["nxyz"][0], dtype=int)
+    dil["cell_cent"] = 1.0 * np.array(dil["cell_cent"])
+    for indz in range(dig["nxyz"][2]):
+        i_i = dig["nxyz"][0] * (dig["nxyz"][2] - indz - 1)
+        iii = dig["nxyz"][0] * dig["nxyz"][1] * (dig["nxyz"][2] - 1 - indz)
+        if indz != 0:
+            mults = np.floor(
+                dil["cell_cent"][i_i : i_i + dig["nxyz"][0]] / dig["gxyz"][0]
+            )
+        values = dil["cell_cent"][i_i : i_i + dig["nxyz"][0]] + mults * (
+            dig["gxyz"][0]
+        ) * (dig["gxyz"][1] - 1)
+        tmp_inds[iii : iii + dig["nxyz"][0]] = values
+        for j, iy in enumerate(indy[1:]):
+            tmp_inds[
+                iii + dig["nxyz"][0] * (j + 1) : iii + dig["nxyz"][0] * (j + 2)
+            ] = (iy * dig["gxyz"][0]) + values
+    dil["cell_cent"] = tmp_inds
     return dil
 
 
@@ -893,6 +917,7 @@ def static_map_to_report_grid_performance_spatial(dig, dil):
             dil["arat_refg"][mask[0]] += dil["arat_array"][i] * mask[1]
             dil["counter"][mask[0]] += 1.0
             dil["pv"][mask[0]] += dig["porv"][i]
+    dil["ei"] = dil["pv"] > 0.0
     dil["cvol_refg"] = np.divide(dil["cvol_refg"], dil["counter"])
     dil["arat_refg"] = np.divide(dil["arat_refg"], dil["counter"])
     return dil
@@ -942,8 +967,12 @@ def map_to_report_grid_performance_spatial(dig, dil, names, d_t):
             dil["h2omb_refg"][mask[0]] += dil["h2omb_array"][i] * mask[1]
     dil["co2mn_refg"] *= d_t
     dil["h2omn_refg"] *= d_t
-    dil["co2mb_refg"] = d_t * np.divide(dil["co2mb_refg"], dil["pv"])
-    dil["h2omb_refg"] = d_t * np.divide(dil["h2omb_refg"], dil["pv"])
+    dil["co2mb_refg"][dil["ei"]] = d_t * np.divide(
+        dil["co2mb_refg"][dil["ei"]], dil["pv"][dil["ei"]]
+    )
+    dil["h2omb_refg"][dil["ei"]] = d_t * np.divide(
+        dil["h2omb_refg"][dil["ei"]], dil["pv"][dil["ei"]]
+    )
     return dil
 
 
@@ -1019,7 +1048,9 @@ def generate_arrays(dig, dil, names, t_n):
     """Numpy arrays for the dense data"""
     for name in names[:-1]:
         dil[f"{name}_array"] = np.zeros(dig["nocellst"])
-        dil[f"{name}_refg"] = np.empty(dig["nocellsr"]) * np.nan
+        dil[f"{name}_refg"] = np.zeros(dig["nocellsr"])
+        if dig["case"] == "spe11a":
+            dil[f"{name}_array"] = np.empty(dig["nocellst"]) * np.nan
     dil["tco2_array"] = np.zeros(dig["nocellst"])
     dil["tco2_refg"] = np.zeros(dig["nocellsr"])
     dil["tco2_refg"][dig["actindr"]] = np.nan
@@ -1085,8 +1116,9 @@ def map_to_report_grid(dig, dil, names):
     for i in dig["actind"]:
         for mask in dil["cell_ind"][i]:
             dil["tco2_refg"][mask[0]] += dil["tco2_array"][i] * mask[1]
+    for i, ind in enumerate(dil["cell_cent"]):
         for name in names[:-1]:
-            dil[f"{name}_refg"][dil["cell_cent"][i]] = dil[f"{name}_array"][i]
+            dil[f"{name}_refg"][i] = dil[f"{name}_array"][int(ind)]
     return dil
 
 
@@ -1099,11 +1131,15 @@ def write_dense_data(dig, dil, i):
         for ycord in dil["refycent"]:
             for xcord in dil["refxcent"]:
                 idc = -dig["nxyz"][0] * dig["nxyz"][1] * (dig["nxyz"][2] - idz) + idxy
+                if np.isnan(dil["tco2_refg"][idc]):
+                    co2 = "n/a"
+                else:
+                    co2 = f"{dil['tco2_refg'][idc] :.3e}"
                 if dig["case"] == "spe11a":
                     if np.isnan(dil["pressure_refg"][idc]):
                         text.append(
                             f"{xcord:.3e}, {zcord:.3e}, n/a, n/a, n/a, n/a, n/a, "
-                            + "n/a, n/a"
+                            + f"n/a, {co2}"
                         )
                     else:
                         text.append(
@@ -1111,16 +1147,16 @@ def write_dense_data(dig, dil, i):
                             + f"{dil['pressure_refg'][idc] :.3e}, "
                             + f"{dil['sgas_refg'][idc] :.3e}, "
                             + f"{dil['xco2_refg'][idc] :.3e}, "
-                            + f"{dil['xh20_refg'][idc] :.3e}, "
+                            + "n/a, "
                             + f"{dil['gden_refg'][idc] :.3e}, "
                             + f"{dil['wden_refg'][idc] :.3e}, "
-                            + f"{dil['tco2_refg'][idc] :.3e}"
+                            + f"{co2}"
                         )
                 elif dig["case"] == "spe11b":
                     if np.isnan(dil["pressure_refg"][idc]):
                         text.append(
                             f"{xcord:.3e}, {zcord:.3e}, "
-                            + "n/a, n/a, n/a, n/a, n/a, n/a, n/a, n/a"
+                            + f"n/a, n/a, n/a, n/a, n/a, n/a, {co2}, n/a"
                         )
                     else:
                         text.append(
@@ -1131,14 +1167,14 @@ def write_dense_data(dig, dil, i):
                             + f"{dil['xh20_refg'][idc] :.3e}, "
                             + f"{dil['gden_refg'][idc] :.3e}, "
                             + f"{dil['wden_refg'][idc] :.3e}, "
-                            + f"{dil['tco2_refg'][idc] :.3e}, "
+                            + f"{co2}, "
                             + f"{dil['temp_refg'][idc] :.3e}"
                         )
                 else:
                     if np.isnan(dil["pressure_refg"][idc]):
                         text.append(
                             f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, "
-                            + "n/a, n/a, n/a, n/a, n/a, n/a, n/a, n/a"
+                            + f"n/a, n/a, n/a, n/a, n/a, n/a, {co2}, n/a"
                         )
                     else:
                         text.append(
@@ -1149,7 +1185,7 @@ def write_dense_data(dig, dil, i):
                             + f"{dil['xh20_refg'][idc] :.3e}, "
                             + f"{dil['gden_refg'][idc] :.3e}, "
                             + f"{dil['wden_refg'][idc] :.3e}, "
-                            + f"{dil['tco2_refg'][idc] :.3e}, "
+                            + f"{co2}, "
                             + f"{dil['temp_refg'][idc] :.3e}"
                         )
                 idxy += 1
