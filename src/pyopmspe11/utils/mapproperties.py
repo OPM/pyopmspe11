@@ -173,7 +173,9 @@ def structured_handling_spe11bc(dic):
             dic["satnum"].append(dic["ids_gmsh"][fgl][0])
             dic = boxes(dic, dic["xmx_center"][i], z_c, i, dic["satnum"][-1])
             dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
-            dic["poro"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1])
+            poro = dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1]
+            dic["poro"].append(poro)
+            pv = float(poro) * (dic["pvAdded"] + dic["widthBuffer"])
             dic["thconr"].append(
                 f"{dic['rockCond'][int(dic['ids_gmsh'][fgl][0])-1][0]}"
             )
@@ -184,13 +186,13 @@ def structured_handling_spe11bc(dic):
                 int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
             ):
                 dic["porv"].append(
-                    f"PORV {dic['pvAdded']*dic['dy'][0]*dic['dz'][k]} 1 1 1 1 {k+1} {k+1} /"
+                    f"PORV {pv*dic['dy'][0]*dic['dz'][k]} 1 1 1 1 {k+1} {k+1} /"
                 )
             elif i == dic["noCells"][0] - 1 and (
                 int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
             ):
                 dic["porv"].append(
-                    f"PORV {dic['pvAdded']*dic['dy'][0]*dic['dz'][k]} {dic['noCells'][0]} "
+                    f"PORV {pv*dic['dy'][0]*dic['dz'][k]} {dic['noCells'][0]} "
                     + f"{dic['noCells'][0]} 1 1 {k+1} {k+1} /"
                 )
             centers.append(
@@ -235,7 +237,7 @@ def structured_handling_spe11bc(dic):
                     and int(dic["satnum"][-dic["noCells"][0] + i_i]) != 7
                 ):
                     dic["porv"].append(
-                        f"PORV {dic['pvAdded']*dic['dy'][j+1]*dic['dz'][k]} 1 1 "
+                        f"PORV {pv*dic['dy'][j+1]*dic['dz'][k]} 1 1 "
                         + f"{j+2} {j+2} {k+1} {k+1} /"
                     )
                 elif i_i == dic["noCells"][0] - 1 and (
@@ -243,7 +245,7 @@ def structured_handling_spe11bc(dic):
                     and int(dic["satnum"][-dic["noCells"][0] + i_i]) != 7
                 ):
                     dic["porv"].append(
-                        f"PORV {dic['pvAdded']*dic['dy'][j+1]*dic['dz'][k]} {dic['noCells'][0]} "
+                        f"PORV {pv*dic['dy'][j+1]*dic['dz'][k]} {dic['noCells'][0]} "
                         + f"{dic['noCells'][0]} {j+2} {j+2} {k+1} {k+1} /"
                     )
     dic["pop1"] = pd.Series(sensor1).argmin()
@@ -435,21 +437,23 @@ def corner_point_handling_spe11bc(dic):
         dic["satnum"].append(dic["ids_gmsh"][fgl][0])
         dic = boxes(dic, dic["xyz"][0], z_c, dic["ijk"][0], dic["satnum"][-1])
         dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
-        dic["poro"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1])
+        poro = dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1]
+        dic["poro"].append(poro)
+        pv = float(poro) * (dic["pvAdded"] + dic["widthBuffer"])
         dic["disperc"].append(f"{dic['dispersion'][int(dic['ids_gmsh'][fgl][0])-1]}")
         dic["thconr"].append(f"{dic['rockCond'][int(dic['ids_gmsh'][fgl][0])-1][0]}")
         if dic["ijk"][0] == 0 and (
             int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
         ):
             dic["porv"].append(
-                f"PORV {dic['pvAdded']*dic['d_y'][0]*dic['d_z'][i]} 1 1 1 1 "
+                f"PORV { pv*dic['d_y'][0]*dic['d_z'][i]} 1 1 1 1 "
                 + f"{dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
             )
         elif dic["ijk"][0] == dic["noCells"][0] - 1 and (
             int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
         ):
             dic["porv"].append(
-                f"PORV {dic['pvAdded']*dic['d_y'][0]*dic['d_z'][i]} {dic['noCells'][0]} "
+                f"PORV {pv*dic['d_y'][0]*dic['d_z'][i]} {dic['noCells'][0]} "
                 + f"{dic['noCells'][0]} 1 1 {dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
             )
         centers.append(str([dic["xyz"][0], dic["ymy_center"][0], dic["xyz"][2]])[1:-1])
@@ -476,7 +480,7 @@ def corner_point_handling_spe11bc(dic):
                         dic["d_zl"] = dic["d_z"][-dic["noCells"][0] + 1 + i]
                         dic["porv"].append(
                             "PORV "
-                            + f"{dic['pvAdded']*dic['d_y'][j+1]*dic['d_zl']} 1 1 "
+                            + f"{pv*dic['d_y'][j+1]*dic['d_zl']} 1 1 "
                             + f"{j+2} {j+2} {dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
                         )
                     elif i_i == dic["noCells"][0] - 1 and (
@@ -484,7 +488,7 @@ def corner_point_handling_spe11bc(dic):
                         and int(dic["satnum"][-dic["noCells"][0] + i_i]) != 7
                     ):
                         dic["porv"].append(
-                            f"PORV {dic['pvAdded']*dic['d_y'][j+1]*dic['d_z'][i]} "
+                            f"PORV {pv*dic['d_y'][j+1]*dic['d_z'][i]} "
                             + f"{dic['noCells'][0]} {dic['noCells'][0]} {j+2} {j+2} "
                             + f"{dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
                         )
