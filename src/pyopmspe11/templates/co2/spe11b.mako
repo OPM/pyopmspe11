@@ -183,10 +183,17 @@ PERFORMA
 FGIP
 FGIR
 FGIT
+% if dic["flow_version"] != "2023.10":
+RGKDI
+/
+RGKDM
+/
+% else:
 RGCDI
 /
 RGCDM
 /
+% endif
 RGIP
 /
 RWCD

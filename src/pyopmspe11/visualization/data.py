@@ -255,7 +255,7 @@ def performance(dig):
     dil["nress"] = np.array([infostep[8] for infostep in dil["infosteps"]])
     dil["tlinsols"] = np.array([infostep[4] for infostep in dil["infosteps"]])
     dil["runtimes"] = np.array(
-        [sum(infostep[i] for i in [2, 4, 5, 6]) for infostep in dil["infosteps"]]
+        [sum(infostep[i] for i in [2, 3, 4, 5, 6]) for infostep in dil["infosteps"]]
     )
     dil["liniters"] = np.array([infostep[10] for infostep in dil["infosteps"]])
     dil["nliters"] = np.array([infostep[9] for infostep in dil["infosteps"]])
@@ -264,14 +264,16 @@ def performance(dig):
     )
     dil["alltsteps"] = np.array([86400 * infostep[1] for infostep in dil["infosteps"]])
     if dig["use"] == "opm":
-        fgip = dig["smspec"]["FGIP"]
+        fgip = GAS_DEN_REF * dig["smspec"]["FGIP"]
         times = 86400.0 * dig["smspec"]["TIME"] - dig["time_initial"]
     else:
-        fgip = dig["smspec"]["FGIP"].values
+        fgip = GAS_DEN_REF * dig["smspec"]["FGIP"].values
         times = 86400.0 * dig["smspec"]["TIME"].values - dig["time_initial"]
+    times = np.insert(times, 0, 0)
+    fgip = np.insert(fgip, 0, 0)
     interp_fgip = interp1d(
         times,
-        GAS_DEN_REF * fgip,
+        fgip,
         fill_value="extrapolate",
     )
     dil["text"] = []
@@ -281,8 +283,9 @@ def performance(dig):
     )
     if dig["no_skip_rst"] == 0:
         dil["text"].append(
-            "0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, "
-            + "0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00"
+            "0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, "
+            + f"{dig['dof'] * dig['nocellsa']:.3e}, "
+            + "0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00"
         )
         dil["times_data"] = np.delete(dil["times_data"], 0)
     for j, time in enumerate(dil["times_data"]):
@@ -348,6 +351,10 @@ def create_from_summary(dig, dil):
             ind += 1
             if ind == 2:
                 break
+    if "RGKDI:1" in dig["smspec"].keys():
+        dig["X"] = "K"
+    else:
+        dig["X"] = "C"
     sort = sorted(range(len(i_jk)), key=i_jk.__getitem__)
     if dig["use"] == "opm":
         pop1 = dig["unrst"]["PRESSURE", 0][dil["fipnum"].index(8)]
@@ -358,39 +365,39 @@ def create_from_summary(dig, dil):
         dil["pop1"] = [pop1 * 1.0e5] + list(dig["smspec"][names[sort[0]]] * 1.0e5)  # Pa
         dil["pop2"] = [pop2 * 1.0e5] + list(dig["smspec"][names[sort[1]]] * 1.0e5)  # Pa
         for i in [2, 4, 5, 8]:
-            dil["moba"] += dig["smspec"][f"RGCDM:{i}"] * KMOL_TO_KG
-            dil["imma"] += dig["smspec"][f"RGCDI:{i}"] * KMOL_TO_KG
+            dil["moba"] += dig["smspec"][f"RG{dig['X']}DM:{i}"] * KMOL_TO_KG
+            dil["imma"] += dig["smspec"][f"RG{dig['X']}DI:{i}"] * KMOL_TO_KG
             dil["dissa"] += dig["smspec"][f"RWCD:{i}"] * KMOL_TO_KG
         for i in [5, 8]:
             dil["seala"] += (
                 dig["smspec"][f"RWCD:{i}"]
-                + dig["smspec"][f"RGCDM:{i}"]
-                + dig["smspec"][f"RGCDI:{i}"]
+                + dig["smspec"][f"RG{dig['X']}DM:{i}"]
+                + dig["smspec"][f"RG{dig['X']}DI:{i}"]
             ) * KMOL_TO_KG
         for i in [3, 6]:
-            dil["mobb"] += dig["smspec"][f"RGCDM:{i}"] * KMOL_TO_KG
-            dil["immb"] += dig["smspec"][f"RGCDI:{i}"] * KMOL_TO_KG
+            dil["mobb"] += dig["smspec"][f"RG{dig['X']}DM:{i}"] * KMOL_TO_KG
+            dil["immb"] += dig["smspec"][f"RG{dig['X']}DI:{i}"] * KMOL_TO_KG
             dil["dissb"] += dig["smspec"][f"RWCD:{i}"] * KMOL_TO_KG
-        for key in ["RWCD:6", "RGCDM:6", "RGCDI:6"]:
+        for key in ["RWCD:6", f"RG{dig['X']}DM:6", f"RG{dig['X']}DI:6"]:
             dil["sealb"] += dig["smspec"][key] * KMOL_TO_KG
         dil["sealt"] = dil["seala"] + dil["sealb"]
-        for name in ["RWCD", "RGCDM", "RGCDI"]:
+        for name in ["RWCD", f"RG{dig['X']}DM", f"RG{dig['X']}DI"]:
             dil["sealt"] += (
                 dig["smspec"][f"{name}:7"] + dig["smspec"][f"{name}:9"]
             ) * KMOL_TO_KG
         if dig["case"] != "spe11a":
             sealbound = (
                 dig["smspec"]["RWCD:10"]
-                + dig["smspec"]["RGCDM:10"]
-                + dig["smspec"]["RGCDI:10"]
+                + dig["smspec"][f"RG{dig['X']}DM:10"]
+                + dig["smspec"][f"RG{dig['X']}DI:10"]
             ) * KMOL_TO_KG
             dil["sealt"] += sealbound
             dil["boundtot"] = (
                 sealbound
                 + (
                     dig["smspec"]["RWCD:11"]
-                    + dig["smspec"]["RGCDM:11"]
-                    + dig["smspec"]["RGCDI:11"]
+                    + dig["smspec"][f"RG{dig['X']}DM:11"]
+                    + dig["smspec"][f"RG{dig['X']}DI:11"]
                 )
                 * KMOL_TO_KG
             )
@@ -413,39 +420,39 @@ def resdata_summary(dig, dil, names, sort):
         dig["smspec"][names[sort[1]]].values * 1.0e5
     )  # Pa
     for i in [2, 4, 5, 8]:
-        dil["moba"] += dig["smspec"][f"RGCDM:{i}"].values * KMOL_TO_KG
-        dil["imma"] += dig["smspec"][f"RGCDI:{i}"].values * KMOL_TO_KG
+        dil["moba"] += dig["smspec"][f"RG{dig['X']}DM:{i}"].values * KMOL_TO_KG
+        dil["imma"] += dig["smspec"][f"RG{dig['X']}DI:{i}"].values * KMOL_TO_KG
         dil["dissa"] += dig["smspec"][f"RWCD:{i}"].values * KMOL_TO_KG
     for i in [5, 8]:
         dil["seala"] += (
             dig["smspec"][f"RWCD:{i}"].values
-            + dig["smspec"][f"RGCDM:{i}"].values
-            + dig["smspec"][f"RGCDI:{i}"].values
+            + dig["smspec"][f"RG{dig['X']}DM:{i}"].values
+            + dig["smspec"][f"RG{dig['X']}DI:{i}"].values
         ) * KMOL_TO_KG
     for i in [3, 6]:
-        dil["mobb"] += dig["smspec"][f"RGCDM:{i}"].values * KMOL_TO_KG
-        dil["immb"] += dig["smspec"][f"RGCDI:{i}"].values * KMOL_TO_KG
+        dil["mobb"] += dig["smspec"][f"RG{dig['X']}DM:{i}"].values * KMOL_TO_KG
+        dil["immb"] += dig["smspec"][f"RG{dig['X']}DI:{i}"].values * KMOL_TO_KG
         dil["dissb"] += dig["smspec"][f"RWCD:{i}"].values * KMOL_TO_KG
-    for key in ["RWCD:6", "RGCDM:6", "RGCDI:6"]:
+    for key in ["RWCD:6", f"RG{dig['X']}DM:6", f"RG{dig['X']}DI:6"]:
         dil["sealb"] += dig["smspec"][key].values * KMOL_TO_KG
     dil["sealt"] = dil["seala"] + dil["sealb"]
-    for name in ["RWCD", "RGCDM", "RGCDI"]:
+    for name in ["RWCD", f"RG{dig['X']}DM", f"RG{dig['X']}DI"]:
         dil["sealt"] += (
             dig["smspec"][f"{name}:7"].values + dig["smspec"][f"{name}:9"].values
         ) * KMOL_TO_KG
     if dig["case"] != "spe11a":
         sealbound = (
             dig["smspec"]["RWCD:10"].values
-            + dig["smspec"]["RGCDM:10"].values
-            + dig["smspec"]["RGCDI:10"].values
+            + dig["smspec"][f"RG{dig['X']}DM:10"].values
+            + dig["smspec"][f"RG{dig['X']}DI:10"].values
         ) * KMOL_TO_KG
         dil["sealt"] += sealbound
         dil["boundtot"] = (
             sealbound
             + (
                 dig["smspec"]["RWCD:11"].values
-                + dig["smspec"]["RGCDM:11"].values
-                + dig["smspec"]["RGCDI:11"].values
+                + dig["smspec"][f"RG{dig['X']}DM:11"].values
+                + dig["smspec"][f"RG{dig['X']}DI:11"].values
             )
             * KMOL_TO_KG
         )
@@ -455,32 +462,32 @@ def resdata_summary(dig, dil, names, sort):
 def overlapping_c_and_facie1_contribution(dig, dil):
     """Add the corresponding fipnum 12 contribution"""
     if dig["use"] == "opm":
-        dil["moba"] += dig["smspec"]["RGCDM:12"] * KMOL_TO_KG
-        dil["imma"] += dig["smspec"]["RGCDI:12"] * KMOL_TO_KG
+        dil["moba"] += dig["smspec"][f"RG{dig['X']}DM:12"] * KMOL_TO_KG
+        dil["imma"] += dig["smspec"][f"RG{dig['X']}DI:12"] * KMOL_TO_KG
         dil["dissa"] += dig["smspec"]["RWCD:12"] * KMOL_TO_KG
         dil["seala"] += (
             dig["smspec"]["RWCD:12"]
-            + dig["smspec"]["RGCDM:12"]
-            + dig["smspec"]["RGCDI:12"]
+            + dig["smspec"][f"RG{dig['X']}DM:12"]
+            + dig["smspec"][f"RG{dig['X']}DI:12"]
         ) * KMOL_TO_KG
         dil["sealt"] += (
             dig["smspec"]["RWCD:12"]
-            + dig["smspec"]["RGCDM:12"]
-            + dig["smspec"]["RGCDI:12"]
+            + dig["smspec"][f"RG{dig['X']}DM:12"]
+            + dig["smspec"][f"RG{dig['X']}DI:12"]
         ) * KMOL_TO_KG
     else:
-        dil["moba"] += dig["smspec"]["RGCDM:12"].values * KMOL_TO_KG
-        dil["imma"] += dig["smspec"]["RGCDI:12"].values * KMOL_TO_KG
+        dil["moba"] += dig["smspec"][f"RG{dig['X']}DM:12"].values * KMOL_TO_KG
+        dil["imma"] += dig["smspec"][f"RG{dig['X']}DI:12"].values * KMOL_TO_KG
         dil["dissa"] += dig["smspec"]["RWCD:12"].values * KMOL_TO_KG
         dil["seala"] += (
             dig["smspec"]["RWCD:12"].values
-            + dig["smspec"]["RGCDM:12"].values
-            + dig["smspec"]["RGCDI:12"].values
+            + dig["smspec"][f"RG{dig['X']}DM:12"].values
+            + dig["smspec"][f"RG{dig['X']}DI:12"].values
         ) * KMOL_TO_KG
         dil["sealt"] += (
             dig["smspec"]["RWCD:12"].values
-            + dig["smspec"]["RGCDM:12"].values
-            + dig["smspec"]["RGCDI:12"].values
+            + dig["smspec"][f"RG{dig['X']}DM:12"].values
+            + dig["smspec"][f"RG{dig['X']}DI:12"].values
         ) * KMOL_TO_KG
     return dil
 
@@ -535,11 +542,11 @@ def compute_m_c(dig, dil):
     dil = max_xcw(dig, dil)
     for t_n in range(dig["no_skip_rst"] + 1, dig["norst"]):
         if dig["use"] == "opm":
-            sgas = np.array(dig["unrst"]["SGAS", t_n])
+            sgas = abs(np.array(dig["unrst"]["SGAS", t_n]))
             rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}", t_n])
             rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}", t_n])
         else:
-            sgas = np.array(dig["unrst"]["SGAS"][t_n])
+            sgas = abs(np.array(dig["unrst"]["SGAS"][t_n]))
             rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}"][t_n])
             rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}"][t_n])
         co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
@@ -613,18 +620,25 @@ def write_sparse_data(dig, dil):
         "# t [s], p1 [Pa], p2 [Pa], mobA [kg], immA [kg], dissA [kg], sealA [kg], "
         + "<same for B>, MC [m^2], sealTot [kg]"
     ]
-    if dig["case"] != "spe11a":
+    if dig["case"] == "spe11a":
+        for j, time in enumerate(dil["times_data"]):
+            text.append(
+                f"{time:.3e}, {dil['pop1'][j]:.5e}, {dil['pop2'][j]:.5e}, "
+                f"{dil['moba'][j]:.3e}, {dil['imma'][j]:.3e}, {dil['dissb'][j]:.3e}, "
+                f"{dil['seala'][j]:.3e}, {dil['mobb'][j]:.3e}, {dil['immb'][j]:.3e}, "
+                f"{dil['dissb'][j]:.3e}, {dil['sealb'][j]:.3e}, {dil['m_c'][j]:.3e}, "
+                f"{dil['sealt'][j]:.3e}"
+            )
+    else:
         text[-1] += ", boundTot [kg]"
-    for j, time in enumerate(dil["times_data"]):
-        text.append(
-            f"{time:.3e}, {dil['pop1'][j]:.3e}, {dil['pop2'][j]:.3e}, "
-            f"{dil['moba'][j]:.3e}, {dil['imma'][j]:.3e}, {dil['dissb'][j]:.3e}, "
-            f"{dil['seala'][j]:.3e}, {dil['mobb'][j]:.3e}, {dil['immb'][j]:.3e}, "
-            f"{dil['dissb'][j]:.3e}, {dil['sealb'][j]:.3e}, {dil['m_c'][j]:.3e}, "
-            f"{dil['sealt'][j]:.3e}"
-        )
-        if dig["case"] != "spe11a":
-            text[-1] += f",{dil['boundtot'][j]:.3e}"
+        for j, time in enumerate(dil["times_data"]):
+            text.append(
+                f"{time:.4e}, {dil['pop1'][j]:.3e}, {dil['pop2'][j]:.3e}, "
+                f"{dil['moba'][j]:.3e}, {dil['imma'][j]:.3e}, {dil['dissb'][j]:.3e}, "
+                f"{dil['seala'][j]:.3e}, {dil['mobb'][j]:.3e}, {dil['immb'][j]:.3e}, "
+                f"{dil['dissb'][j]:.3e}, {dil['sealb'][j]:.3e}, {dil['m_c'][j]:.3e}, "
+                f"{dil['sealt'][j]:.3e}, {dil['boundtot'][j]:.3e}"
+            )
     with open(
         f"{dig['where']}/{dig['case']}_time_series.csv", "w", encoding="utf8"
     ) as file:
@@ -636,11 +650,11 @@ def max_xcw(dig, dil):
     dil["xcw_max"] = 0
     for t_n in range(dig["no_skip_rst"], dig["norst"]):
         if dig["use"] == "opm":
-            sgas = np.array(dig["unrst"]["SGAS", t_n])
+            sgas = abs(np.array(dig["unrst"]["SGAS", t_n]))
             rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}", t_n])
             rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}", t_n])
         else:
-            sgas = np.array(dig["unrst"]["SGAS"][t_n])
+            sgas = abs(np.array(dig["unrst"]["SGAS"][t_n]))
             rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}"][t_n])
             rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}"][t_n])
         co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
@@ -1055,26 +1069,26 @@ def generate_arrays(dig, dil, names, t_n):
     dil["tco2_refg"] = np.zeros(dig["nocellsr"])
     dil["tco2_refg"][dig["actindr"]] = np.nan
     if dig["use"] == "opm":
-        sgas = np.array(dig["unrst"]["SGAS", t_n])
+        sgas = abs(np.array(dig["unrst"]["SGAS", t_n]))
         rhog = np.array(dig["unrst"]["GAS_DEN", t_n])
         pres = np.array(dig["unrst"]["PRESSURE", t_n])
         if dig["unrst"].count("PCGW", t_n):
             pres -= np.array(dig["unrst"]["PCGW", t_n])
         rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}", t_n])
         rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}", t_n])
+        rvv = np.array(dig["unrst"][f"{dig['r_v'].upper()}", t_n])
         if dig["case"] != "spe11a":
-            rvv = np.array(dig["unrst"][f"{dig['r_v'].upper()}", t_n])
             dil["temp_array"][dig["actind"]] = np.array(dig["unrst"]["TEMP", t_n])
     else:
-        sgas = np.array(dig["unrst"]["SGAS"][t_n])
+        sgas = abs(np.array(dig["unrst"]["SGAS"][t_n]))
         rhog = np.array(dig["unrst"]["GAS_DEN"][t_n])
         pres = np.array(dig["unrst"]["PRESSURE"][t_n])
         if dig["unrst"].has_kw("PCGW"):
             pres -= np.array(dig["unrst"]["PCGW"][t_n])
         rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}"][t_n])
         rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}"][t_n])
+        rvv = np.array(dig["unrst"][f"{dig['r_v'].upper()}"][t_n])
         if dig["case"] != "spe11a":
-            rvv = np.array(dig["unrst"][f"{dig['r_v'].upper()}"][t_n])
             dil["temp_array"][dig["actind"]] = np.array(dig["unrst"]["TEMP"][t_n])
     co2_g = sgas * rhog * dig["porva"]
     co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
@@ -1085,9 +1099,8 @@ def generate_arrays(dig, dil, names, t_n):
     dil["wden_array"][dig["actind"]] = rhow
     dil["tco2_array"][dig["actind"]] = co2_d + co2_g
     dil = compute_xco2(dig, dil, co2_d, h2o_l)
-    if dig["case"] != "spe11a":
-        h2o_v = rvv * rhog * sgas * dig["porva"] * WAT_DEN_REF / GAS_DEN_REF
-        dil = compute_xh20(dig, dil, h2o_v, co2_g)
+    h2o_v = rvv * rhog * sgas * dig["porva"] * WAT_DEN_REF / GAS_DEN_REF
+    dil = compute_xh20(dig, dil, h2o_v, co2_g)
     return dil
 
 
@@ -1147,7 +1160,7 @@ def write_dense_data(dig, dil, i):
                             + f"{dil['pressure_refg'][idc] :.3e}, "
                             + f"{dil['sgas_refg'][idc] :.3e}, "
                             + f"{dil['xco2_refg'][idc] :.3e}, "
-                            + "n/a, "
+                            + f"{dil['xh20_refg'][idc] :.3e}, "
                             + f"{dil['gden_refg'][idc] :.3e}, "
                             + f"{dil['wden_refg'][idc] :.3e}, "
                             + f"{co2}"
