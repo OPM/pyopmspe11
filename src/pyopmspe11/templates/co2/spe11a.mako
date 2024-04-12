@@ -22,8 +22,10 @@ CO2STORE
 % if dic['model'] == 'complete':
 % if dic["co2store"] == "gaswater":
 DISGASW
+VAPWAT
 % else:
 DISGAS
+VAPOIL
 % endif
 % if (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
 DIFFUSE
@@ -148,6 +150,10 @@ RPTRST
 RSVD
 0   0.0
 ${dic['dims'][2]} 0.0 /
+
+RVVD
+0   0.0
+${dic['dims'][2]} 0.0 /
 % endif
 
 RTEMPVD
@@ -161,10 +167,17 @@ PERFORMA
 FGIP
 FGIR
 FGIT
+% if dic["flow_version"] != "2023.10":
+RGKDI
+/
+RGKDM
+/
+% else:
 RGCDI
 /
 RGCDM
 /
+% endif
 RGIP
 /
 RWCD

@@ -374,8 +374,6 @@ def dense_data(dic):
     for kind in dic["kinds"]:
         dic = handle_kind(dic, kind)
         for k, quantity in enumerate(dic["quantities"]):
-            if dic["case"] == "spe11a" and quantity == "xh20":
-                continue
             dic["ptimes"] = dic["times"][: dic["allplots"][k]] + [dic["times"][-1]]
             dic = ini_quantity_plot(dic)
             csv = np.genfromtxt(
