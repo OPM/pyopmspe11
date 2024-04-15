@@ -395,8 +395,8 @@ def dense_data(dic):
                     skip_header=1,
                 )
                 quan = np.array([csv[i][dic["dims"] + k] for i in range(csv.shape[0])])
-                dic["min"].append(quan[quan >= 0].min())
-                dic["max"].append(quan[quan >= 0].max())
+                dic["min"].append(quan[~np.isnan(quan)].min())
+                dic["max"].append(quan[~np.isnan(quan)].max())
                 if quantity == "tco2":
                     dic["sum"].append(quan[quan >= 0].sum())
                 dic["minc"] = min(dic["minc"], dic["min"][-1])
@@ -448,8 +448,6 @@ def dense_data(dic):
                         + f", {dic['case']} ({dic['folders'][0]})"
                     )
                 axis.axis("scaled")
-                axis.set_xlabel("x [m]")
-                axis.set_ylabel("z [m]")
                 divider = make_axes_locatable(axis)
                 vect = np.linspace(
                     dic["minc"],
