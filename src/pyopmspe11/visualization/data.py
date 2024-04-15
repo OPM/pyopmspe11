@@ -245,18 +245,32 @@ def performance(dig):
     infotimes = [
         infostep[0] * 86400 - dig["time_initial"] for infostep in dil["infosteps"]
     ]
-    times = max(0, dig["no_skip_rst"] - 1)
+    time0 = max(0, dig["no_skip_rst"] - 1)
     dil["map_info"] = np.array(
-        [times + int(np.floor(infotime / dig["sparse_t"])) for infotime in infotimes]
+        [time0 + int(np.floor(infotime / dig["sparse_t"])) for infotime in infotimes]
     )
+    dil["detail_info"] = [0]
+    for j, infotime in enumerate(infotimes):
+        if j < len(infotimes) - 1:
+            if infotime == infotimes[j + 1]:
+                dil["detail_info"].append(dil["detail_info"][-1])
+            else:
+                dil["detail_info"].append(1 + dil["detail_info"][-1])
+    dil["detail_info"] = np.array(dil["detail_info"])
+    dil["times_det"] = []
+    infotimes = np.array(infotimes)
+    for j in range(max(dil["detail_info"]) + 1):
+        ind = j == dil["detail_info"]
+        dil["times_det"].append(max(infotimes[ind]))
+    dil["times_det"] = np.array(dil["times_det"])
     dil["fsteps"] = np.array(
         [1.0 * (infostep[11] == 0) for infostep in dil["infosteps"]]
     )
     dil["nress"] = np.array([infostep[8] for infostep in dil["infosteps"]])
     dil["tlinsols"] = np.array([infostep[4] for infostep in dil["infosteps"]])
-    dil["runtimes"] = np.array(
-        [sum(infostep[i] for i in [2, 3, 4, 5, 6]) for infostep in dil["infosteps"]]
-    )
+    # dil["runtimes"] = np.array(
+    #     [sum(infostep[i] for i in [2, 3, 4, 5, 6]) for infostep in dil["infosteps"]]
+    # )
     dil["liniters"] = np.array([infostep[10] for infostep in dil["infosteps"]])
     dil["nliters"] = np.array([infostep[9] for infostep in dil["infosteps"]])
     dil["tsteps"] = np.array(
@@ -264,18 +278,35 @@ def performance(dig):
     )
     dil["alltsteps"] = np.array([86400 * infostep[1] for infostep in dil["infosteps"]])
     if dig["use"] == "opm":
+        tcpu = dig["smspec"]["TCPU"]
         fgip = GAS_DEN_REF * dig["smspec"]["FGIP"]
         times = 86400.0 * dig["smspec"]["TIME"] - dig["time_initial"]
     else:
+        tcpu = dig["smspec"]["TCPU"].values
         fgip = GAS_DEN_REF * dig["smspec"]["FGIP"].values
         times = 86400.0 * dig["smspec"]["TIME"].values - dig["time_initial"]
-    times = np.insert(times, 0, 0)
-    fgip = np.insert(fgip, 0, 0)
+    dil["map_sum"] = np.array(
+        [time0 + int(np.floor(time / dig["sparse_t"])) for time in dil["times_det"]]
+    )
+    if dig["time_initial"] > 0:
+        tcpu = tcpu[-len(dil["map_sum"]) - 1 :]
+        tcpu = tcpu[1:] - tcpu[:-1]
+    else:
+        tcpu = tcpu[-len(dil["map_sum"]) :]
+        tcpu[1:] -= tcpu[:-1]
+    if dig["time_initial"] == 0:
+        times = np.insert(times, 0, 0)
+        fgip = np.insert(fgip, 0, 0)
     interp_fgip = interp1d(
         times,
         fgip,
         fill_value="extrapolate",
     )
+    write_performance(dig, dil, interp_fgip, tcpu, infotimes)
+
+
+def write_performance(dig, dil, interp_fgip, tcpu, infotimes):
+    """Write the performance data"""
     dil["text"] = []
     dil["text"].append(
         "# t [s], tstep [s], fsteps [-], mass [kg], dof [-], nliter [-], "
@@ -290,6 +321,7 @@ def performance(dig):
         dil["times_data"] = np.delete(dil["times_data"], 0)
     for j, time in enumerate(dil["times_data"]):
         ind = j == dil["map_info"]
+        itd = j == dil["map_sum"]
         dil["tstep"] = np.sum(dil["tsteps"][ind])
         if dil["tstep"] > 0:
             dil["tstep"] /= np.sum(ind)
@@ -302,7 +334,7 @@ def performance(dig):
             + f"{np.sum(dil['nliters'][ind]):.3e}, "
             + f"{np.sum(dil['nress'][ind]):.3e}, "
             + f"{np.sum(dil['liniters'][ind]):.3e}, "
-            + f"{np.sum(dil['runtimes'][ind]):.3e}, "
+            + f"{np.sum(tcpu[itd]):.3e}, "
             + f"{np.sum(dil['tlinsols'][ind]):.3e}"
         )
     with open(
@@ -316,19 +348,22 @@ def performance(dig):
         "# t [s], tstep [s], fsteps [-], mass [kg], dof [-], nliter [-], "
         + "nres [-], liniter [-], runtime [s], tlinsol [s]"
     )
-    for j, time in enumerate(infotimes):
-        dil["text"].append(
-            f"{time:.3e}, "
-            + f"{dil['alltsteps'][j]:.3e}, "
-            + f"{dil['fsteps'][j]:.3e}, "
-            + f"{interp_fgip(time):.3e}, "
-            + f"{dig['dof'] * dig['nocellsa']:.3e}, "
-            + f"{dil['nliters'][j]:.3e}, "
-            + f"{dil['nress'][j]:.3e}, "
-            + f"{dil['liniters'][j]:.3e}, "
-            + f"{dil['runtimes'][j]:.3e}, "
-            + f"{dil['tlinsols'][j]:.3e}"
-        )
+    for j in range(max(dil["detail_info"]) + 1):
+        ind = j == dil["detail_info"]
+        time = max(infotimes[ind])
+        if time >= 0:
+            dil["text"].append(
+                f"{time:.3e}, "
+                + f"{max(dil['tsteps'][ind]):.3e}, "
+                + f"{np.sum(dil['fsteps'][ind]):.3e}, "
+                + f"{interp_fgip(time):.3e}, "
+                + f"{dig['dof'] * dig['nocellsa']:.3e}, "
+                + f"{np.sum(dil['nliters'][ind]):.3e}, "
+                + f"{np.sum(dil['nress'][ind]):.3e}, "
+                + f"{np.sum(dil['liniters'][ind]):.3e}, "
+                + f"{tcpu[j]:.3e}, "
+                + f"{np.sum(dil['tlinsols'][ind]):.3e}"
+            )
     with open(
         f"{dig['where']}/{dig['case']}_performance_time_series_detailed.csv",
         "w",
@@ -668,21 +703,6 @@ def max_xcw(dig, dil):
     return dil
 
 
-def get_centers(dig, dil):
-    """Centers from the simulation grid"""
-    for i in ["x", "z"]:
-        dil[f"sim{i}cent"] = [0.0] * dig["noxz"]
-    with open(f"{dig['path']}/deck/centers.txt", "r", encoding="utf8") as file:
-        for j, row in enumerate(csv.reader(file)):
-            dil["simxcent"][j] = float(row[0])
-            dil["simzcent"][j] = dig["dims"][2] - float(row[2])
-    if dig["use"] == "opm":
-        dil["satnum"] = list(dig["init"]["SATNUM"])
-    else:
-        dil["satnum"] = list(dig["init"].iget_kw("SATNUM")[0])
-    return dil
-
-
 def get_corners(dig, dil):
     """Corners from the simulation grid"""
     for i in ["x", "z"]:
@@ -691,6 +711,9 @@ def get_corners(dig, dil):
         for j, row in enumerate(csv.reader(file)):
             dil["simxcent"][j] = float(row[0])
             dil["simzcent"][j] = dig["dims"][2] - float(row[2])
+            if dil["simzcent"][j] == 0:
+                dil["simxcent"][j] = -1e10
+                dil["simzcent"][j] = -1e10
     dil["simpoly"] = []
     with open(f"{dig['path']}/deck/corners.txt", "r", encoding="utf8") as file:
         for row in csv.reader(file):
@@ -869,7 +892,7 @@ def handle_inactive_mapping(dig, dil):
 
 def handle_performance_spatial(dig, dil):
     """Create the performance spatial maps"""
-    dil["counter"] = 1.0 * np.ones(dig["nocellsr"])
+    dil["counter"] = 0.0 * np.ones(dig["nocellsr"])
     dil["pv"] = 0.0 * np.ones(dig["nocellsr"])
     dil["pv"][dig["actindr"]] = 1.0
     dil = static_map_to_report_grid_performance_spatial(dig, dil)
@@ -909,7 +932,6 @@ def static_map_to_report_grid_performance_spatial(dig, dil):
     for name in ["cvol", "arat"]:
         dil[f"{name}_array"] = np.zeros(dig["nocellst"])
         dil[f"{name}_refg"] = np.zeros(dig["nocellsr"])
-        dil[f"{name}_refg"][dig["actindr"]] = np.nan
     if dig["use"] == "opm":
         dil["cvol_array"][dig["actind"]] = np.divide(
             dig["porva"], np.array(dig["init"]["PORO"])
@@ -927,13 +949,15 @@ def static_map_to_report_grid_performance_spatial(dig, dil):
         )
     for i in dig["actind"]:
         for mask in dil["cell_ind"][i]:
-            dil["cvol_refg"][mask[0]] += dil["cvol_array"][i] * mask[1]
-            dil["arat_refg"][mask[0]] += dil["arat_array"][i] * mask[1]
+            dil["cvol_refg"][mask[0]] += dil["cvol_array"][i]
+            dil["arat_refg"][mask[0]] += dil["arat_array"][i]
             dil["counter"][mask[0]] += 1.0
             dil["pv"][mask[0]] += dig["porv"][i]
-    dil["ei"] = dil["pv"] > 0.0
     dil["cvol_refg"] = np.divide(dil["cvol_refg"], dil["counter"])
     dil["arat_refg"] = np.divide(dil["arat_refg"], dil["counter"])
+    for name in ["cvol", "arat"]:
+        dil[f"{name}_refg"][dil[f"{name}_refg"] < 1e-12] = np.nan
+    dil["ei"] = dil["pv"] > 0.0
     return dil
 
 
@@ -1076,7 +1100,10 @@ def generate_arrays(dig, dil, names, t_n):
             pres -= np.array(dig["unrst"]["PCGW", t_n])
         rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}", t_n])
         rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}", t_n])
-        rvv = np.array(dig["unrst"][f"{dig['r_v'].upper()}", t_n])
+        if dig["unrst"].count(f"{dig['r_v'].upper()}", t_n):
+            rvv = np.array(dig["unrst"][f"{dig['r_v'].upper()}", t_n])
+        else:
+            rvv = 0.0 * rss
         if dig["case"] != "spe11a":
             dil["temp_array"][dig["actind"]] = np.array(dig["unrst"]["TEMP", t_n])
     else:
@@ -1087,7 +1114,10 @@ def generate_arrays(dig, dil, names, t_n):
             pres -= np.array(dig["unrst"]["PCGW"][t_n])
         rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}"][t_n])
         rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}"][t_n])
-        rvv = np.array(dig["unrst"][f"{dig['r_v'].upper()}"][t_n])
+        if dig["unrst"].has_kw(f"{dig['r_v'].upper()}"):
+            rvv = np.array(dig["unrst"][f"{dig['r_v'].upper()}"][t_n])
+        else:
+            rvv = 0.0 * rss
         if dig["case"] != "spe11a":
             dil["temp_array"][dig["actind"]] = np.array(dig["unrst"]["TEMP"][t_n])
     co2_g = sgas * rhog * dig["porva"]

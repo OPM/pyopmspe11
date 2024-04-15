@@ -49,4 +49,6 @@ PERM7    1e-5 PORO7 1e-6 DISP7 0 THCONR7 2.00
 
 """Define the injection values ([hours] for spe11a; [years] for spe11b/c)""" 
 """injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
-25 5 .1 1 0.035 10 1 0 10
+999.9 999.9 10 1     0 10 1 0 10
+   .1    .1 .1 1     0 10 1 0 10
+   25     5 .1 1 0.035 10 1 0 10
