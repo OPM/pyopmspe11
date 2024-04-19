@@ -250,12 +250,20 @@ def sparse_data(dic):
                         color="k",
                         linestyle=dic["linestyle"][-1 + j],
                     )
-                axis.plot(
-                    times,
-                    [csv[i][ncol] for i in range(csv.shape[0])],
-                    color=dic["colors"][nfol],
-                    linestyle=dic["linestyle"][-1 + j],
-                )
+                if label == "MC":
+                    axis.plot(
+                        times,
+                        [csv[i][ncol] for i in range(csv.shape[0])],
+                        color=dic["colors"][nfol],
+                        linestyle=dic["linestyle"][-1 + j + nfol],
+                    )
+                else:
+                    axis.plot(
+                        times,
+                        [csv[i][ncol] for i in range(csv.shape[0])],
+                        color=dic["colors"][nfol],
+                        linestyle=dic["linestyle"][-1 + j],
+                    )
                 ncol += 1
         axis.set_title(plot + f", {dic['case']}")
         axis.set_ylabel(ylabel)

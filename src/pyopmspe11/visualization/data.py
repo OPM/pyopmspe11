@@ -778,6 +778,8 @@ def dense_data(dig):
                 if area > 0:
                     dil["cell_ind"][k].append([ind, area])
                     dil["cell_indc"][k] = ind
+        else:
+            dil["cell_indc"][k] = dil["cell_indc"][k - 1]
     for k, (xcen, zcen) in enumerate(zip(dil["refxgrid"], dil["refzgrid"])):
         dil["cell_cent"][k] = pd.Series(
             np.abs(dil["simxcent"] - xcen) + np.abs(dil["simzcent"] - zcen)
@@ -813,20 +815,16 @@ def handle_yaxis_mapping_extensive(dig, dil):
     )
     weights = [1.0 / (np.sum(indy == val)) for val in indy]
     wei_inds = [[] for _ in range(dig["nocellst"])]
-    mults = np.zeros(dig["gxyz"][0], dtype=int)
     for indz in range(dig["gxyz"][2]):
         i_i = dig["gxyz"][0] * (dig["gxyz"][2] - indz - 1)
-        i_f = dig["gxyz"][0] * (dig["gxyz"][2] - indz)
         iii = dig["gxyz"][0] * dig["gxyz"][1] * (dig["gxyz"][2] - 1 - indz)
-        if indz != 0:
-            mults += 1 * (
-                dil["cell_indc"][i_f : i_f + dig["gxyz"][0]]
-                != dil["cell_indc"][i_i : i_i + dig["gxyz"][0]]
-            )
         maps = [
             [
                 [
-                    col[0] + mults[i] * dig["nxyz"][0] * (dig["nxyz"][1] - 1),
+                    col[0]
+                    + int(np.floor(col[0] / dig["nxyz"][0]))
+                    * dig["nxyz"][0]
+                    * (dig["nxyz"][1] - 1),
                     col[1] * weights[0],
                 ]
                 for col in row
@@ -936,25 +934,43 @@ def static_map_to_report_grid_performance_spatial(dig, dil):
         dil["cvol_array"][dig["actind"]] = np.divide(
             dig["porva"], np.array(dig["init"]["PORO"])
         )
-        dil["arat_array"][dig["actind"]] = np.divide(
-            np.array(dig["init"]["DZ"]), np.array(dig["init"]["DX"])
-        )
+        if dig["case"] != "spe11c":
+            dil["arat_array"][dig["actind"]] = np.divide(
+                np.array(dig["init"]["DZ"]), np.array(dig["init"]["DX"])
+            )
+        else:
+            dil["arat_array"][dig["actind"]] = np.divide(
+                np.array(dig["init"]["DZ"]),
+                (np.array(dig["init"]["DX"]) ** 2 + np.array(dig["init"]["DY"]) ** 2)
+                ** 0.5,
+            )
     else:
         dil["cvol_array"][dig["actind"]] = np.divide(
             dig["porva"], np.array(dig["init"].iget_kw("PORO")[0])
         )
-        dil["arat_array"][dig["actind"]] = np.divide(
-            np.array(dig["init"].iget_kw("DZ")[0]),
-            np.array(dig["init"].iget_kw("DX")[0]),
-        )
+        if dig["case"] != "spe11c":
+            dil["arat_array"][dig["actind"]] = np.divide(
+                np.array(dig["init"].iget_kw("DZ")[0]),
+                np.array(dig["init"].iget_kw("DX")[0]),
+            )
+        else:
+            dil["arat_array"][dig["actind"]] = np.divide(
+                np.array(dig["init"].iget_kw("DZ")[0]),
+                (
+                    np.array(dig["init"].iget_kw("DX")[0]) ** 2
+                    + np.array(dig["init"].iget_kw("DY")[0]) ** 2
+                )
+                ** 0.5,
+            )
     for i in dig["actind"]:
         for mask in dil["cell_ind"][i]:
             dil["cvol_refg"][mask[0]] += dil["cvol_array"][i]
             dil["arat_refg"][mask[0]] += dil["arat_array"][i]
             dil["counter"][mask[0]] += 1.0
             dil["pv"][mask[0]] += dig["porv"][i]
-    dil["cvol_refg"] = np.divide(dil["cvol_refg"], dil["counter"])
-    dil["arat_refg"] = np.divide(dil["arat_refg"], dil["counter"])
+    inds = dil["counter"] > 0.0
+    dil["cvol_refg"][inds] = np.divide(dil["cvol_refg"][inds], dil["counter"][inds])
+    dil["arat_refg"][inds] = np.divide(dil["arat_refg"][inds], dil["counter"][inds])
     for name in ["cvol", "arat"]:
         dil[f"{name}_refg"][dil[f"{name}_refg"] < 1e-12] = np.nan
     dil["ei"] = dil["pv"] > 0.0

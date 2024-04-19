@@ -141,6 +141,11 @@ ${dic["temperature"][1]} ${dic["rockExtra"][0]}
 ${dic["temperature"][0]} ${dic["rockExtra"][0]} /
 % endfor
 % endif
+
+% if dic["flow_version"] != "2023.10":
+THCO2MIX
+NONE NONE NONE /
+% endif
 ----------------------------------------------------------------------------
 REGIONS
 ----------------------------------------------------------------------------
