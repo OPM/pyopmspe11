@@ -125,6 +125,11 @@ DIFFC
 18.01528E-3 44.018E-3 ${dic["diffusion"][1]} ${dic["diffusion"][1]} ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
 % endif
 % endif
+
+% if dic["flow_version"] != "2023.10":
+THCO2MIX
+NONE NONE NONE /
+% endif
 ----------------------------------------------------------------------------
 REGIONS
 ----------------------------------------------------------------------------
