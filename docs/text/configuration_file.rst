@@ -48,8 +48,8 @@ The following input lines in the configuration file are:
     0 5e4 1           #Added pore volume on top boundary (for spe11a [if 0, free flow bc]), pore volume on lateral boundaries, and width of buffer cell [m] (for spe11b/c)
     150 10            #Elevation of the parabola and back [m] (for spe11c) 
 
-In line 5 you specify if you are using OPM Flow from the master branch or from the latest stable release (OPM-flow 2023.10 release).
-This since there are continuous changues in the OPM master branch (e.g., implementation of mechanical dispersion). Then we 
+In line 5 you specify if you are using OPM Flow from the master branch or from the latest stable release (OPM-flow 2024.04 release).
+This since there are continuous changues in the OPM master branch. Then we 
 will keep updating the decks for using Flow from master and also we will keep the framework to produce decks compatible for the latest OPM stable release.
 The immiscible model allows for faster prototyping while the complete model includes dissolution of the components in the
 gas and liquid phases, in addition to thermal effects. Regarding the grid type, the cartesian mode generates an uniform grid
@@ -93,7 +93,7 @@ The following entries define the properties of the different facies:
     SWI7    0 SNI7   0 PEN7         0 PENMAX7 3e7 NPOINTS7    2
 
     """Properties rock"""
-    """K [mD], phi [-], disp [m] (dispersion requires a Flow version newer than 17-11-2023), thconr [W m-1 K-1]"""
+    """K [mD], phi [-], disp [m], thconr [W m-1 K-1]"""
     PERM1 0.10132 PORO1 0.10 DISP1 10 THCONR1 1.90
     PERM2 101.324 PORO2 0.20 DISP2 10 THCONR2 1.25
     PERM3 202.650 PORO3 0.20 DISP3 10 THCONR3 1.25
@@ -117,7 +117,7 @@ The last part of the configuration file sets the wells radius, location, and the
     :lineno-start: 45
 
     """Wells radius and position"""
-    """radius (0 to use the SOURCE keyword instead of well keywords, this requires a Flow version newer than 23-01-2024), x, y, and z position [m] (final positions as well for spe11c)"""
+    """radius (0 to use the SOURCE keyword instead of well keywords), x, y, and z position [m] (final positions as well for spe11c)"""
     0.15 2700. 1000. 300. 2700. 4000. 300. #Well 1 
     0.15 5100. 1000. 700. 5100. 4000. 700. #Well 2 
 

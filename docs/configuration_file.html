@@ -125,8 +125,8 @@ by tightening the mb tolerances (–tolerance-mb), etc.).</p>
 <span class="linenos">17</span><span class="mi">150</span> <span class="mi">10</span>            <span class="c1">#Elevation of the parabola and back [m] (for spe11c)</span>
 </pre></div>
 </div>
-<p>In line 5 you specify if you are using OPM Flow from the master branch or from the latest stable release (OPM-flow 2023.10 release).
-This since there are continuous changues in the OPM master branch (e.g., implementation of mechanical dispersion). Then we
+<p>In line 5 you specify if you are using OPM Flow from the master branch or from the latest stable release (OPM-flow 2024.04 release).
+This since there are continuous changues in the OPM master branch. Then we
 will keep updating the decks for using Flow from master and also we will keep the framework to produce decks compatible for the latest OPM stable release.
 The immiscible model allows for faster prototyping while the complete model includes dissolution of the components in the
 gas and liquid phases, in addition to thermal effects. Regarding the grid type, the cartesian mode generates an uniform grid
@@ -168,7 +168,7 @@ the boxes (A, B, and C), sensors, and the required regions to report the benchma
 <span class="linenos">33</span><span class="n">SWI7</span>    <span class="mi">0</span> <span class="n">SNI7</span>   <span class="mi">0</span> <span class="n">PEN7</span>         <span class="mi">0</span> <span class="n">PENMAX7</span> <span class="mf">3e7</span> <span class="n">NPOINTS7</span>    <span class="mi">2</span>
 <span class="linenos">34</span>
 <span class="linenos">35</span><span class="sd">&quot;&quot;&quot;Properties rock&quot;&quot;&quot;</span>
-<span class="linenos">36</span><span class="sd">&quot;&quot;&quot;K [mD], phi [-], disp [m] (dispersion requires a Flow version newer than 17-11-2023), thconr [W m-1 K-1]&quot;&quot;&quot;</span>
+<span class="linenos">36</span><span class="sd">&quot;&quot;&quot;K [mD], phi [-], disp [m], thconr [W m-1 K-1]&quot;&quot;&quot;</span>
 <span class="linenos">37</span><span class="n">PERM1</span> <span class="mf">0.10132</span> <span class="n">PORO1</span> <span class="mf">0.10</span> <span class="n">DISP1</span> <span class="mi">10</span> <span class="n">THCONR1</span> <span class="mf">1.90</span>
 <span class="linenos">38</span><span class="n">PERM2</span> <span class="mf">101.324</span> <span class="n">PORO2</span> <span class="mf">0.20</span> <span class="n">DISP2</span> <span class="mi">10</span> <span class="n">THCONR2</span> <span class="mf">1.25</span>
 <span class="linenos">39</span><span class="n">PERM3</span> <span class="mf">202.650</span> <span class="n">PORO3</span> <span class="mf">0.20</span> <span class="n">DISP3</span> <span class="mi">10</span> <span class="n">THCONR3</span> <span class="mf">1.25</span>
@@ -192,7 +192,7 @@ the boxes (A, B, and C), sensors, and the required regions to report the benchma
 <h2>Well-related parameters<a class="headerlink" href="#well-related-parameters" title="Link to this heading"></a></h2>
 <p>The last part of the configuration file sets the wells radius, location, and the injection schedule.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">45</span><span class="sd">&quot;&quot;&quot;Wells radius and position&quot;&quot;&quot;</span>
-<span class="linenos">46</span><span class="sd">&quot;&quot;&quot;radius (0 to use the SOURCE keyword instead of well keywords, this requires a Flow version newer than 23-01-2024), x, y, and z position [m] (final positions as well for spe11c)&quot;&quot;&quot;</span>
+<span class="linenos">46</span><span class="sd">&quot;&quot;&quot;radius (0 to use the SOURCE keyword instead of well keywords), x, y, and z position [m] (final positions as well for spe11c)&quot;&quot;&quot;</span>
 <span class="linenos">47</span><span class="mf">0.15</span> <span class="mf">2700.</span> <span class="mf">1000.</span> <span class="mf">300.</span> <span class="mf">2700.</span> <span class="mf">4000.</span> <span class="mf">300.</span> <span class="c1">#Well 1</span>
 <span class="linenos">48</span><span class="mf">0.15</span> <span class="mf">5100.</span> <span class="mf">1000.</span> <span class="mf">700.</span> <span class="mf">5100.</span> <span class="mf">4000.</span> <span class="mf">700.</span> <span class="c1">#Well 2</span>
 <span class="linenos">49</span>

@@ -94,7 +94,7 @@ BCCON
 /
 % endif
 
-% if dic["version"] == "master" and sum(dic["dispersion"]) > 0 and dic["flow_version"] != "2023.10":
+% if sum(dic["dispersion"]) > 0:
 INCLUDE
 'DISPERC.INC' /
 % endif
@@ -126,10 +126,8 @@ DIFFC
 % endif
 % endif
 
-% if dic["flow_version"] != "2023.10":
 THCO2MIX
 NONE NONE NONE /
-% endif
 ----------------------------------------------------------------------------
 REGIONS
 ----------------------------------------------------------------------------
@@ -172,17 +170,10 @@ PERFORMA
 FGIP
 FGIR
 FGIT
-% if dic["flow_version"] != "2023.10":
 RGKDI
 /
 RGKDM
 /
-% else:
-RGCDI
-/
-RGCDM
-/
-% endif
 RGIP
 /
 RWCD

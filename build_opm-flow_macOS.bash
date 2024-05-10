@@ -5,7 +5,7 @@ CURRENT_DIRECTORY="$PWD"
 
 # Dune modules
 for module in common geometry grid istl
-do   git clone https://gitlab.dune-project.org/core/dune-$module.git --branch v2.9.0
+do   git clone https://gitlab.dune-project.org/core/dune-$module.git
 done
 for module in common geometry grid istl
 do   ./dune-common/bin/dunecontrol --only=dune-$module cmake -DCMAKE_DISABLE_FIND_PACKAGE_MPI=1
