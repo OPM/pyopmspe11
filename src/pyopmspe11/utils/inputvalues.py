@@ -229,16 +229,8 @@ def check_deck(dic):
     with Popen(args=f"{flow} --version", stdout=PIPE, shell=True) as process:
         dic["flow_version"] = str(process.communicate()[0])[7:-3]
     if dic["flow_version"] == "2023.10":
-        if dic["co2store"] == "gaswater" and dic["spe11"] != "spe11a":
-            print(
-                "\nDiffusion is not supported for gaswater + energy systems in "
-                + "flow 2023.10.\nThen diffusion is not included in the generated "
-                + "deck.\nEither select the co2store gasoil implementation or build "
-                + "flow from the master GitHub branches.\n"
-            )
-        if sum(dic["dispersion"]) > 0:
-            print(
-                "\nDispersion is not supported in flow 2023.10.\nThen dispersion is "
-                + "not included in the generated deck.\nBuild flow from the master "
-                + "GitHub branches to include dispersion in the simulations.\n"
-            )
+        print(
+            "\nYou are using Flow 2023.10. Please update to Flow 2024.04, or "
+            + "build flow from the master GitHub branches.\n"
+        )
+        sys.exit()

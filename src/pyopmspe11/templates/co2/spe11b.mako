@@ -23,7 +23,7 @@ CO2STORE
 % if dic["co2store"] == "gaswater":
 DISGASW
 VAPWAT
-% if dic["flow_version"] != "2023.10" and (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
+% if (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
 DIFFUSE
 % endif
 % else:
@@ -97,14 +97,14 @@ INCLUDE
 'THCONR.INC' /
 % endif
 
-% if dic['model'] == 'complete' and dic["flow_version"] != "2023.10":
+% if dic['model'] == 'complete':
 BCCON 
 1 1 ${dic['noCells'][0]} 1 1 1 1 Z-/
 2 1 ${dic['noCells'][0]} 1 1 ${dic['noCells'][2]} ${dic['noCells'][2]} Z/
 /
 % endif
 
-% if dic["version"] == "master" and sum(dic["dispersion"]) > 0 and dic["flow_version"] != "2023.10":
+% if sum(dic["dispersion"]) > 0:
 INCLUDE
 'DISPERC.INC' /
 % endif
@@ -121,7 +121,7 @@ INCLUDE
 
 % if dic['model'] == 'complete':
 % if dic["co2store"] == "gaswater":
-% if dic["flow_version"] != "2023.10" and (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
+% if (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
 DIFFAWAT
 ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
 
@@ -142,10 +142,8 @@ ${dic["temperature"][0]} ${dic["rockExtra"][0]} /
 % endfor
 % endif
 
-% if dic["flow_version"] != "2023.10":
 THCO2MIX
 NONE NONE NONE /
-% endif
 ----------------------------------------------------------------------------
 REGIONS
 ----------------------------------------------------------------------------
@@ -188,17 +186,10 @@ PERFORMA
 FGIP
 FGIR
 FGIT
-% if dic["flow_version"] != "2023.10":
 RGKDI
 /
 RGKDM
 /
-% else:
-RGCDI
-/
-RGCDM
-/
-% endif
 RGIP
 /
 RWCD
@@ -224,7 +215,7 @@ RPTRST
 'BASIC=2' DEN RESIDUAL ${'PCGW' if dic["co2store"] == "gaswater" else ''}/
 % endif
 
-% if dic['model'] == 'complete' and dic["flow_version"] != "2023.10":
+% if dic['model'] == 'complete':
 BCPROP
 1 THERMAL /
 2 THERMAL /

@@ -12,7 +12,7 @@ Here we use the [_OPM-Flow_](https://opm-project.org/?page_id=19) simulator.
 
 ## Installation
 You will first need to install
-* Flow (https://opm-project.org, Release 2023.10 or current master branches)
+* Flow (https://opm-project.org, Release 2024.04 or current master branches)
 
 You can install the Python requirements in a virtual environment with the following commands:
 

@@ -386,10 +386,6 @@ def create_from_summary(dig, dil):
             ind += 1
             if ind == 2:
                 break
-    if "RGKDI:1" in dig["smspec"].keys():
-        dig["X"] = "K"
-    else:
-        dig["X"] = "C"
     sort = sorted(range(len(i_jk)), key=i_jk.__getitem__)
     if dig["use"] == "opm":
         pop1 = dig["unrst"]["PRESSURE", 0][dil["fipnum"].index(8)]
@@ -400,39 +396,39 @@ def create_from_summary(dig, dil):
         dil["pop1"] = [pop1 * 1.0e5] + list(dig["smspec"][names[sort[0]]] * 1.0e5)  # Pa
         dil["pop2"] = [pop2 * 1.0e5] + list(dig["smspec"][names[sort[1]]] * 1.0e5)  # Pa
         for i in [2, 4, 5, 8]:
-            dil["moba"] += dig["smspec"][f"RG{dig['X']}DM:{i}"] * KMOL_TO_KG
-            dil["imma"] += dig["smspec"][f"RG{dig['X']}DI:{i}"] * KMOL_TO_KG
+            dil["moba"] += dig["smspec"][f"RGKDM:{i}"] * KMOL_TO_KG
+            dil["imma"] += dig["smspec"][f"RGKDI:{i}"] * KMOL_TO_KG
             dil["dissa"] += dig["smspec"][f"RWCD:{i}"] * KMOL_TO_KG
         for i in [5, 8]:
             dil["seala"] += (
                 dig["smspec"][f"RWCD:{i}"]
-                + dig["smspec"][f"RG{dig['X']}DM:{i}"]
-                + dig["smspec"][f"RG{dig['X']}DI:{i}"]
+                + dig["smspec"][f"RGKDM:{i}"]
+                + dig["smspec"][f"RGKDI:{i}"]
             ) * KMOL_TO_KG
         for i in [3, 6]:
-            dil["mobb"] += dig["smspec"][f"RG{dig['X']}DM:{i}"] * KMOL_TO_KG
-            dil["immb"] += dig["smspec"][f"RG{dig['X']}DI:{i}"] * KMOL_TO_KG
+            dil["mobb"] += dig["smspec"][f"RGKDM:{i}"] * KMOL_TO_KG
+            dil["immb"] += dig["smspec"][f"RGKDI:{i}"] * KMOL_TO_KG
             dil["dissb"] += dig["smspec"][f"RWCD:{i}"] * KMOL_TO_KG
-        for key in ["RWCD:6", f"RG{dig['X']}DM:6", f"RG{dig['X']}DI:6"]:
+        for key in ["RWCD:6", "RGKDM:6", "RGKDI:6"]:
             dil["sealb"] += dig["smspec"][key] * KMOL_TO_KG
         dil["sealt"] = dil["seala"] + dil["sealb"]
-        for name in ["RWCD", f"RG{dig['X']}DM", f"RG{dig['X']}DI"]:
+        for name in ["RWCD", "RGKDM", "RGKDI"]:
             dil["sealt"] += (
                 dig["smspec"][f"{name}:7"] + dig["smspec"][f"{name}:9"]
             ) * KMOL_TO_KG
         if dig["case"] != "spe11a":
             sealbound = (
                 dig["smspec"]["RWCD:10"]
-                + dig["smspec"][f"RG{dig['X']}DM:10"]
-                + dig["smspec"][f"RG{dig['X']}DI:10"]
+                + dig["smspec"]["RGKDM:10"]
+                + dig["smspec"]["RGKDI:10"]
             ) * KMOL_TO_KG
             dil["sealt"] += sealbound
             dil["boundtot"] = (
                 sealbound
                 + (
                     dig["smspec"]["RWCD:11"]
-                    + dig["smspec"][f"RG{dig['X']}DM:11"]
-                    + dig["smspec"][f"RG{dig['X']}DI:11"]
+                    + dig["smspec"]["RGKDM:11"]
+                    + dig["smspec"]["RGKDI:11"]
                 )
                 * KMOL_TO_KG
             )
@@ -455,39 +451,39 @@ def resdata_summary(dig, dil, names, sort):
         dig["smspec"][names[sort[1]]].values * 1.0e5
     )  # Pa
     for i in [2, 4, 5, 8]:
-        dil["moba"] += dig["smspec"][f"RG{dig['X']}DM:{i}"].values * KMOL_TO_KG
-        dil["imma"] += dig["smspec"][f"RG{dig['X']}DI:{i}"].values * KMOL_TO_KG
+        dil["moba"] += dig["smspec"][f"RGKDM:{i}"].values * KMOL_TO_KG
+        dil["imma"] += dig["smspec"][f"RGKDI:{i}"].values * KMOL_TO_KG
         dil["dissa"] += dig["smspec"][f"RWCD:{i}"].values * KMOL_TO_KG
     for i in [5, 8]:
         dil["seala"] += (
             dig["smspec"][f"RWCD:{i}"].values
-            + dig["smspec"][f"RG{dig['X']}DM:{i}"].values
-            + dig["smspec"][f"RG{dig['X']}DI:{i}"].values
+            + dig["smspec"][f"RGKDM:{i}"].values
+            + dig["smspec"][f"RGKDI:{i}"].values
         ) * KMOL_TO_KG
     for i in [3, 6]:
-        dil["mobb"] += dig["smspec"][f"RG{dig['X']}DM:{i}"].values * KMOL_TO_KG
-        dil["immb"] += dig["smspec"][f"RG{dig['X']}DI:{i}"].values * KMOL_TO_KG
+        dil["mobb"] += dig["smspec"][f"RGKDM:{i}"].values * KMOL_TO_KG
+        dil["immb"] += dig["smspec"][f"RGKDI:{i}"].values * KMOL_TO_KG
         dil["dissb"] += dig["smspec"][f"RWCD:{i}"].values * KMOL_TO_KG
-    for key in ["RWCD:6", f"RG{dig['X']}DM:6", f"RG{dig['X']}DI:6"]:
+    for key in ["RWCD:6", "RGKDM:6", "RGKDI:6"]:
         dil["sealb"] += dig["smspec"][key].values * KMOL_TO_KG
     dil["sealt"] = dil["seala"] + dil["sealb"]
-    for name in ["RWCD", f"RG{dig['X']}DM", f"RG{dig['X']}DI"]:
+    for name in ["RWCD", "RGKDM", "RGKDI"]:
         dil["sealt"] += (
             dig["smspec"][f"{name}:7"].values + dig["smspec"][f"{name}:9"].values
         ) * KMOL_TO_KG
     if dig["case"] != "spe11a":
         sealbound = (
             dig["smspec"]["RWCD:10"].values
-            + dig["smspec"][f"RG{dig['X']}DM:10"].values
-            + dig["smspec"][f"RG{dig['X']}DI:10"].values
+            + dig["smspec"]["RGKDM:10"].values
+            + dig["smspec"]["RGKDI:10"].values
         ) * KMOL_TO_KG
         dil["sealt"] += sealbound
         dil["boundtot"] = (
             sealbound
             + (
                 dig["smspec"]["RWCD:11"].values
-                + dig["smspec"][f"RG{dig['X']}DM:11"].values
-                + dig["smspec"][f"RG{dig['X']}DI:11"].values
+                + dig["smspec"]["RGKDM:11"].values
+                + dig["smspec"]["RGKDI:11"].values
             )
             * KMOL_TO_KG
         )
@@ -497,32 +493,32 @@ def resdata_summary(dig, dil, names, sort):
 def overlapping_c_and_facie1_contribution(dig, dil):
     """Add the corresponding fipnum 12 contribution"""
     if dig["use"] == "opm":
-        dil["moba"] += dig["smspec"][f"RG{dig['X']}DM:12"] * KMOL_TO_KG
-        dil["imma"] += dig["smspec"][f"RG{dig['X']}DI:12"] * KMOL_TO_KG
+        dil["moba"] += dig["smspec"]["RGKDM:12"] * KMOL_TO_KG
+        dil["imma"] += dig["smspec"]["RGKDI:12"] * KMOL_TO_KG
         dil["dissa"] += dig["smspec"]["RWCD:12"] * KMOL_TO_KG
         dil["seala"] += (
             dig["smspec"]["RWCD:12"]
-            + dig["smspec"][f"RG{dig['X']}DM:12"]
-            + dig["smspec"][f"RG{dig['X']}DI:12"]
+            + dig["smspec"]["RGKDM:12"]
+            + dig["smspec"]["RGKDI:12"]
         ) * KMOL_TO_KG
         dil["sealt"] += (
             dig["smspec"]["RWCD:12"]
-            + dig["smspec"][f"RG{dig['X']}DM:12"]
-            + dig["smspec"][f"RG{dig['X']}DI:12"]
+            + dig["smspec"]["RGKDM:12"]
+            + dig["smspec"]["RGKDI:12"]
         ) * KMOL_TO_KG
     else:
-        dil["moba"] += dig["smspec"][f"RG{dig['X']}DM:12"].values * KMOL_TO_KG
-        dil["imma"] += dig["smspec"][f"RG{dig['X']}DI:12"].values * KMOL_TO_KG
+        dil["moba"] += dig["smspec"]["RGKDM:12"].values * KMOL_TO_KG
+        dil["imma"] += dig["smspec"]["RGKDI:12"].values * KMOL_TO_KG
         dil["dissa"] += dig["smspec"]["RWCD:12"].values * KMOL_TO_KG
         dil["seala"] += (
             dig["smspec"]["RWCD:12"].values
-            + dig["smspec"][f"RG{dig['X']}DM:12"].values
-            + dig["smspec"][f"RG{dig['X']}DI:12"].values
+            + dig["smspec"]["RGKDM:12"].values
+            + dig["smspec"]["RGKDI:12"].values
         ) * KMOL_TO_KG
         dil["sealt"] += (
             dig["smspec"]["RWCD:12"].values
-            + dig["smspec"][f"RG{dig['X']}DM:12"].values
-            + dig["smspec"][f"RG{dig['X']}DI:12"].values
+            + dig["smspec"]["RGKDM:12"].values
+            + dig["smspec"]["RGKDI:12"].values
         ) * KMOL_TO_KG
     return dil
 

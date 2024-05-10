@@ -183,3 +183,4 @@ tests/configs/test_compare
 tests/configs/output
 tests/configs/spe11a
 tests/configs/spe11c
+tests/configs/check_format.py

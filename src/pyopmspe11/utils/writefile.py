@@ -73,11 +73,7 @@ def write_keywords(dic):
     else:
         keywords = ["satnum", "fipnum", "poro", "permx", "thconr"]
         added_pv(dic, git)
-    if (
-        dic["version"] == "master"
-        and sum(dic["dispersion"]) > 0
-        and dic["flow_version"] != "2023.10"
-    ):
+    if sum(dic["dispersion"]) > 0:
         keywords += ["disperc"]
     for names in keywords:
         dic[f"{names}"].insert(0, f"{names.upper()}")

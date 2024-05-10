@@ -51,7 +51,6 @@
 <li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#hello-world">Hello world</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#presentation">Presentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#spe11a-in-a-1-mm-cartesian-grid">SPE11A in a 1 mm Cartesian grid</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#spe11b-in-a-1-m-cartesian-grid">SPE11B in a 1 m Cartesian grid</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#spe11c-in-a-corner-point-grid">SPE11C in a corner-point grid</a></li>
@@ -120,25 +119,6 @@ Then, to visualize the comparison between both runs, this can be achived by exec
 </figure>
 <p>This example uses a very coarser grid to run fast. See the following section for finer grids.</p>
 </section>
-<section id="presentation">
-<h2>Presentation<a class="headerlink" href="#presentation" title="Link to this heading"></a></h2>
-<p>Using the same grid size for the reporting of the results in the SPE11 description, the following computational times
-were reported for the 2023 SPE Reservoir Simulation Conference (see the presentation <a class="reference external" href="https://github.com/Simulation-Benchmarks/11thSPE-CSP/blob/main/description/SPE11%20CSP.pdf">here</a>,
-where you can also see some of the preliminary simulation results using OPM Flow):</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">Case      Dimensions [m]      Max. grid size [m]   No. grid cells  Total no. cells  No. active cells   Solver time step [d]¨  Total simulation time [s]</span>
-<span class="l l-Scalar l-Scalar-Plain">spe11a^   [2.8,  0.01,  1.2]  [0.01, 0.01, 0.01]    [280, 1, 120]            33600             31034                   1e-5                    2118.30</span>
-<span class="l l-Scalar l-Scalar-Plain">spe11b^*  [8400,    1, 1200]  [10,      1,   10]    [842, 1, 120]           101040             93318                     50                    1420.15</span>
-<span class="l l-Scalar l-Scalar-Plain">spe11c^*  [8400, 5000, 1350]  [50,     50,   10]  [170, 100, 120]          2040000           1885200                     50                   25450.68</span>
-
-
-<span class="l l-Scalar l-Scalar-Plain">^ All three cases were run with 70 MPI processes and 2 threads per MPI process. i.e., 140 cpu cores.</span>
-<span class="l l-Scalar l-Scalar-Plain">* spe11b and spe11c have an extra layer [1 m] of grid cells on the left and right boundaries to include the buffer volume</span>
-<span class="l l-Scalar l-Scalar-Plain">¨ The solver time step is the maximum value allowed by the simulator</span>
-</pre></div>
-</div>
-<p>The <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids">examples/finner_grids</a> folder contains configuration files
-with grid size of the same order and finner as requested for reporting the spatial data in the benchmark, as well as the required injection schedules.</p>
-</section>
 <section id="spe11a-in-a-1-mm-cartesian-grid">
 <h2>SPE11A in a 1 mm Cartesian grid<a class="headerlink" href="#spe11a-in-a-1-mm-cartesian-grid" title="Link to this heading"></a></h2>
 <p>In a 1 mm Cartesian grid for the spe11a <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11a1mm.txt">(spe11a1mm.txt)</a>, by executing:</p>
@@ -176,7 +156,7 @@ with grid size of the same order and finner as requested for reporting the spati
 <p>The following are simulation results in a 1 m Cartesian grid <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11b1m.txt">(spe11b1m.txt)</a>,
 and the animation in the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main">main page</a> was generated using these results (the inizialization time of 1000 years was
 skipped and the results were printed ever 25 years instead of 5 years):</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b1m.txt<span class="w"> </span>-o<span class="w"> </span>spe11b1m<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">840</span>,1,120<span class="w"> </span>-t<span class="w"> </span><span class="m">25</span><span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.1
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b1m.txt<span class="w"> </span>-o<span class="w"> </span>spe11b1m<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">840</span>,1,120<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.1
 </pre></div>
 </div>
 <figure class="align-default" id="id5">
