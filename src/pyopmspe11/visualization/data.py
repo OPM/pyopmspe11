@@ -77,7 +77,7 @@ def main():
         default="sparse",
         help="Write only the 'dense', 'sparse', 'performance', 'performance-spatial', "
         "'dense_performance', 'performance_sparse', 'dense_performance-spatial', "
-        "'dense_sparse', or 'all'",
+        "'dense_sparse', 'dense_performance_sparse', or 'all'",
     )
     parser.add_argument(
         "-u",
@@ -120,9 +120,21 @@ def main():
         dig = read_opm(dig)
     else:
         dig = read_resdata(dig)
-    if dig["mode"] in ["performance", "all", "dense_performance", "performance_sparse"]:
+    if dig["mode"] in [
+        "performance",
+        "all",
+        "dense_performance",
+        "performance_sparse",
+        "dense_performance_sparse",
+    ]:
         performance(dig)
-    if dig["mode"] in ["all", "sparse", "dense_sparse", "performance_sparse"]:
+    if dig["mode"] in [
+        "all",
+        "sparse",
+        "dense_sparse",
+        "dense_performance_sparse",
+        "performance_sparse",
+    ]:
         sparse_data(dig)
     if dig["mode"] in [
         "all",
@@ -131,6 +143,7 @@ def main():
         "dense_performance",
         "dense_sparse",
         "dense_performance-spatial",
+        "dense_performance_sparse",
     ]:
         if isinstance(dig["dense_t"], float):
             dig["dense_t"] = [

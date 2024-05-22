@@ -7,7 +7,7 @@ import os
 import subprocess
 
 
-def test_spe11b():
+def test_spe11c():
     """See configs/spe11c.txt"""
     cwd = os.getcwd()
     os.chdir(f"{os.getcwd()}/tests/configs")

@@ -60,7 +60,7 @@ def main():
         default="sparse",
         help="Plot only the 'dense', 'sparse', 'performance', 'performance-spatial', "
         "'dense_performance', 'dense_sparse', 'performance_sparse', "
-        "'dense_performance-spatial', or 'all'",
+        "'dense_performance-spatial', 'dense_performance_sparse', or 'all'",
     )
     cmdargs = vars(parser.parse_known_args()[0])
     dic = {"folders": [cmdargs["folder"].strip()]}
@@ -129,9 +129,16 @@ def plot_results(dic):
         "performance",
         "dense_performance",
         "performance_sparse",
+        "dense_performance_sparse",
     ]:
         performance(dic)
-    if dic["generate"] in ["all", "sparse", "dense_sparse", "performance_sparse"]:
+    if dic["generate"] in [
+        "all",
+        "sparse",
+        "dense_sparse",
+        "performance_sparse",
+        "dense_performance_sparse",
+    ]:
         sparse_data(dic)
     if dic["compare"]:
         return
@@ -143,6 +150,7 @@ def plot_results(dic):
         "dense_performance",
         "dense_sparse",
         "dense_performance-spatial",
+        "dense_performance_sparse",
     ]:
         dense_data(dic)
 
