@@ -34,7 +34,7 @@ where
 - \-i, \-\-input: The base name of the :doc:`configuration file <./configuration_file>` ('input.txt' by default).
 - \-o, \-\-output: The base name of the :doc:`output folder <./output_folder>` ('output' by default).
 - \-m, \-\-mode: Run the whole framework ('all'), only create decks ('deck'), only run flow ('flow'), only write benchmark data ('data'), only create plots ('plot'), deck and run ('deck_flow'), data and plot ('data_plot'), run and data ('flow_data'), or deck, run, and data ('deck_flow_data') ('deck_flow' by default).
-- \-g, \-\-generate: Write only the 'dense', 'sparse', 'performance', 'performance-spatial', 'dense_performance', 'dense_sparse', 'performance_sparse', 'dense_performance-spatial', or 'all' ('performance_sparse') by default.
+- \-g, \-\-generate: Write only the 'dense', 'sparse', 'performance', 'performance-spatial', 'dense_performance', 'dense_sparse', 'performance_sparse', 'dense_performance-spatial', 'dense_performance_sparse', or 'all' ('performance_sparse') by default.
 - \-r, \-\-resolution: Number of x, y, and z elements to map the simulation results to the dense report data ('8,1,5' by default).
 - \-t, \-\-time: If one number, time step for the spatial maps (spe11a [h]; spe11b/c [y]) ('5' by default); otherwise, times separated by commas.
 - \-u, \-\-use: Using the 'opm' or 'resdata' python package ('resdata' by default).

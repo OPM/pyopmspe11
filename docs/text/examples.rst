@@ -39,70 +39,86 @@ The following are some of the figures generated in the compare folder:
 
 This example uses a very coarser grid to run fast. See the following section for finer grids. 
 
-===============================
-SPE11A in a 1 mm Cartesian grid 
-===============================
+======
+SPE11A
+======
 
-In a 1 mm Cartesian grid for the spe11a `(spe11a1mm.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11a1mm.txt>`_, by executing:
+In a 1 mm Cartesian grid for the spe11a `(spe11a1mm.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11a1mm.txt>`_
+and in a 1 cmish corner-point grid `(spe11a_cp_1cmish.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11a_cp_1cmish.txt>`_:
 
 .. code-block:: bash
 
     pyopmspe11 -i spe11a1mm.txt -o spe11a1mm -m all -g all -t 1 -r 280,1,120 -w 0.16666666666666666
+    pyopmspe11 -i spe11a_cp_1cmish.txt -o spe11a_cp_1cmish -m all -g all -t 1 -r 280,1,120 -w 0.16666666666666666
+    pyopmspe11 -c spe11a
+    
 
-the following are some of the generated figures:
+.. figure:: figs/spe11a_masses.png
 
-.. figure:: figs/spe11a_sparse_data.png
-
-    Sparse data.
+    Final CO2 mass in the reporting grid of 1 cm size for (left) spe11a1mm and (right) spe11a_cp_1cmish.
 
 .. figure:: figs/spe11a_performance.png
 
     Performance data.
 
-.. figure:: figs/spe11a_performance_detailed.png
+.. figure:: figs/spe11a_sparse_data.png
 
-    Detailed performance data.
+    Sparse data.
 
-.. figure:: figs/spe11a_tco2_2Dmaps.png
+.. note::
+    For the spe11a1mm, regarding the mob and imm results in the sparse data (blue lines in the boxA and boxB plots), the immobile saturations
+    were computed as the fraction of mobile saturation that will be immobilized due to future migration, and after 
+    clarification of the definition of immobile saturations for the benchmark (CO2 at saturations for which the nonwetting
+    relative permeability equals zero), then this has been implemented, and the spe11a_cp_1cmish results (and also the
+    results in hello world, SPE11B, and SPE11C) follow this definition. Since running the spe11a1mm requires many many days,
+    then we will rerun the case after feedback from the workshop in June. 
 
-    Dense data for the CO2 mass (in the 1 cm size, tho the simulations are runned at 1 mm size).
-
-==============================
-SPE11B in a 1 m Cartesian grid 
-==============================
+======
+SPE11B
+======
 
 The following are simulation results in a 1 m Cartesian grid `(spe11b1m.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11b1m.txt>`_, 
-and the animation in the `main page <https://github.com/OPM/pyopmspe11/blob/main>`_ was generated using these results (the inizialization time of 1000 years was 
-skipped and the results were printed ever 25 years instead of 5 years):
+and the animation in the `main page <https://github.com/OPM/pyopmspe11/blob/main>`_ was generated using these results, as well as for a 10 m Cartesian grid 
+`(spe11b10m.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11b10m.txt>`_ which is the grid resolution for the reporting of dense data in the benchmark:
 
 .. code-block:: bash
 
     pyopmspe11 -i spe11b1m.txt -o spe11b1m -m all -g all -r 840,1,120 -t 5 -w 0.1
+    pyopmspe11 -i spe11b10m.txt -o spe11b10m -m all -g all -r 840,1,120 -t 5 -w 0.1
+    pyopmspe11 -c spe11b
 
-.. figure:: figs/spe11b_sparse_data_1m.png
+.. figure:: figs/spe11b_sparse_data_1m-10m.png
 
-    Sparse data in the 1 m Cartesian grid.
+    Sparse data.
 
-.. figure:: figs/spe11b_performance_1m.png
+.. figure:: figs/spe11b_performance_1m-10m.png
 
-    Performance data in the 1 m Cartesian grid.
+    Performance data.
 
-=============================
-SPE11C in a corner-point grid
-=============================
+======
+SPE11C
+======
 
-The following are simulation results in a corner-point grid `(spe11c_cp.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11c_cp.txt>`_ with 21729920 active cells (the inizialization time of 1000 years was skipped):
+The following are simulation results in a corner-point grid `(spe11c_cp.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11c_cp.txt>`_ with 21729920 active cells
+and in a Cartesian grid with the same resolution as in the benchmark reporting data `(spe11c_168_100_120.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11c_168_100_120.txt>`_:
 
 .. code-block:: bash
 
-    pyopmspe11 -i spe11c_cp.txt -o spe11c_cp -m all -g all -r 168,100,120 -t 0,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000
+    pyopmspe11 -i spe11c_cp.txt -o spe11c_cp -m all -g all -r 168,100,120 -t 0,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000 -w 0.1
+    pyopmspe11 -i spe11c_168_100_120.txt -o spe11c_168_100_120 -m all -g all -r 168,100,120 -t 0,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000 -w 0.1
+    pyopmspe11 -c spe11c
+
 
 .. figure:: figs/spe11c_sparse_data.png
 
-    Sparse data in the corner-point grid.
+    Sparse data.
 
 .. figure:: figs/spe11c_performance.png
 
-    Performance data in the corner-point grid.
+    Performance data.
+
+.. note::
+    For the spe11c_cp results (orange lines), currently new simulations with improved tunning are being runned to avoid the significant mass lost during
+    the injection period, then the results will be updated.
 
 .. image:: ./figs/spe11c.gif

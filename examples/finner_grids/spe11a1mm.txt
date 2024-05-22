@@ -33,7 +33,7 @@ SWI6 0.10 SNI6 0.1 PEN6    1 PENMAX6 2500 NPOINTS6 1000
 SWI7    0 SNI7   0 PEN7    0 PENMAX7 2500 NPOINTS7    2
 
 """Properties rock"""
-"""K [mD], phi [-], disp [m] (dispersion requires a Flow version newer than 17-11-2023)"""
+"""K [mD], phi [-], disp [m]"""
 PERM1 44529.9988 PORO1 0.44 DISP1 1e-2
 PERM2 506624.985 PORO2 0.43 DISP2 1e-2
 PERM3 1013249.97 PORO3 0.44 DISP3 1e-2
@@ -43,7 +43,7 @@ PERM6 10132499.7 PORO6 0.46 DISP6 1e-2
 PERM7          0 PORO7    0 DISP7    0
 
 """Wells position"""
-"""radius (0 to use the SOURCE keyword instead of well keywords, this requires a Flow version newer than 23-01-2024), x, y, and z position [m] (final positions as well for spe11c)"""
+"""radius (0 to use the SOURCE keyword instead of well keywords), x, y, and z position [m] (final positions as well for spe11c)"""
 0 0.9 0.005 0.3 #Well 1
 0 1.7 0.005 0.7 #Well 2
 

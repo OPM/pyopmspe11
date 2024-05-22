@@ -178,9 +178,10 @@ examples/finner_grids/spe11b
 examples/finner_grids/spe11c
 examples/hello_world/spe11a
 examples/hello_world/spe11b
-examples/hello_world/spe11c
+examples/hello_world/spe11
 tests/configs/test_compare
 tests/configs/output
 tests/configs/spe11a
+tests/configs/spe11b
 tests/configs/spe11c
 tests/configs/check_format.py

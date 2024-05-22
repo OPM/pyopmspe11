@@ -7,7 +7,7 @@ import os
 
 
 def test_comparison():
-    """See visualization/data.py"""
+    """See visualization/plot.py"""
     cwd = os.getcwd()
     os.system(f"mkdir {cwd}/tests/configs/test_compare")
     os.system(f"mkdir {cwd}/tests/configs/test_compare/spe11c_ens1")
@@ -27,3 +27,4 @@ def test_comparison():
     assert os.path.exists(
         f"{cwd}/tests/configs/test_compare/compare/spe11c_performance.png"
     )
+    os.chdir(cwd)
