@@ -120,10 +120,14 @@ def plot_results(dic):
         dic["where"] = f"{dic['exe']}/{dic['folders'][0]}/figures"
     if dic["case"] == "spe11a":
         dic["tlabel"] = "h"
+        dic["dims"] = 2
         dic["tscale"] = 3600.0
     else:
         dic["tlabel"] = "y"
+        dic["dims"] = 2
         dic["tscale"] = SECONDS_IN_YEAR
+    if dic["case"] == "spe11c":
+        dic["dims"] = 3
     if dic["generate"] in [
         "all",
         "performance",
@@ -298,14 +302,17 @@ def generate_grid(dic):
         skip_header=1,
     )
     dic["length"] = csv[-1][0] + csv[0][0]
-    dic["height"] = csv[-1][1] + csv[0][1]
+    dic["width"] = csv[-1][dic["dims"] - 2] + csv[0][dic["dims"] - 2]
+    dic["height"] = csv[-1][dic["dims"] - 1] + csv[0][dic["dims"] - 1]
     dic["xmx"] = np.linspace(
         0, dic["length"], round(dic["length"] / (2.0 * csv[0][0])) + 1
     )
-    dic["zmz"] = np.linspace(
-        0, dic["height"], round(dic["height"] / (2.0 * csv[0][1])) + 1
+    dic["ymy"] = np.linspace(
+        0, dic["width"], round(dic["width"] / (2.0 * csv[0][dic["dims"] - 2])) + 1
     )
-    dic["ny"] = int(len(csv) / ((len(dic["xmx"]) - 1) * (len(dic["zmz"]) - 1)))
+    dic["zmz"] = np.linspace(
+        0, dic["height"], round(dic["height"] / (2.0 * csv[0][dic["dims"] - 1])) + 1
+    )
     dic["xmsh"], dic["zmsh"] = np.meshgrid(dic["xmx"], dic["zmz"][::-1])
     if dic["generate"] in ["all", "dense_performance-spatial"]:
         dic["kinds"] = ["", "_performance"]
@@ -391,7 +398,7 @@ def dense_data(dic):
                 delimiter=",",
                 skip_header=1,
             )
-            quan = np.array([csv[i][2 + k] for i in range(csv.shape[0])])
+            quan = np.array([csv[i][dic["dims"] + k] for i in range(csv.shape[0])])
             dic["minc"], dic["maxc"] = (
                 quan[~np.isnan(quan)].min(),
                 quan[~np.isnan(quan)].max(),
@@ -403,7 +410,7 @@ def dense_data(dic):
                     delimiter=",",
                     skip_header=1,
                 )
-                quan = np.array([csv[i][2 + k] for i in range(csv.shape[0])])
+                quan = np.array([csv[i][dic["dims"] + k] for i in range(csv.shape[0])])
                 dic["min"].append(quan[~np.isnan(quan)].min())
                 dic["max"].append(quan[~np.isnan(quan)].max())
                 if quantity == "tco2":
@@ -418,12 +425,13 @@ def dense_data(dic):
                         ]
                     else:
                         dic["plot"][-1][-1 - i, :] = quan[
-                            (i * dic["ny"] * (len(dic["xmx"]) - 1))
-                            + mt.floor(dic["ny"] / 2)
+                            (i * (len(dic["ymy"]) - 1) * (len(dic["xmx"]) - 1))
+                            + mt.floor((len(dic["ymy"]) - 1) / 2)
                             * (len(dic["xmx"]) - 1) : (
                                 (len(dic["xmx"]) - 1)
-                                + i * dic["ny"] * (len(dic["xmx"]) - 1)
-                                + mt.floor(dic["ny"] / 2) * (len(dic["xmx"]) - 1)
+                                + i * (len(dic["ymy"]) - 1) * (len(dic["xmx"]) - 1)
+                                + mt.floor((len(dic["ymy"]) - 1) / 2)
+                                * (len(dic["xmx"]) - 1)
                             )
                         ]
             for j, time in enumerate(dic["ptimes"]):

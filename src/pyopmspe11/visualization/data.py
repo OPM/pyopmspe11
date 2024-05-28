@@ -1045,33 +1045,58 @@ def write_dense_data_performance_spatial(dig, dil, i):
         name_t = f"{round(dig['dense_t'][i]/3600)}h"
     else:
         name_t = f"{round(dig['dense_t'][i]/SECONDS_IN_YEAR)}y"
-    text = [
-        "# x [m], z [m], cvol [m^3], arat [-], CO2 max_norm_res [-], "
-        + "H2O max_norm_res [-], CO2 mb_error [-], H2O mb_error [-], "
-        + "post_est [-]"
-    ]
+    if dig["case"] != "spe11c":
+        text = [
+            "# x [m], z [m], cvol [m^3], arat [-], CO2 max_norm_res [-], "
+            + "H2O max_norm_res [-], CO2 mb_error [-], H2O mb_error [-], "
+            + "post_est [-]"
+        ]
+    else:
+        text = [
+            "# x [m], y [m], z [m], cvol [m^3], arat [-], CO2 max_norm_res [-], "
+            + "H2O max_norm_res [-], CO2 mb_error [-], H2O mb_error [-], "
+            + "post_est [-]"
+        ]
     idz = 0
     for zcord in dil["refzcent"]:
         idxy = 0
-        for _ in dil["refycent"]:
+        for ycord in dil["refycent"]:
             for xcord in dil["refxcent"]:
                 idc = -dig["nxyz"][0] * dig["nxyz"][1] * (dig["nxyz"][2] - idz) + idxy
-                if np.isnan(dil["cvol_refg"][idc]):
-                    text.append(
-                        f"{xcord:.3e}, {zcord:.3e}, n/a, n/a, n/a, n/a, n/a, "
-                        + "n/a, n/a"
-                    )
+                if dig["case"] != "spe11c":
+                    if np.isnan(dil["cvol_refg"][idc]):
+                        text.append(
+                            f"{xcord:.3e}, {zcord:.3e}, n/a, n/a, n/a, n/a, n/a, "
+                            + "n/a, n/a"
+                        )
+                    else:
+                        text.append(
+                            f"{xcord:.3e}, {zcord:.3e}, "
+                            + f"{dil['cvol_refg'][idc] :.3e}, "
+                            + f"{dil['arat_refg'][idc] :.3e}, "
+                            + f"{dil['co2mn_refg'][idc] :.3e}, "
+                            + f"{dil['h2omn_refg'][idc] :.3e}, "
+                            + f"{dil['co2mb_refg'][idc] :.3e}, "
+                            + f"{dil['h2omb_refg'][idc] :.3e}, "
+                            + "n/a"
+                        )
                 else:
-                    text.append(
-                        f"{xcord:.3e}, {zcord:.3e}, "
-                        + f"{dil['cvol_refg'][idc] :.3e}, "
-                        + f"{dil['arat_refg'][idc] :.3e}, "
-                        + f"{dil['co2mn_refg'][idc] :.3e}, "
-                        + f"{dil['h2omn_refg'][idc] :.3e}, "
-                        + f"{dil['co2mb_refg'][idc] :.3e}, "
-                        + f"{dil['h2omb_refg'][idc] :.3e}, "
-                        + "n/a"
-                    )
+                    if np.isnan(dil["cvol_refg"][idc]):
+                        text.append(
+                            f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, n/a, n/a, n/a, "
+                            + "n/a, n/a, n/a, n/a"
+                        )
+                    else:
+                        text.append(
+                            f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, "
+                            + f"{dil['cvol_refg'][idc] :.3e}, "
+                            + f"{dil['arat_refg'][idc] :.3e}, "
+                            + f"{dil['co2mn_refg'][idc] :.3e}, "
+                            + f"{dil['h2omn_refg'][idc] :.3e}, "
+                            + f"{dil['co2mb_refg'][idc] :.3e}, "
+                            + f"{dil['h2omb_refg'][idc] :.3e}, "
+                            + "n/a"
+                        )
                 idxy += 1
         idz += 1
     with open(
@@ -1171,7 +1196,7 @@ def write_dense_data(dig, dil, i):
     idz = 0
     for zcord in dil["refzcent"]:
         idxy = 0
-        for _ in dil["refycent"]:
+        for ycord in dil["refycent"]:
             for xcord in dil["refxcent"]:
                 idc = -dig["nxyz"][0] * dig["nxyz"][1] * (dig["nxyz"][2] - idz) + idxy
                 if np.isnan(dil["tco2_refg"][idc]):
@@ -1195,7 +1220,7 @@ def write_dense_data(dig, dil, i):
                             + f"{dil['wden_refg'][idc] :.3e}, "
                             + f"{co2}"
                         )
-                else:
+                elif dig["case"] == "spe11b":
                     if np.isnan(dil["pressure_refg"][idc]):
                         text.append(
                             f"{xcord:.3e}, {zcord:.3e}, "
@@ -1204,6 +1229,24 @@ def write_dense_data(dig, dil, i):
                     else:
                         text.append(
                             f"{xcord:.3e}, {zcord:.3e}, "
+                            + f"{dil['pressure_refg'][idc] :.3e}, "
+                            + f"{dil['sgas_refg'][idc] :.3e}, "
+                            + f"{dil['xco2_refg'][idc] :.3e}, "
+                            + f"{dil['xh20_refg'][idc] :.3e}, "
+                            + f"{dil['gden_refg'][idc] :.3e}, "
+                            + f"{dil['wden_refg'][idc] :.3e}, "
+                            + f"{co2}, "
+                            + f"{dil['temp_refg'][idc] :.3e}"
+                        )
+                else:
+                    if np.isnan(dil["pressure_refg"][idc]):
+                        text.append(
+                            f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, "
+                            + f"n/a, n/a, n/a, n/a, n/a, n/a, {co2}, n/a"
+                        )
+                    else:
+                        text.append(
+                            f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, "
                             + f"{dil['pressure_refg'][idc] :.3e}, "
                             + f"{dil['sgas_refg'][idc] :.3e}, "
                             + f"{dil['xco2_refg'][idc] :.3e}, "
@@ -1231,10 +1274,18 @@ def get_header(dig, i):
             + "phase mass density gas [kg/m3], phase mass density water [kg/m3], "
             + "total mass CO2 [kg]"
         ]
-    else:
+    elif dig["case"] == "spe11b":
         name_t = f"{round(dig['dense_t'][i]/SECONDS_IN_YEAR)}y"
         text = [
             "# x [m], z [m], pressure [Pa], gas saturation [-], "
+            + "mass fraction of CO2 in liquid [-], mass fraction of H20 in vapor [-], "
+            + "phase mass density gas [kg/m3], phase mass density water [kg/m3], "
+            + "total mass CO2 [kg], temperature [C]"
+        ]
+    else:
+        name_t = f"{round(dig['dense_t'][i]/SECONDS_IN_YEAR)}y"
+        text = [
+            "# x [m], y [m], z [m], pressure [Pa], gas saturation [-], "
             + "mass fraction of CO2 in liquid [-], mass fraction of H20 in vapor [-], "
             + "phase mass density gas [kg/m3], phase mass density water [kg/m3], "
             + "total mass CO2 [kg], temperature [C]"
