@@ -117,8 +117,4 @@ and in a Cartesian grid with the same resolution as in the benchmark reporting d
 
     Performance data.
 
-.. note::
-    For the spe11c_cp results (orange lines), currently new simulations with improved tunning are being runned to avoid the significant mass lost during
-    the injection period, then the results will be updated.
-
 .. image:: ./figs/spe11c.gif
