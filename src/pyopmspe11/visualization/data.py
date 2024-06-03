@@ -668,7 +668,7 @@ def write_sparse_data(dig, dil):
         for j, time in enumerate(dil["times_data"]):
             text.append(
                 f"{time:.3e}, {dil['pop1'][j]:.5e}, {dil['pop2'][j]:.5e}, "
-                f"{dil['moba'][j]:.3e}, {dil['imma'][j]:.3e}, {dil['dissb'][j]:.3e}, "
+                f"{dil['moba'][j]:.3e}, {dil['imma'][j]:.3e}, {dil['dissa'][j]:.3e}, "
                 f"{dil['seala'][j]:.3e}, {dil['mobb'][j]:.3e}, {dil['immb'][j]:.3e}, "
                 f"{dil['dissb'][j]:.3e}, {dil['sealb'][j]:.3e}, {dil['m_c'][j]:.3e}, "
                 f"{dil['sealt'][j]:.3e}"
@@ -678,7 +678,7 @@ def write_sparse_data(dig, dil):
         for j, time in enumerate(dil["times_data"]):
             text.append(
                 f"{time:.4e}, {dil['pop1'][j]:.3e}, {dil['pop2'][j]:.3e}, "
-                f"{dil['moba'][j]:.3e}, {dil['imma'][j]:.3e}, {dil['dissb'][j]:.3e}, "
+                f"{dil['moba'][j]:.3e}, {dil['imma'][j]:.3e}, {dil['dissa'][j]:.3e}, "
                 f"{dil['seala'][j]:.3e}, {dil['mobb'][j]:.3e}, {dil['immb'][j]:.3e}, "
                 f"{dil['dissb'][j]:.3e}, {dil['sealb'][j]:.3e}, {dil['m_c'][j]:.3e}, "
                 f"{dil['sealt'][j]:.3e}, {dil['boundtot'][j]:.3e}"
