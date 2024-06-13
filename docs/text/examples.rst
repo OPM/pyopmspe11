@@ -39,6 +39,11 @@ The following are some of the figures generated in the compare folder:
 
 This example uses a very coarser grid to run fast. See the following section for finer grids. 
 
+.. warning::
+    There have been two bug fixes that will change some of the results below (see `this <https://github.com/OPM/pyopmspe11/pull/54>`_
+    and `this PR <https://github.com/OPM/pyopmspe11/pull/55>`_). We will remove this warning once we have rerun the cases and updated
+    the results here. Please use a version of pyopmspe11 after 13.06.2024, which includes the fixes to these two issues. 
+
 ======
 SPE11A
 ======
