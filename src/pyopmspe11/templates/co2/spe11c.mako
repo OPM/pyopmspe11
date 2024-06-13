@@ -118,8 +118,8 @@ DIFFC
 
 SPECROCK
 % for i in range(dic['noSands']): 
-${dic["temperature"][1]} ${dic["rockExtra"][0]}
-${dic["temperature"][0]} ${dic["rockExtra"][0]} /
+${dic["temperature"][1]} ${dic["rockExtra"][0]*dic["rockExtra"][1]}
+${dic["temperature"][0]} ${dic["rockExtra"][0]*dic["rockExtra"][1]} /
 % endfor
 % endif
 
