@@ -51,9 +51,18 @@
 <li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#hello-world">Hello world</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#spe11a">SPE11A</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#spe11b">SPE11B</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#spe11c">SPE11C</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#before-the-13-06-2024-workshop">Before the 13.06.2024 workshop</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#spe11a">SPE11A</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#spe11b">SPE11B</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#spe11c">SPE11C</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#after-the-13-06-2024-workshop">After the 13.06.2024 workshop</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">SPE11A</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">SPE11B</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">SPE11C</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
@@ -118,15 +127,15 @@ Then, to visualize the comparison between both runs, this can be achived by exec
 <img alt="_images/spe11b_sparse_data.png" src="_images/spe11b_sparse_data.png" />
 </figure>
 <p>This example uses a very coarser grid to run fast. See the following section for finer grids.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>There have been two bug fixes that will change some of the results below (see <a class="reference external" href="https://github.com/OPM/pyopmspe11/pull/54">this</a>
-and <a class="reference external" href="https://github.com/OPM/pyopmspe11/pull/55">this PR</a>). We will remove this warning once we have rerun the cases and updated
-the results here. Please use a version of pyopmspe11 after 13.06.2024, which includes the fixes to these two issues.</p>
-</div>
 </section>
+<section id="before-the-13-06-2024-workshop">
+<h2>Before the 13.06.2024 workshop<a class="headerlink" href="#before-the-13-06-2024-workshop" title="Link to this heading"></a></h2>
+<p>The results below are the ones presented in the second CSP workshop. There have been two bug fixes that change
+some of the results (see <a class="reference external" href="https://github.com/OPM/pyopmspe11/pull/54">this</a> and <a class="reference external" href="https://github.com/OPM/pyopmspe11/pull/55">this PR</a>).
+See the results in <a class="reference internal" href="#new-results"><span class="std std-ref">After the 13.06.2024 workshop</span></a> for the new simulation results (currently only for the simulations with the grid size of the same order
+as the reporting grid, later we will update the results for the finner grids).</p>
 <section id="spe11a">
-<h2>SPE11A<a class="headerlink" href="#spe11a" title="Link to this heading"></a></h2>
+<h3>SPE11A<a class="headerlink" href="#spe11a" title="Link to this heading"></a></h3>
 <p>In a 1 mm Cartesian grid for the spe11a <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11a1mm.txt">(spe11a1mm.txt)</a>
 and in a 1 cmish corner-point grid <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11a_cp_1cmish.txt">(spe11a_cp_1cmish.txt)</a>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11a1mm.txt<span class="w"> </span>-o<span class="w"> </span>spe11a1mm<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">1</span><span class="w"> </span>-r<span class="w"> </span><span class="m">280</span>,1,120<span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.16666666666666666
@@ -134,22 +143,22 @@ pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11a_cp_1cmish.txt
 pyopmspe11<span class="w"> </span>-c<span class="w"> </span>spe11a
 </pre></div>
 </div>
-<figure class="align-default" id="id1">
+<figure class="align-default" id="id4">
 <img alt="_images/spe11a_masses.png" src="_images/spe11a_masses.png" />
 <figcaption>
-<p><span class="caption-text">Final CO2 mass in the reporting grid of 1 cm size for (left) spe11a1mm and (right) spe11a_cp_1cmish.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+<p><span class="caption-text">Final CO2 mass in the reporting grid of 1 cm size for (left) spe11a1mm and (right) spe11a_cp_1cmish.</span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
 </figcaption>
 </figure>
-<figure class="align-default" id="id2">
+<figure class="align-default" id="id5">
 <img alt="_images/spe11a_performance.png" src="_images/spe11a_performance.png" />
 <figcaption>
-<p><span class="caption-text">Performance data.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+<p><span class="caption-text">Performance data.</span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
 </figcaption>
 </figure>
-<figure class="align-default" id="id3">
+<figure class="align-default" id="id6">
 <img alt="_images/spe11a_sparse_data.png" src="_images/spe11a_sparse_data.png" />
 <figcaption>
-<p><span class="caption-text">Sparse data.</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
+<p><span class="caption-text">Sparse data.</span><a class="headerlink" href="#id6" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <div class="admonition note">
@@ -163,30 +172,31 @@ then we will rerun the case after feedback from the workshop in June.</p>
 </div>
 </section>
 <section id="spe11b">
-<h2>SPE11B<a class="headerlink" href="#spe11b" title="Link to this heading"></a></h2>
+<h3>SPE11B<a class="headerlink" href="#spe11b" title="Link to this heading"></a></h3>
 <p>The following are simulation results in a 1 m Cartesian grid <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11b1m.txt">(spe11b1m.txt)</a>,
-and the animation in the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main">main page</a> was generated using these results, as well as for a 10 m Cartesian grid
-<a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11b10m.txt">(spe11b10m.txt)</a> which is the grid resolution for the reporting of dense data in the benchmark:</p>
+as well as for a 10 m Cartesian grid <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11b10m.txt">(spe11b10m.txt)</a> which is the grid
+resolution for the reporting of dense data in the benchmark:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b1m.txt<span class="w"> </span>-o<span class="w"> </span>spe11b1m<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">840</span>,1,120<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.1
 pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b10m.txt<span class="w"> </span>-o<span class="w"> </span>spe11b10m<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">840</span>,1,120<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.1
 pyopmspe11<span class="w"> </span>-c<span class="w"> </span>spe11b
 </pre></div>
 </div>
-<figure class="align-default" id="id4">
+<figure class="align-default" id="id7">
 <img alt="_images/spe11b_sparse_data_1m-10m.png" src="_images/spe11b_sparse_data_1m-10m.png" />
 <figcaption>
-<p><span class="caption-text">Sparse data.</span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
+<p><span class="caption-text">Sparse data.</span><a class="headerlink" href="#id7" title="Link to this image"></a></p>
 </figcaption>
 </figure>
-<figure class="align-default" id="id5">
+<figure class="align-default" id="id8">
 <img alt="_images/spe11b_performance_1m-10m.png" src="_images/spe11b_performance_1m-10m.png" />
 <figcaption>
-<p><span class="caption-text">Performance data.</span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
+<p><span class="caption-text">Performance data.</span><a class="headerlink" href="#id8" title="Link to this image"></a></p>
 </figcaption>
 </figure>
+<img alt="_images/animation.gif" src="_images/animation.gif" />
 </section>
 <section id="spe11c">
-<h2>SPE11C<a class="headerlink" href="#spe11c" title="Link to this heading"></a></h2>
+<h3>SPE11C<a class="headerlink" href="#spe11c" title="Link to this heading"></a></h3>
 <p>The following are simulation results in a corner-point grid <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11c_cp.txt">(spe11c_cp.txt)</a> with 21729920 active cells
 and in a Cartesian grid with the same resolution as in the benchmark reporting data <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11c_168_100_120.txt">(spe11c_168_100_120.txt)</a>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11c_cp.txt<span class="w"> </span>-o<span class="w"> </span>spe11c_cp<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">168</span>,100,120<span class="w"> </span>-t<span class="w"> </span><span class="m">0</span>,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000<span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.1
@@ -194,19 +204,56 @@ pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11c_168_100_120.t
 pyopmspe11<span class="w"> </span>-c<span class="w"> </span>spe11c
 </pre></div>
 </div>
-<figure class="align-default" id="id6">
+<figure class="align-default" id="id9">
 <img alt="_images/spe11c_sparse_data.png" src="_images/spe11c_sparse_data.png" />
 <figcaption>
-<p><span class="caption-text">Sparse data.</span><a class="headerlink" href="#id6" title="Link to this image"></a></p>
+<p><span class="caption-text">Sparse data.</span><a class="headerlink" href="#id9" title="Link to this image"></a></p>
 </figcaption>
 </figure>
-<figure class="align-default" id="id7">
+<figure class="align-default" id="id10">
 <img alt="_images/spe11c_performance.png" src="_images/spe11c_performance.png" />
 <figcaption>
-<p><span class="caption-text">Performance data.</span><a class="headerlink" href="#id7" title="Link to this image"></a></p>
+<p><span class="caption-text">Performance data.</span><a class="headerlink" href="#id10" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <img alt="_images/spe11c.gif" src="_images/spe11c.gif" />
+</section>
+</section>
+<section id="after-the-13-06-2024-workshop">
+<span id="new-results"></span><h2>After the 13.06.2024 workshop<a class="headerlink" href="#after-the-13-06-2024-workshop" title="Link to this heading"></a></h2>
+<p>For these results, the maximum time step for the simulator during the injection period and after the injeciton period has been
+restricted after looking to the debug files to reduce the number of time step chops and mass conservation issues. We welcome
+PRs with configuration files with better tunning. “CP” are the results in a corner-point grid, while “CART” in a Cartesian grid.</p>
+<section id="id1">
+<h3>SPE11A<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<figure class="align-default">
+<img alt="_images/spe11a_performance_new.png" src="_images/spe11a_performance_new.png" />
+</figure>
+<figure class="align-default">
+<img alt="_images/spe11a_sparse_data_new.png" src="_images/spe11a_sparse_data_new.png" />
+</figure>
+<img alt="_images/spe11as.gif" src="_images/spe11as.gif" />
+</section>
+<section id="id2">
+<h3>SPE11B<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<figure class="align-default">
+<img alt="_images/spe11b_performance_new.png" src="_images/spe11b_performance_new.png" />
+</figure>
+<figure class="align-default">
+<img alt="_images/spe11b_sparse_data_new.png" src="_images/spe11b_sparse_data_new.png" />
+</figure>
+<img alt="_images/animationspe11b.gif" src="_images/animationspe11b.gif" />
+</section>
+<section id="id3">
+<h3>SPE11C<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<figure class="align-default">
+<img alt="_images/spe11c_performance_new.png" src="_images/spe11c_performance_new.png" />
+</figure>
+<figure class="align-default">
+<img alt="_images/spe11c_sparse_data_new.png" src="_images/spe11c_sparse_data_new.png" />
+</figure>
+<img alt="_images/animationspe11c.gif" src="_images/animationspe11c.gif" />
+</section>
 </section>
 </section>
 

@@ -5,7 +5,7 @@
 
 # pyopmspe11: A Python framework using OPM Flow for the SPE11 benchmark project
 
-<img src="docs/text/figs/animation.gif" width="830" height="160">
+<img src="docs/text/figs/animationspe11a.gif" width="830" height="360">
 
 This repository contains scripts to set up a workflow in python for the three cases in the SPE11 project.
 Here we use the [_OPM-Flow_](https://opm-project.org/?page_id=19) simulator.
