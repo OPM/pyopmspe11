@@ -39,14 +39,17 @@ The following are some of the figures generated in the compare folder:
 
 This example uses a very coarser grid to run fast. See the following section for finer grids. 
 
-.. warning::
-    There have been two bug fixes that will change some of the results below (see `this <https://github.com/OPM/pyopmspe11/pull/54>`_
-    and `this PR <https://github.com/OPM/pyopmspe11/pull/55>`_). We will remove this warning once we have rerun the cases and updated
-    the results here. Please use a version of pyopmspe11 after 13.06.2024, which includes the fixes to these two issues. 
+==============================
+Before the 13.06.2024 workshop 
+==============================
+The results below are the ones presented in the second CSP workshop. There have been two bug fixes that change
+some of the results (see `this <https://github.com/OPM/pyopmspe11/pull/54>`_ and `this PR <https://github.com/OPM/pyopmspe11/pull/55>`_).
+See the results in :ref:`new_results` for the new simulation results (currently only for the simulations with the grid size of the same order
+as the reporting grid, later we will update the results for the finner grids). 
 
-======
+------
 SPE11A
-======
+------
 
 In a 1 mm Cartesian grid for the spe11a `(spe11a1mm.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11a1mm.txt>`_
 and in a 1 cmish corner-point grid `(spe11a_cp_1cmish.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11a_cp_1cmish.txt>`_:
@@ -78,13 +81,13 @@ and in a 1 cmish corner-point grid `(spe11a_cp_1cmish.txt) <https://github.com/O
     results in hello world, SPE11B, and SPE11C) follow this definition. Since running the spe11a1mm requires many many days,
     then we will rerun the case after feedback from the workshop in June. 
 
-======
+------
 SPE11B
-======
+------
 
 The following are simulation results in a 1 m Cartesian grid `(spe11b1m.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11b1m.txt>`_, 
-and the animation in the `main page <https://github.com/OPM/pyopmspe11/blob/main>`_ was generated using these results, as well as for a 10 m Cartesian grid 
-`(spe11b10m.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11b10m.txt>`_ which is the grid resolution for the reporting of dense data in the benchmark:
+as well as for a 10 m Cartesian grid `(spe11b10m.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11b10m.txt>`_ which is the grid 
+resolution for the reporting of dense data in the benchmark:
 
 .. code-block:: bash
 
@@ -100,9 +103,11 @@ and the animation in the `main page <https://github.com/OPM/pyopmspe11/blob/main
 
     Performance data.
 
-======
+.. image:: ./figs/animation.gif
+
+------
 SPE11C
-======
+------
 
 The following are simulation results in a corner-point grid `(spe11c_cp.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11c_cp.txt>`_ with 21729920 active cells
 and in a Cartesian grid with the same resolution as in the benchmark reporting data `(spe11c_168_100_120.txt) <https://github.com/OPM/pyopmspe11/blob/main/examples/finner_grids/spe11c_168_100_120.txt>`_:
@@ -123,3 +128,42 @@ and in a Cartesian grid with the same resolution as in the benchmark reporting d
     Performance data.
 
 .. image:: ./figs/spe11c.gif
+
+.. _new_results:
+
+=============================
+After the 13.06.2024 workshop 
+=============================
+For these results, the maximum time step for the simulator during the injection period and after the injeciton period has been
+restricted after looking to the debug files to reduce the number of time step chops and mass conservation issues. We welcome
+PRs with configuration files with better tunning. "CP" are the results in a corner-point grid, while "CART" in a Cartesian grid.  
+
+------
+SPE11A
+------
+
+.. figure:: figs/spe11a_performance_new.png
+
+.. figure:: figs/spe11a_sparse_data_new.png
+
+.. image:: ./figs/spe11as.gif
+
+------
+SPE11B
+------
+
+.. figure:: figs/spe11b_performance_new.png
+
+.. figure:: figs/spe11b_sparse_data_new.png
+
+.. image:: ./figs/animationspe11b.gif
+
+------
+SPE11C
+------
+
+.. figure:: figs/spe11c_performance_new.png
+
+.. figure:: figs/spe11c_sparse_data_new.png
+
+.. image:: ./figs/animationspe11c.gif

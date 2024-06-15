@@ -2,7 +2,7 @@
 Introduction
 ============
 
-.. image:: ./figs/animation.gif
+.. image:: ./figs/animationspe11a.gif
 
 This documentation describes the content of the **pyopmspe11** package.
 The numerical studies are performed using the `Flow <https://opm-project.org/?page_id=19>`_ simulator. 
