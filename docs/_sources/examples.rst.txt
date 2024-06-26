@@ -44,8 +44,7 @@ Before the 13.06.2024 workshop
 ==============================
 The results below are the ones presented in the second CSP workshop. There have been two bug fixes that change
 some of the results (see `this <https://github.com/OPM/pyopmspe11/pull/54>`_ and `this PR <https://github.com/OPM/pyopmspe11/pull/55>`_).
-See the results in :ref:`new_results` for the new simulation results (currently only for the simulations with the grid size of the same order
-as the reporting grid, later we will update the results for the finner grids). 
+See the results in :ref:`new_results` for the latest simulation results. 
 
 ------
 SPE11A
@@ -72,14 +71,6 @@ and in a 1 cmish corner-point grid `(spe11a_cp_1cmish.txt) <https://github.com/O
 .. figure:: figs/spe11a_sparse_data.png
 
     Sparse data.
-
-.. note::
-    For the spe11a1mm, regarding the mob and imm results in the sparse data (blue lines in the boxA and boxB plots), the immobile saturations
-    were computed as the fraction of mobile saturation that will be immobilized due to future migration, and after 
-    clarification of the definition of immobile saturations for the benchmark (CO2 at saturations for which the nonwetting
-    relative permeability equals zero), then this has been implemented, and the spe11a_cp_1cmish results (and also the
-    results in hello world, SPE11B, and SPE11C) follow this definition. Since running the spe11a1mm requires many many days,
-    then we will rerun the case after feedback from the workshop in June. 
 
 ------
 SPE11B
