@@ -34,7 +34,7 @@ SECONDS_IN_YEAR = 31536000.0
 
 
 def main():
-    """Postprocessing"""
+    """Generate figures"""
     parser = argparse.ArgumentParser(description="Main script to plot the results")
     parser.add_argument(
         "-p",
@@ -72,7 +72,16 @@ def main():
 
 
 def plot_results(dic):
-    """Make the figures"""
+    """
+    Make some figures using the csv files from the benchmark data
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        None
+
+    """
     dic["colors"] = [
         "#1f77b4",
         "#ff7f0e",
@@ -160,7 +169,16 @@ def plot_results(dic):
 
 
 def performance(dic):
-    """time solver plots"""
+    """
+    Make the plots related to the performance data (e.g., number of Newton iterations)
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        None
+
+    """
     for kind in ["", "_detailed"]:
         dic["fig"] = plt.figure(figsize=(40, 75))
         plots = [
@@ -213,7 +231,16 @@ def performance(dic):
 
 
 def sparse_data(dic):
-    """time plots"""
+    """
+    Make the plots related to the sparse data (e.g., pressure in sensors over time)
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        None
+
+    """
     dic["fig"] = plt.figure(figsize=(25, 40))
     plots = ["sensors", "boxA", "boxB", "boxC", "facie 1"]
     ylabels = ["Presure [Pa]", "Mass [kg]", "Mass [kg]", "Area [m$^2$]", "Mass [kg]"]
@@ -283,7 +310,16 @@ def sparse_data(dic):
 
 
 def generate_grid(dic):
-    """Create the grid and load the times"""
+    """
+    Create the plotting grid and load the times
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
     dic["files"] = [
         f
         for f in os.listdir(f"{dic['exe']}/{dic['folders'][0]}/data")
@@ -330,11 +366,20 @@ def generate_grid(dic):
         "turbo",
         "coolwarm",
     ]
-    return dic
 
 
 def handle_kind(dic, kind):
-    """Identify between dense and performance-spatial"""
+    """
+    Identify between dense and performance-spatial
+
+    Args:
+        dic (dict): Global dictionary\n
+        kind (list): Strings with the type of data to generate
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
     if kind == "":
         dic["quantities"] = [
             "pressure",
@@ -370,28 +415,44 @@ def handle_kind(dic, kind):
         ]
         dic["units"] = [r"[m$^3$]", "[-]", "[-]", "[-]", "[-]", "[-]"]
         dic["allplots"] = [0, 0, -1, -1, -1, -1]
-    return dic
 
 
 def ini_quantity_plot(dic):
-    """Initialize the figure"""
+    """
+    Initialized the size of the Figure according to the spe case
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
     if dic["case"] != "spe11a":
         dic["fig"] = plt.figure(figsize=(50, 3 * len(dic["ptimes"])))
     else:
         dic["fig"] = plt.figure(figsize=(45, 6.5 * len(dic["ptimes"])), dpi=80)
     for name in ["plot", "min", "max", "sum"]:
         dic[f"{name}"] = []
-    return dic
 
 
 def dense_data(dic):
-    """2D spatial maps"""
-    dic = generate_grid(dic)
+    """
+    Make the plots related to the dense data (e.g., saturation maps)
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        None
+
+    """
+    generate_grid(dic)
     for kind in dic["kinds"]:
-        dic = handle_kind(dic, kind)
+        handle_kind(dic, kind)
         for k, quantity in enumerate(dic["quantities"]):
             dic["ptimes"] = dic["times"][: dic["allplots"][k]] + [dic["times"][-1]]
-            dic = ini_quantity_plot(dic)
+            ini_quantity_plot(dic)
             csv = np.genfromtxt(
                 f"{dic['exe']}/{dic['folders'][0]}/data/{dic['case']}{kind}_spatial_map_"
                 + f"0{dic['tlabel']}.csv",

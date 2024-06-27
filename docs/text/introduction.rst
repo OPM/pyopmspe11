@@ -5,20 +5,21 @@ Introduction
 .. image:: ./figs/animationspe11a.gif
 
 This documentation describes the content of the **pyopmspe11** package.
-The numerical studies are performed using the `Flow <https://opm-project.org/?page_id=19>`_ simulator. 
+The numerical studies are performed using the `OPM Flow simulator <https://opm-project.org/?page_id=19>`_. 
 
 Concept
 -------
-Simplified and flexible framework for the three cases in the SPE Comparative Solution Project
+Simplified and flexible framework for the three cases in the `SPE Comparative Solution Project <https://www.spe.org/en/csp/>`_
 via a :doc:`configuration file <./configuration_file>`:
 
 - Set the path to the OPM Flow simulator and simulator flags.
-- Set the grid type (cartesian, tensor, or corner-point grid) and the number of cells.
+- Set the grid type (Cartesian, tensor, or corner-point grid) and the number of cells.
 - Set the rock and fluid properties.
-- Set the well or sources locations and injection schedule.
-- After execution. generates the data in the same format as requested in the benchmark.
-- In addition, generates .png figures for quick inspection.
-- Also, generates figures for comparison between runs (i.e., to assess sensitivities).  
+- Set the wells or sources locations and define the injection schedule.
+- Select the functionality (e.g., generate only the input decks, run the whole framework).
+- The framework generates the data in the same format as requested in the benchmark.
+- In addition, it generates .png figures for quick inspection of the results.
+- Also, it generates figures for comparison between runs (i.e., to assess sensitivities).  
 
 Overview
 --------
