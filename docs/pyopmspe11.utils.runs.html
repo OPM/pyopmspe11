@@ -85,13 +85,15 @@
              
   <section id="module-pyopmspe11.utils.runs">
 <span id="pyopmspe11-utils-runs-module"></span><h1>pyopmspe11.utils.runs module<a class="headerlink" href="#module-pyopmspe11.utils.runs" title="Link to this heading"></a></h1>
-<p>Utiliy functions to run the studies.</p>
+<p>Utiliy functions for the simulations, data processing, and plotting.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.runs.data">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.runs.</span></span><span class="sig-name descname"><span class="pre">data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.runs.data" title="Link to this definition"></a></dt>
-<dd><p>Function to write the sparse and dense benchmark data</p>
+<dd><p>Write the benchmark data</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters</p>
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -99,9 +101,11 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.runs.plotting">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.runs.</span></span><span class="sig-name descname"><span class="pre">plotting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.runs.plotting" title="Link to this definition"></a></dt>
-<dd><p>Function to generate and run the plotting.py file</p>
+<dd><p>Generate the figures</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters</p>
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -109,11 +113,13 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.runs.simulations">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.runs.</span></span><span class="sig-name descname"><span class="pre">simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deck</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.runs.simulations" title="Link to this definition"></a></dt>
-<dd><p>Function to run OPM Flow</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters
-deck: Name of the input deck
-folder: destination of the output files</p>
+<dd><p>Run OPM Flow</p>
+<dl>
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
+<p>deck (str): Name of the input deck</p>
+<p>folder (str): Name of destination of the output files</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
 </dd>
 </dl>
 </dd></dl>

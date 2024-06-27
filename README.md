@@ -7,7 +7,7 @@
 
 <img src="docs/text/figs/animationspe11a.gif" width="830" height="360">
 
-This repository contains scripts to set up a workflow in python for the three cases in the SPE11 project.
+This repository contains scripts to set up a workflow in python for the three cases in the [_SPE11 project_](https://www.spe.org/en/csp/).
 Here we use the [_OPM-Flow_](https://opm-project.org/?page_id=19) simulator.
 
 ## Installation
@@ -33,7 +33,7 @@ pip install -e .
 pip install -r dev-requirements.txt
 ``` 
 
-See the [_CI.yml_](https://github.com/OPM/pyopmspe11/blob/main/.github/workflows/CI.yml) script  for installation of OPM Flow (binary packages) and the pyopmspe11 package. If you are a Linux user (including the windows subsystem for Linux), then you could try to build Flow from the master branches with mpi support, by running the script `./build_opm-flow_mpi.bash`, which in turn should build flow in the folder ./build/opm-simulators/bin/flow. 
+See the [_CI.yml_](https://github.com/OPM/pyopmspe11/blob/main/.github/workflows/CI.yml) script  for installation of OPM Flow (binary packages) and the pyopmspe11 package. If you are a Linux user (including the Windows subsystem for Linux), then you could try to build Flow from the master branches with mpi support, by running the script `./build_opm-flow_mpi.bash`, which in turn should build flow in the folder ./build/opm-simulators/bin/flow. 
 
 For macOS users with the latest chips (M1/M2, guessing also M3?), the resdata Python package might not available via pip install, depending on the Python version (e.g., it is not found using Python 3.9, but it is installed using Python 3.10). If you face this issue, then before installation, remove resdata from the `requirements.txt`, then proceed with the Python requirements installation, install the OPM Flow dependencies (using macports or brew), and once inside the vpyopmspe11 Python environment, run the `./build_opm-flow_macOS.bash`, and deactivate and activate the virtual environment (this script builds OPM Flow as well as the opm Python package, and it exports the required PYTHONPATH).
 

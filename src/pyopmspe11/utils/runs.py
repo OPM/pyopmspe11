@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 """
-Utiliy functions to run the studies.
+Utiliy functions for the simulations, data processing, and plotting.
 """
 import os
 import subprocess
@@ -10,26 +10,32 @@ import subprocess
 
 def simulations(dic, deck, folder):
     """
-    Function to run OPM Flow
+    Run OPM Flow
 
     Args:
-        dic (dict): Global dictionary with required parameters
-        deck: Name of the input deck
-        folder: destination of the output files
+        dic (dict): Global dictionary\n
+        deck (str): Name of the input deck\n
+        folder (str): Name of destination of the output files
+
+    Returns:
+        None
 
     """
     os.system(
         f"{dic['flow']} --output-dir={dic['exe']}/{dic['fol']}/{folder} "
-        f"{dic['exe']}/{dic['fol']}/deck/{deck}.DATA  & wait\n"
+        f"{dic['exe']}/{dic['fol']}/deck/{deck}.DATA & wait\n"
     )
 
 
 def plotting(dic):
     """
-    Function to generate and run the plotting.py file
+    Generate the figures
 
     Args:
-        dic (dict): Global dictionary with required parameters
+        dic (dict): Global dictionary
+
+    Returns:
+        None
 
     """
     os.chdir(f"{dic['exe']}")
@@ -49,10 +55,13 @@ def plotting(dic):
 
 def data(dic):
     """
-    Function to write the sparse and dense benchmark data
+    Write the benchmark data
 
     Args:
-        dic (dict): Global dictionary with required parameters
+        dic (dict): Global dictionary
+
+    Returns:
+        None
 
     """
     os.chdir(f"{dic['exe']}")

@@ -14,20 +14,21 @@ import numpy as np
 
 def process_input(dic, in_file):
     """
-    Function to process the input file
+    Process the configuration file
 
     Args:
-        dic (dict): Global dictionary with required parameters
+        dic (dict): Global dictionary\n
         in_file (str): Name of the input text file
 
     Returns:
-        dic (dict): Global dictionary with new added parameters
+        dic (dict): Modified global dictionary
+
     """
     lol = []  # List of lines
     with open(in_file, "r", encoding="utf8") as file:
         for row in csv.reader(file, delimiter="#"):
             lol.append(row)
-    dic = readthefirstpart(lol, dic)
+    readthefirstpart(lol, dic)
     dic["maxelevation"] = 0.0
     if dic["spe11"] == "spe11a":
         dic["sensors"] = [[1.5, 0.005, 0.5], [1.7, 0.005, 1.1]]
@@ -52,20 +53,20 @@ def process_input(dic, in_file):
         dic["boxb"] = [[100.0, 0.0, 750.0], [3300.0, 5000.0, 1350.0]]
         dic["boxc"] = [[3300.0, 0.0, 250.0], [7800.0, 5000.0, 550.0]]
         dic["time"] = 31536000.0  # year to seconds
-    dic = readthesecondpart(lol, dic)
-    return dic
+    readthesecondpart(lol, dic)
 
 
 def readthefirstpart(lol, dic):
     """
-    Function to process the lines from the flow executable and model parameters
+    Process the lines from the flow executable and model parameters
 
     Args:
-        lol (list): List of lines read from the input file
-        dic (dict): Global dictionary with required parameters
+        lol (list): List of lines read from the input file\n
+        dic (dict): Global dictionary
 
     Returns:
-        dic (dict): Global dictionary with new added parameters
+        dic (dict): Modified global dictionary
+
     """
     dic["flow"] = str(lol[1])[2:-2]  # Path to the flow executable
     row = (lol[4][0].strip()).split()
@@ -120,19 +121,19 @@ def readthefirstpart(lol, dic):
     dic["backElevation"] = float(row[1])  # Elevation of back boundary [m]
     dic["noSands"] = 7  # No. saturation regions
     dic["index"] = 19  # Increase if more rows are added to the parameters part
-    return dic
 
 
 def readthesecondpart(lol, dic):
     """
-    Function to process the lines from the saturation functions until the end
+    Process the lines from the saturation functions until the end
 
     Args:
-        lol (list): List of lines read from the input file
-        dic (dict): Global dictionary with required parameters
+        lol (list): List of lines read from the input file\n
+        dic (dict): Global dictionary
 
     Returns:
-        dic (dict): Global dictionary with new added parameters
+        dic (dict): Modified global dictionary
+
     """
     dic["krw"] = str(lol[dic["index"]][0])  # Wetting rel perm saturation function [-]
     dic["krn"] = str(
@@ -217,11 +218,19 @@ def readthesecondpart(lol, dic):
             + [float(row[j]) for j in range(3, 3 + 3 * len(dic["wellCoord"]))]
         )
     dic["inj"] = column
-    return dic
 
 
 def check_deck(dic):
-    """Write unsupported features to the terminal if flow from release is used"""
+    """
+    Write unsupported features to the terminal if Flow from release is used
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
     for value in dic["flow"].split():
         if "flow" in value:
             flow = value

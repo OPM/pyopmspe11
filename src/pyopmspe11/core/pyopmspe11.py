@@ -1,21 +1,18 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
 
-"""Main script"""
+"""Main script for pyopmspe11"""
 import os
 import argparse
 from pyopmspe11.utils.inputvalues import process_input, check_deck
 from pyopmspe11.utils.runs import simulations, plotting, data
 from pyopmspe11.visualization.plotting import plot_results
 from pyopmspe11.utils.writefile import opm_files, initial
-from pyopmspe11.utils.mapproperties import (
-    grid,
-    positions,
-)
+from pyopmspe11.utils.mapproperties import grid, positions
 
 
 def pyopmspe11():
-    """Main function"""
+    """Main function for the pyopmspe11 executable"""
     cmdargs = load_parser()
     file = cmdargs["input"].strip()  # Name of the input file
     dic = {"fol": cmdargs["output"].strip()}  # Name for the output folder
@@ -38,7 +35,7 @@ def pyopmspe11():
         return
 
     # Process the input file (open pyopmspe11.utils.inputvalues to see the abbreviations meaning)
-    dic = process_input(dic, file)
+    process_input(dic, file)
 
     # Make the output folders
     if not os.path.exists(f"{dic['exe']}/{dic['fol']}"):
@@ -50,21 +47,17 @@ def pyopmspe11():
 
     if dic["mode"] in ["all", "deck", "deck_flow", "deck_flow_data"]:
         # Initialize the grid
-        dic = grid(dic)
-
+        grid(dic)
         # For corner-point grids, get the cell centers by executing flow
         if dic["grid"] == "corner-point":
             initial(dic)
             os.chdir(f"{dic['exe']}/{dic['fol']}/deck")
             simulations(dic, "INITIAL", "flow")
             print("Files used to generate the corner-point grid (INITIAL.* files)")
-
         # Check the generated deck, flow version, and chosen co2store implementation
         check_deck(dic)
-
-        # Get the sand and well positions
-        dic = positions(dic)
-
+        # Get the sand and well/sources positions
+        positions(dic)
         # Write used opm related files
         opm_files(dic)
 
@@ -88,7 +81,8 @@ def pyopmspe11():
 def load_parser():
     """Argument options"""
     parser = argparse.ArgumentParser(
-        description="Main script to run the spe11s with OPM Flow."
+        description="pyopmspe11, a Python tool for the three SPE11 benchmark"
+        " cases provided by the Open Porous Media (OPM) project.",
     )
     parser.add_argument(
         "-i",
