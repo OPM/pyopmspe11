@@ -143,7 +143,7 @@ def structured_handling_spe11bc(dic):
         dic (dict): Modified global dictionary
 
     """
-    sensor1, sensor2, centers, corners = [], [], [], []
+    sensor1, sensor2, centers, corners, pv_l = [], [], [], [], 0
     for k in range(dic["noCells"][2]):
         for i in range(dic["noCells"][0]):
             fgl = pd.Series(
@@ -183,6 +183,7 @@ def structured_handling_spe11bc(dic):
                 dic["porv"].append(
                     f"PORV {pv*dic['dy'][0]*dic['dz'][k]} 1 1 1 1 {k+1} {k+1} /"
                 )
+                pv_l = pv
             elif i == dic["noCells"][0] - 1 and (
                 int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
             ):
@@ -232,7 +233,7 @@ def structured_handling_spe11bc(dic):
                     and int(dic["satnum"][-dic["noCells"][0] + i_i]) != 7
                 ):
                     dic["porv"].append(
-                        f"PORV {pv*dic['dy'][j+1]*dic['dz'][k]} 1 1 "
+                        f"PORV {pv_l*dic['dy'][j+1]*dic['dz'][k]} 1 1 "
                         + f"{j+2} {j+2} {k+1} {k+1} /"
                     )
                 elif i_i == dic["noCells"][0] - 1 and (
@@ -389,7 +390,7 @@ def corner_point_handling_spe11bc(dic):
         dic (dict): Modified global dictionary
 
     """
-    well1, well2, sensor1, sensor2, xtemp, ztemp, centers, corners = (
+    well1, well2, sensor1, sensor2, xtemp, ztemp, centers, corners, pv_l = (
         [],
         [],
         [],
@@ -398,6 +399,7 @@ def corner_point_handling_spe11bc(dic):
         [],
         [],
         [],
+        0,
     )
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
     for i in range(dic["no_cells"]):
@@ -441,6 +443,7 @@ def corner_point_handling_spe11bc(dic):
                 f"PORV { pv*dic['d_y'][0]*dic['d_z'][i]} 1 1 1 1 "
                 + f"{dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
             )
+            pv_l = pv
         elif dic["ijk"][0] == dic["noCells"][0] - 1 and (
             int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
         ):
@@ -472,7 +475,7 @@ def corner_point_handling_spe11bc(dic):
                         dic["d_zl"] = dic["d_z"][-dic["noCells"][0] + 1 + i]
                         dic["porv"].append(
                             "PORV "
-                            + f"{pv*dic['d_y'][j+1]*dic['d_zl']} 1 1 "
+                            + f"{pv_l*dic['d_y'][j+1]*dic['d_zl']} 1 1 "
                             + f"{j+2} {j+2} {dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
                         )
                     elif i_i == dic["noCells"][0] - 1 and (
