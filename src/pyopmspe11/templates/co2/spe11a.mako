@@ -42,7 +42,6 @@ WELLDIMS
 ${len(dic['wellijk'])} ${dic['noCells'][2]} ${len(dic['wellijk'])} ${len(dic['wellijk'])} /
 % endif
 
-UNIFIN
 UNIFOUT
 ----------------------------------------------------------------------------
 GRID
@@ -145,7 +144,7 @@ RPTRST
 % if dic['model'] == 'immiscible': 
 'BASIC=2' FLOWS FLORES DEN/
 % else:
-'BASIC=2' DEN ${'PCGW' if dic["co2store"] == "gaswater" else ''}/
+'BASIC=2' DEN ${'PCGW' if dic["co2store"] == "gaswater" else ''}  ${'RSWSAT' if dic["version"] == "master" and dic["co2store"] == "gaswater" else ''} ${'RSSAT' if dic["version"] == "master" and dic["co2store"] == "gasoil" else ''}/
 % endif
 
 % if dic['model'] == 'complete':
@@ -193,10 +192,10 @@ ${sensor[0]+1} ${sensor[1]+1} ${sensor[2]+1} /
 SCHEDULE
 ----------------------------------------------------------------------------
 RPTRST
-% if dic['model'] == 'immiscible': 
+% if dic['model'] == 'immiscible':
 'BASIC=2' FLOWS FLORES DEN/
 % else:
-'BASIC=2' DEN RESIDUAL ${'PCGW' if dic["co2store"] == "gaswater" else ''}/
+'BASIC=2' DEN RESIDUAL ${'PCGW' if dic["co2store"] == "gaswater" else ''}  ${'RSWSAT' if dic["version"] == "master" and dic["co2store"] == "gaswater" else ''} ${'RSSAT' if dic["version"] == "master" and dic["co2store"] == "gasoil" else ''}/
 % endif
 
 % if sum(dic['radius']) > 0:
