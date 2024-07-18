@@ -699,8 +699,17 @@ def compute_m_c(dig, dil):
         inds = mliq > 0.0
         xco2[inds] = np.divide(co2_d[inds], mliq[inds])
         dil["xcw"] = xco2
-        if dil["xcw_max"] != 0:
+        if dil["xcw_max"] > 0:
             dil["xcw"] /= dil["xcw_max"]
+        if dil["xcw_max"] == -1:
+            if dig["use"] == "opm":
+                rssat = np.array(dig["unrst"][f"{dig['r_s'].upper()}SAT", t_n])
+            else:
+                rssat = np.array(dig["unrst"][f"{dig['r_s'].upper()}SAT"][t_n])
+            co2_d_max = (
+                rssat * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
+            )
+            dil["xcw"] = np.divide(dil["xcw"], np.divide(co2_d_max, co2_d_max + h2o_l))
         if dig["case"] != "spe11c":
             dil["m_c"].append(
                 np.sum(
@@ -810,6 +819,14 @@ def max_xcw(dig, dil):
 
     """
     dil["xcw_max"] = 0
+    if dig["use"] == "opm":
+        if dig["unrst"].count(f"{dig['r_s'].upper()}SAT", 0):
+            dil["xcw_max"] = -1
+            return
+    else:
+        if dig["unrst"].has_kw(f"{dig['r_s'].upper()}SAT"):
+            dil["xcw_max"] = -1
+            return
     for t_n in range(dig["no_skip_rst"], dig["norst"]):
         if dig["use"] == "opm":
             sgas = abs(np.array(dig["unrst"]["SGAS", t_n]))
