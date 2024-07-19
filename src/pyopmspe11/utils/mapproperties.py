@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
-# pylint: disable=C0302, R0914
+# pylint: disable=C0302, R0914, R0915
 
 """
 Utiliy function for the grid and locations in the geological models.
@@ -61,6 +61,12 @@ def grid(dic):
                 dic["xmx"], len(dic["xmx"]) - 1, dic["xmx"][-1] - dic["widthBuffer"]
             )
             dic["noCells"][0] += 2
+        if dic["spe11"] == "spe11c" and 1.1 * dic["widthBuffer"] < dic["ymy"][1]:
+            dic["ymy"] = np.insert(dic["ymy"], 1, dic["widthBuffer"])
+            dic["ymy"] = np.insert(
+                dic["ymy"], len(dic["ymy"]) - 1, dic["ymy"][-1] - dic["widthBuffer"]
+            )
+            dic["noCells"][1] += 2
         for name, size in zip(["xmx", "ymy", "zmz"], ["dx", "dy", "dz"]):
             dic[f"{name}_center"] = (dic[f"{name}"][1:] + dic[f"{name}"][:-1]) / 2.0
             dic[f"{size}"] = dic[f"{name}"][1:] - dic[f"{name}"][:-1]
@@ -244,6 +250,8 @@ def structured_handling_spe11bc(dic):
                         f"PORV {pv*dic['dy'][j+1]*dic['dz'][k]} {dic['noCells'][0]} "
                         + f"{dic['noCells'][0]} {j+2} {j+2} {k+1} {k+1} /"
                     )
+    if dic["spe11"] == "spe11c":
+        add_pv_fipnum_front_back(dic)
     dic["pop1"] = pd.Series(sensor1).argmin()
     dic["pop2"] = pd.Series(sensor2).argmin()
     dic["fipnum"][dic["pop1"]] = "8"
@@ -262,6 +270,49 @@ def structured_handling_spe11bc(dic):
         encoding="utf8",
     ) as file:
         file.write("\n".join(corners))
+
+
+def add_pv_fipnum_front_back(dic):
+    """
+    Add the buffer pore volume and bc labels also on the front and back boundaries
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
+    for k in range(dic["noCells"][2]):
+        for i in range(dic["noCells"][0] - 2):
+            ind = i + 1 + k * dic["noCells"][0] * dic["noCells"][1]
+            if int(dic["satnum"][ind]) != 1 and int(dic["satnum"][ind]) != 7:
+                pv = float(dic["poro"][ind]) * (dic["pvAdded"] + dic["widthBuffer"])
+                if dic["grid"] == "corner-point":
+                    ind_xz = i + 1 + k * dic["noCells"][0]
+                    dic["porv"].append(
+                        f"PORV {pv*dic['d_x'][i+1]*dic['d_z'][ind_xz]} {i+2} {i+2} "
+                        + f"1 1 {k+1} {k+1} /"
+                    )
+                    dic["porv"].append(
+                        f"PORV {pv*dic['d_x'][i+1]*dic['d_z'][ind_xz]} {i+2} {i+2} "
+                        + f"{dic['noCells'][1]} {dic['noCells'][1]} {k+1} {k+1} /"
+                    )
+                else:
+                    dic["porv"].append(
+                        f"PORV {pv*dic['dx'][i+1]*dic['dz'][k]} {i+2} {i+2} "
+                        + f"1 1 {k+1} {k+1} /"
+                    )
+                    dic["porv"].append(
+                        f"PORV {pv*dic['dx'][i+1]*dic['dz'][k]} {i+2} {i+2} "
+                        + f"{dic['noCells'][1]} {dic['noCells'][1]} {k+1} {k+1} /"
+                    )
+            if int(dic["satnum"][ind]) == 1:
+                dic["fipnum"][ind] = "10"
+                dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "10"
+            else:
+                dic["fipnum"][ind] = "11"
+                dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "11"
 
 
 def corner_point_handling_spe11a(dic):
@@ -488,6 +539,8 @@ def corner_point_handling_spe11bc(dic):
                             + f"{dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
                         )
             xtemp, ztemp = [], []
+    if dic["spe11"] == "spe11c":
+        add_pv_fipnum_front_back(dic)
     dic["pop1"] = pd.Series(sensor1).argmin()
     dic["pop2"] = pd.Series(sensor2).argmin()
     dic["well1"] = pd.Series(well1).argmin()
@@ -968,7 +1021,6 @@ def corner(dic):
     for i, n_y in enumerate(dic["y_n"]):
         for j in range(n_y):
             dic["ymy"].append((i + (j + 1.0) / n_y) * dic["dims"][1] / len(dic["y_n"]))
-    dic["noCells"][1] = len(dic["ymy"]) - 1
     if (dic["spe11"] == "spe11b" or dic["spe11"] == "spe11c") and 1.1 * dic[
         "widthBuffer"
     ] < dic["xmx"][1]:
@@ -976,6 +1028,12 @@ def corner(dic):
         dic["xmx"] = np.insert(
             dic["xmx"], len(dic["xmx"]) - 1, dic["xmx"][-1] - dic["widthBuffer"]
         )
+    if dic["spe11"] == "spe11c" and 1.1 * dic["widthBuffer"] < dic["ymy"][1]:
+        dic["ymy"] = np.insert(dic["ymy"], 1, dic["widthBuffer"])
+        dic["ymy"] = np.insert(
+            dic["ymy"], len(dic["ymy"]) - 1, dic["ymy"][-1] - dic["widthBuffer"]
+        )
+    dic["noCells"][1] = len(dic["ymy"]) - 1
     for xcor in dic["xmx"]:
         for _, lcor in enumerate(lines):
             dic["xcor"].append(xcor)
@@ -1010,6 +1068,7 @@ def corner(dic):
     dic["xmx"] = np.array(dic["xmx"])
     dic["ymy_center"] = 0.5 * (np.array(dic["ymy"])[1:] + np.array(dic["ymy"])[:-1])
     dic["d_y"] = np.array(dic["ymy"])[1:] - np.array(dic["ymy"])[:-1]
+    dic["d_x"] = np.array(dic["xmx"])[1:] - np.array(dic["xmx"])[:-1]
 
 
 def refinement_z(xci, zci, ncx, ncz, znr):
