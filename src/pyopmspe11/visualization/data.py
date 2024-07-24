@@ -469,22 +469,26 @@ def create_from_summary(dig, dil):
             pop2 -= dig["unrst"]["PCGW", 0][dil["fipnum"].index(9)]
         dil["pop1"] = [pop1 * 1.0e5] + list(dig["smspec"][names[sort[0]]] * 1.0e5)  # Pa
         dil["pop2"] = [pop2 * 1.0e5] + list(dig["smspec"][names[sort[1]]] * 1.0e5)  # Pa
-        for i in [2, 4, 5, 8]:
+        for i in dil["fip_diss_a"]:
             dil["moba"] += dig["smspec"][f"RGKDM:{i}"] * KMOL_TO_KG
             dil["imma"] += dig["smspec"][f"RGKDI:{i}"] * KMOL_TO_KG
             dil["dissa"] += dig["smspec"][f"RWCD:{i}"] * KMOL_TO_KG
-        for i in [5, 8]:
+        for i in dil["fip_seal_a"]:
             dil["seala"] += (
                 dig["smspec"][f"RWCD:{i}"]
                 + dig["smspec"][f"RGKDM:{i}"]
                 + dig["smspec"][f"RGKDI:{i}"]
             ) * KMOL_TO_KG
-        for i in [3, 6]:
+        for i in dil["fip_diss_b"]:
             dil["mobb"] += dig["smspec"][f"RGKDM:{i}"] * KMOL_TO_KG
             dil["immb"] += dig["smspec"][f"RGKDI:{i}"] * KMOL_TO_KG
             dil["dissb"] += dig["smspec"][f"RWCD:{i}"] * KMOL_TO_KG
-        for key in ["RWCD:6", "RGKDM:6", "RGKDI:6"]:
-            dil["sealb"] += dig["smspec"][key] * KMOL_TO_KG
+        for i in dil["fip_seal_b"]:
+            dil["sealb"] += (
+                dig["smspec"][f"RWCD:{i}"]
+                + dig["smspec"][f"RGKDM:{i}"]
+                + dig["smspec"][f"RGKDI:{i}"]
+            ) * KMOL_TO_KG
         dil["sealt"] = dil["seala"] + dil["sealb"]
         for name in ["RWCD", "RGKDM", "RGKDI"]:
             dil["sealt"] += (
@@ -497,15 +501,13 @@ def create_from_summary(dig, dil):
                 + dig["smspec"]["RGKDI:10"]
             ) * KMOL_TO_KG
             dil["sealt"] += sealbound
-            dil["boundtot"] = (
-                sealbound
-                + (
-                    dig["smspec"]["RWCD:11"]
-                    + dig["smspec"]["RGKDM:11"]
-                    + dig["smspec"]["RGKDI:11"]
-                )
-                * KMOL_TO_KG
-            )
+            dil["boundtot"] = sealbound
+        for i in dil["fip_bound_t"]:
+            dil["boundtot"] += (
+                dig["smspec"][f"RWCD:{i}"]
+                + dig["smspec"][f"RGKDM:{i}"]
+                + dig["smspec"][f"RGKDI:{i}"]
+            ) * KMOL_TO_KG
     else:
         resdata_summary(dig, dil, names, sort)
 
@@ -535,22 +537,26 @@ def resdata_summary(dig, dil, names, sort):
     dil["pop2"] = [pop2 * 1.0e5] + list(
         dig["smspec"][names[sort[1]]].values * 1.0e5
     )  # Pa
-    for i in [2, 4, 5, 8]:
+    for i in dil["fip_diss_a"]:
         dil["moba"] += dig["smspec"][f"RGKDM:{i}"].values * KMOL_TO_KG
         dil["imma"] += dig["smspec"][f"RGKDI:{i}"].values * KMOL_TO_KG
         dil["dissa"] += dig["smspec"][f"RWCD:{i}"].values * KMOL_TO_KG
-    for i in [5, 8]:
+    for i in dil["fip_seal_a"]:
         dil["seala"] += (
             dig["smspec"][f"RWCD:{i}"].values
             + dig["smspec"][f"RGKDM:{i}"].values
             + dig["smspec"][f"RGKDI:{i}"].values
         ) * KMOL_TO_KG
-    for i in [3, 6]:
+    for i in dil["fip_diss_b"]:
         dil["mobb"] += dig["smspec"][f"RGKDM:{i}"].values * KMOL_TO_KG
         dil["immb"] += dig["smspec"][f"RGKDI:{i}"].values * KMOL_TO_KG
         dil["dissb"] += dig["smspec"][f"RWCD:{i}"].values * KMOL_TO_KG
-    for key in ["RWCD:6", "RGKDM:6", "RGKDI:6"]:
-        dil["sealb"] += dig["smspec"][key].values * KMOL_TO_KG
+    for i in dil["fip_seal_b"]:
+        dil["sealb"] += (
+            dig["smspec"][f"RWCD:{i}"].values
+            + dig["smspec"][f"RGKDM:{i}"].values
+            + dig["smspec"][f"RGKDI:{i}"].values
+        ) * KMOL_TO_KG
     dil["sealt"] = dil["seala"] + dil["sealb"]
     for name in ["RWCD", "RGKDM", "RGKDI"]:
         dil["sealt"] += (
@@ -563,57 +569,13 @@ def resdata_summary(dig, dil, names, sort):
             + dig["smspec"]["RGKDI:10"].values
         ) * KMOL_TO_KG
         dil["sealt"] += sealbound
-        dil["boundtot"] = (
-            sealbound
-            + (
-                dig["smspec"]["RWCD:11"].values
-                + dig["smspec"]["RGKDM:11"].values
-                + dig["smspec"]["RGKDI:11"].values
-            )
-            * KMOL_TO_KG
-        )
-
-
-def overlapping_c_and_facie1_contribution(dig, dil):
-    """
-    Add the corresponding fipnum 12 contribution
-
-    Args:
-        dig (dict): Global dictionary\n
-        dil (dict): Local dictionary
-
-    Returns:
-        dil (dict): Modified local dictionary
-
-    """
-    if dig["use"] == "opm":
-        dil["moba"] += dig["smspec"]["RGKDM:12"] * KMOL_TO_KG
-        dil["imma"] += dig["smspec"]["RGKDI:12"] * KMOL_TO_KG
-        dil["dissa"] += dig["smspec"]["RWCD:12"] * KMOL_TO_KG
-        dil["seala"] += (
-            dig["smspec"]["RWCD:12"]
-            + dig["smspec"]["RGKDM:12"]
-            + dig["smspec"]["RGKDI:12"]
-        ) * KMOL_TO_KG
-        dil["sealt"] += (
-            dig["smspec"]["RWCD:12"]
-            + dig["smspec"]["RGKDM:12"]
-            + dig["smspec"]["RGKDI:12"]
-        ) * KMOL_TO_KG
-    else:
-        dil["moba"] += dig["smspec"]["RGKDM:12"].values * KMOL_TO_KG
-        dil["imma"] += dig["smspec"]["RGKDI:12"].values * KMOL_TO_KG
-        dil["dissa"] += dig["smspec"]["RWCD:12"].values * KMOL_TO_KG
-        dil["seala"] += (
-            dig["smspec"]["RWCD:12"].values
-            + dig["smspec"]["RGKDM:12"].values
-            + dig["smspec"]["RGKDI:12"].values
-        ) * KMOL_TO_KG
-        dil["sealt"] += (
-            dig["smspec"]["RWCD:12"].values
-            + dig["smspec"]["RGKDM:12"].values
-            + dig["smspec"]["RGKDI:12"].values
-        ) * KMOL_TO_KG
+        dil["boundtot"] = sealbound
+        for i in dil["fip_bound_t"]:
+            dil["boundtot"] += (
+                dig["smspec"][f"RWCD:{i}"].values
+                + dig["smspec"][f"RGKDM:{i}"].values
+                + dig["smspec"][f"RGKDI:{i}"].values
+            ) * KMOL_TO_KG
 
 
 def sparse_data(dig):
@@ -658,12 +620,41 @@ def sparse_data(dig):
     for ent in dil["names"]:
         dil[ent] = 0.0
     dil["m_c"] = []
+    handle_fipnums(dig, dil)
     create_from_summary(dig, dil)
-    if dig["case"] == "spe11c" and max(dil["fipnum"]) == 12:
-        overlapping_c_and_facie1_contribution(dig, dil)
-    # Using the restart data until implemented in OPM Flow summary
+    # Using the restart data
     compute_m_c(dig, dil)
     write_sparse_data(dig, dil)
+
+
+def handle_fipnums(dig, dil):
+    """
+    Set the fipnum groups to compute the sparse data
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary
+
+    Returns:
+        dil (dict): Modified local dictionary
+
+    """
+    dil["fip_diss_a"] = [2, 4, 5, 8]
+    dil["fip_seal_a"] = [5, 8]
+    dil["fip_diss_b"] = [3, 6]
+    dil["fip_seal_b"] = [6]
+    if dig["case"] != "spe11a":
+        dil["fip_bound_t"] = [11]
+    if dig["case"] == "spe11c":
+        dil["fip_diss_a"] += [13, 14, 17]
+        dil["fip_seal_a"] += [14]
+        dil["fip_diss_b"] += [15, 16]
+        dil["fip_seal_b"] += [16]
+        dil["fip_bound_t"] += [13, 14, 15, 16, 17]
+        if max(dil["fipnum"]) == 18:
+            dil["fip_diss_a"] += [12, 18]
+            dil["fip_seal_a"] += [12, 18]
+            dil["fip_bound_t"] += [18]
 
 
 def compute_m_c(dig, dil):
@@ -678,7 +669,7 @@ def compute_m_c(dig, dil):
         dil (dict): Modified local dictionary
 
     """
-    dil["boxc"] = np.array([fip in (4, 12) for fip in dil["fipnum"]])
+    dil["boxc"] = np.array([fip in (4, 12, 17, 18) for fip in dil["fipnum"]])
     dil["boxc_x"] = np.roll(dil["boxc"], 1)
     dil["boxc_y"] = np.roll(dil["boxc"], -dig["gxyz"][0])
     dil["boxc_z"] = np.roll(dil["boxc"], -dig["gxyz"][0] * dig["gxyz"][1])

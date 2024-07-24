@@ -274,7 +274,7 @@ def structured_handling_spe11bc(dic):
 
 def add_pv_fipnum_front_back(dic):
     """
-    Add the buffer pore volume and bc labels also on the front and back boundaries
+    Add the buffer pore volume and bc labels also on the front and back boundaries.
 
     Args:
         dic (dict): Global dictionary
@@ -307,12 +307,51 @@ def add_pv_fipnum_front_back(dic):
                         f"PORV {pv*dic['dx'][i+1]*dic['dz'][k]} {i+2} {i+2} "
                         + f"{dic['noCells'][1]} {dic['noCells'][1]} {k+1} {k+1} /"
                     )
-            if int(dic["satnum"][ind]) == 1:
-                dic["fipnum"][ind] = "10"
-                dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "10"
-            else:
-                dic["fipnum"][ind] = "11"
-                dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "11"
+            set_back_front_fipnums(dic, ind)
+
+
+def set_back_front_fipnums(dic, ind):
+    """
+    For the front and back boundaries in spe11c:\n
+    Box A: Fipnum 13\n
+    Satnum 1 and Box A: Fipnum 14\n
+    Box B: Fipnum 15\n
+    Satnum 1 and Box B: Fipnum 16\n
+    Box C: Fipnum 17\n
+    Satnum 1 and Box C: Fipnum 18\n
+
+    Args:
+        dic (dict): Global dictionary
+        ind (int): ID index for the property
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
+    if int(dic["fipnum"][ind]) == 2:
+        dic["fipnum"][ind] = "13"
+        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "13"
+    elif int(dic["fipnum"][ind]) == 5:
+        dic["fipnum"][ind] = "14"
+        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "14"
+    elif int(dic["fipnum"][ind]) == 3:
+        dic["fipnum"][ind] = "15"
+        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "15"
+    elif int(dic["fipnum"][ind]) == 6:
+        dic["fipnum"][ind] = "16"
+        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "16"
+    elif int(dic["fipnum"][ind]) == 4:
+        dic["fipnum"][ind] = "17"
+        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "17"
+    elif int(dic["fipnum"][ind]) == 12:
+        dic["fipnum"][ind] = "18"
+        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "18"
+    elif int(dic["satnum"][ind]) == 1:
+        dic["fipnum"][ind] = "10"
+        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "10"
+    else:
+        dic["fipnum"][ind] = "11"
+        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "11"
 
 
 def corner_point_handling_spe11a(dic):
