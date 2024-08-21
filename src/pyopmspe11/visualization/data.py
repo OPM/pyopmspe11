@@ -968,11 +968,23 @@ def handle_yaxis_mapping_extensive(dig, dil):
     simycent = [0.0] * dig["gxyz"][1]
     with open(f"{dig['path']}/deck/ycenters.txt", "r", encoding="utf8") as file:
         for j, row in enumerate(csv.reader(file)):
-            simycent[j] = float(row[0])
+            simycent[j] = float(f"{float(row[0]):.1f}")
+    simyvert = [0]
+    for ycent in simycent:
+        simyvert.append(simyvert[-1] + 2 * (ycent - simyvert[-1]))
     indy = np.array(
         [pd.Series(np.abs(dil["refycent"] - y_c)).argmin() for y_c in simycent]
     )
-    weights = [1.0 / (np.sum(indy == val)) for val in indy]
+    weights = []
+    ind = 0
+    for i, (y_i, y_f) in enumerate(zip(simyvert[:-1], simyvert[1:])):
+        if dil["refyvert"][ind] <= y_i and y_f <= dil["refyvert"][ind + 1]:
+            weights.append([1.0])
+        else:
+            weights.append([])
+            weights[-1].append((dil["refyvert"][ind + 1] - y_i) / (y_f - y_i))
+            weights[-1].append((y_f - dil["refyvert"][ind + 1]) / (y_f - y_i))
+            ind += 1
     wei_inds = [[] for _ in range(dig["nocellst"])]
     for indz in range(dig["gxyz"][2]):
         i_i = dig["gxyz"][0] * (dig["gxyz"][2] - indz - 1)
@@ -984,7 +996,7 @@ def handle_yaxis_mapping_extensive(dig, dil):
                     + int(np.floor(col[0] / dig["nxyz"][0]))
                     * dig["nxyz"][0]
                     * (dig["nxyz"][1] - 1),
-                    col[1] * weights[0],
+                    col[1] * weights[0][0],
                 ]
                 for col in row
             ]
@@ -996,11 +1008,34 @@ def handle_yaxis_mapping_extensive(dig, dil):
                 iii + dig["gxyz"][0] * (j + 1) : iii + dig["gxyz"][0] * (j + 2)
             ] = [
                 [
-                    [col[0] + (iy * dig["nxyz"][0]), col[1] * weights[j + 1]]
+                    [col[0] + (iy * dig["nxyz"][0]), col[1] * weights[j + 1][0]]
                     for col in row
                 ]
                 for row in maps
             ]
+            for weight in weights[j + 1][1:]:
+                for i, val in enumerate(
+                    wei_inds[
+                        iii + dig["gxyz"][0] * (j + 1) : iii + dig["gxyz"][0] * (j + 2)
+                    ]
+                ):
+                    if wei_inds[
+                        iii + dig["gxyz"][0] * (j + 1) : iii + dig["gxyz"][0] * (j + 2)
+                    ][i]:
+                        wei_inds[
+                            iii
+                            + dig["gxyz"][0] * (j + 1) : iii
+                            + dig["gxyz"][0] * (j + 2)
+                        ][i].append(
+                            [
+                                (
+                                    val[0][0] + dig["nxyz"][0]
+                                    if val[0][0] + dig["nxyz"][0] < dig["nocellsr"]
+                                    else val[0][0]
+                                ),
+                                weight,
+                            ]
+                        )
     dil["cell_ind"] = wei_inds
 
 
@@ -1377,13 +1412,13 @@ def generate_arrays(dig, dil, names, t_n):
     co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
     h2o_l = (1 - sgas) * rhow * dig["porva"]
     dil["pressure_array"][dig["actind"]] = 1e5 * pres
-    dil["sgas_array"][dig["actind"]] = sgas
-    dil["gden_array"][dig["actind"]] = rhog * (sgas > 0.0)
+    dil["sgas_array"][dig["actind"]] = sgas * (sgas > 0.02)
+    dil["gden_array"][dig["actind"]] = rhog * (sgas > 0.02)
     dil["wden_array"][dig["actind"]] = rhow
     dil["tco2_array"][dig["actind"]] = co2_d + co2_g
     compute_xco2(dig, dil, co2_d, h2o_l)
     h2o_v = rvv * rhog * sgas * dig["porva"] * WAT_DEN_REF / GAS_DEN_REF
-    compute_xh20(dig, dil, h2o_v, co2_g)
+    compute_xh20(dig, dil, h2o_v, co2_g, sgas)
 
 
 def compute_xco2(dig, dil, co2_d, h2o_l):
@@ -1407,7 +1442,7 @@ def compute_xco2(dig, dil, co2_d, h2o_l):
     dil["xco2_array"][dig["actind"]] = xco2
 
 
-def compute_xh20(dig, dil, h2o_v, co2_g):
+def compute_xh20(dig, dil, h2o_v, co2_g, sgas):
     """
     Compute the mass fraction of water in vapour
 
@@ -1415,7 +1450,8 @@ def compute_xh20(dig, dil, h2o_v, co2_g):
         dig (dict): Global dictionary\n
         dil (dict): Local dictionary\n
         h2o_v (array): Floats with the mass of vaporized water\n
-        co2_g (array): Floats with the mass of gaseous co2
+        co2_g (array): Floats with the mass of gaseous co2\n
+        sgas (array): Floats with the gas saturation
 
     Returns:
         dil (dict): Modified local dictionary
@@ -1425,7 +1461,7 @@ def compute_xh20(dig, dil, h2o_v, co2_g):
     xh20 = 0.0 * h2o_v
     inds = mgas > 0.0
     xh20[inds] = np.divide(h2o_v[inds], mgas[inds])
-    dil["xh20_array"][dig["actind"]] = xh20
+    dil["xh20_array"][dig["actind"]] = xh20 * (sgas > 0.02)
 
 
 def map_to_report_grid(dig, dil, names):
