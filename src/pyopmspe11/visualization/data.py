@@ -34,6 +34,7 @@ GAS_DEN_REF = 1.86843
 WAT_DEN_REF = 998.108
 SECONDS_IN_YEAR = 31536000
 KMOL_TO_KG = 1e3 * 0.044
+SGAS_THR = 0.097
 
 
 def main():
@@ -676,20 +677,10 @@ def compute_m_c(dig, dil):
     max_xcw(dig, dil)
     for t_n in range(dig["no_skip_rst"] + 1, dig["norst"]):
         if dig["use"] == "opm":
-            sgas = abs(np.array(dig["unrst"]["SGAS", t_n]))
-            rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}", t_n])
             rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}", t_n])
         else:
-            sgas = abs(np.array(dig["unrst"]["SGAS"][t_n]))
-            rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}"][t_n])
             rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}"][t_n])
-        co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
-        h2o_l = (1 - sgas) * rhow * dig["porva"]
-        mliq = co2_d + h2o_l
-        xco2 = 0.0 * co2_d
-        inds = mliq > 0.0
-        xco2[inds] = np.divide(co2_d[inds], mliq[inds])
-        dil["xcw"] = xco2
+        dil["xcw"] = np.divide(rss, rss + WAT_DEN_REF / GAS_DEN_REF)
         if dil["xcw_max"] > 0:
             dil["xcw"] /= dil["xcw_max"]
         if dil["xcw_max"] == -1:
@@ -697,10 +688,8 @@ def compute_m_c(dig, dil):
                 rssat = np.array(dig["unrst"][f"{dig['r_s'].upper()}SAT", t_n])
             else:
                 rssat = np.array(dig["unrst"][f"{dig['r_s'].upper()}SAT"][t_n])
-            co2_d_max = (
-                rssat * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
-            )
-            dil["xcw"] = np.divide(dil["xcw"], np.divide(co2_d_max, co2_d_max + h2o_l))
+            x_l_co2_max = np.divide(rssat, rssat + WAT_DEN_REF / GAS_DEN_REF)
+            dil["xcw"] = np.divide(dil["xcw"], x_l_co2_max)
         if dig["case"] != "spe11c":
             dil["m_c"].append(
                 np.sum(
@@ -820,19 +809,10 @@ def max_xcw(dig, dil):
             return
     for t_n in range(dig["no_skip_rst"], dig["norst"]):
         if dig["use"] == "opm":
-            sgas = abs(np.array(dig["unrst"]["SGAS", t_n]))
-            rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}", t_n])
             rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}", t_n])
         else:
-            sgas = abs(np.array(dig["unrst"]["SGAS"][t_n]))
-            rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}"][t_n])
             rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}"][t_n])
-        co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
-        h2o_l = (1 - sgas) * rhow * dig["porva"]
-        mliq = co2_d + h2o_l
-        xcw = 0.0 * co2_d
-        inds = mliq > 0.0
-        xcw[inds] = np.divide(co2_d[inds], mliq[inds])
+        xcw = np.divide(rss, rss + WAT_DEN_REF / GAS_DEN_REF)
         xcw_max = np.max(xcw[dil["boxc"]])
         dil["xcw_max"] = max(xcw_max, dil["xcw_max"])
 
@@ -972,15 +952,15 @@ def handle_yaxis_mapping_extensive(dig, dil):
     simyvert = [0]
     for ycent in simycent:
         simyvert.append(simyvert[-1] + 2 * (ycent - simyvert[-1]))
-    indy = np.array(
-        [pd.Series(np.abs(dil["refycent"] - y_c)).argmin() for y_c in simycent]
-    )
-    weights = []
-    ind = 0
+    weights, indy, ind = [], [], 0
     for i, (y_i, y_f) in enumerate(zip(simyvert[:-1], simyvert[1:])):
+        if dil["refyvert"][ind + 1] <= y_i:
+            ind += 1
         if dil["refyvert"][ind] <= y_i and y_f <= dil["refyvert"][ind + 1]:
+            indy.append(ind)
             weights.append([1.0])
         else:
+            indy.append(ind)
             weights.append([])
             weights[-1].append((dil["refyvert"][ind + 1] - y_i) / (y_f - y_i))
             weights[-1].append((y_f - dil["refyvert"][ind + 1]) / (y_f - y_i))
@@ -1408,60 +1388,17 @@ def generate_arrays(dig, dil, names, t_n):
             rvv = 0.0 * rss
         if dig["case"] != "spe11a":
             dil["temp_array"][dig["actind"]] = np.array(dig["unrst"]["TEMP"][t_n])
-    co2_g = sgas * rhog * dig["porva"]
-    co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
-    h2o_l = (1 - sgas) * rhow * dig["porva"]
+    x_l_co2 = np.divide(rss, rss + WAT_DEN_REF / GAS_DEN_REF)
+    x_g_h2o = np.divide(rvv, rvv + GAS_DEN_REF / WAT_DEN_REF)
+    co2_g = (1 - x_g_h2o) * sgas * rhog * dig["porva"]
+    co2_d = x_l_co2 * (1 - sgas) * rhow * dig["porva"]
     dil["pressure_array"][dig["actind"]] = 1e5 * pres
-    dil["sgas_array"][dig["actind"]] = sgas * (sgas > 0.02)
-    dil["gden_array"][dig["actind"]] = rhog * (sgas > 0.02)
+    dil["sgas_array"][dig["actind"]] = sgas * (sgas > SGAS_THR)
+    dil["gden_array"][dig["actind"]] = rhog * (sgas > SGAS_THR)
     dil["wden_array"][dig["actind"]] = rhow
+    dil["xco2_array"][dig["actind"]] = x_l_co2
+    dil["xh20_array"][dig["actind"]] = x_g_h2o * (sgas > SGAS_THR)
     dil["tco2_array"][dig["actind"]] = co2_d + co2_g
-    compute_xco2(dig, dil, co2_d, h2o_l)
-    h2o_v = rvv * rhog * sgas * dig["porva"] * WAT_DEN_REF / GAS_DEN_REF
-    compute_xh20(dig, dil, h2o_v, co2_g, sgas)
-
-
-def compute_xco2(dig, dil, co2_d, h2o_l):
-    """
-    Compute the mass fraction of CO2 in liquid
-
-    Args:
-        dig (dict): Global dictionary\n
-        dil (dict): Local dictionary\n
-        co2_d (array): Floats with the mass of dissolved co2\n
-        h2o_l (array): Floats with the mass of liquid water
-
-    Returns:
-        dil (dict): Modified local dictionary
-
-    """
-    mliq = co2_d + h2o_l
-    xco2 = 0.0 * co2_d
-    inds = mliq > 0.0
-    xco2[inds] = np.divide(co2_d[inds], mliq[inds])
-    dil["xco2_array"][dig["actind"]] = xco2
-
-
-def compute_xh20(dig, dil, h2o_v, co2_g, sgas):
-    """
-    Compute the mass fraction of water in vapour
-
-    Args:
-        dig (dict): Global dictionary\n
-        dil (dict): Local dictionary\n
-        h2o_v (array): Floats with the mass of vaporized water\n
-        co2_g (array): Floats with the mass of gaseous co2\n
-        sgas (array): Floats with the gas saturation
-
-    Returns:
-        dil (dict): Modified local dictionary
-
-    """
-    mgas = h2o_v + co2_g
-    xh20 = 0.0 * h2o_v
-    inds = mgas > 0.0
-    xh20[inds] = np.divide(h2o_v[inds], mgas[inds])
-    dil["xh20_array"][dig["actind"]] = xh20 * (sgas > 0.02)
 
 
 def map_to_report_grid(dig, dil, names):
