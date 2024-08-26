@@ -1,6 +1,6 @@
 # Contributing
 
-Hola hola :).
+Hola hola 🙂.
 The following is a set of guidelines for contributing to pyopmspe11.
 
 ## Ground Rules

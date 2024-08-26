@@ -14,6 +14,14 @@ pyopmnearwell
 
 `A framework to simulate near well dynamics using OPM Flow <https://github.com/cssr-tools/pyopmnearwell>`_.
 
+*****
+plopm
+*****
+
+.. image:: ./figs/plopm.png
+
+`Quick generation of PNG figures and VTKs from a OPM Flow type model <https://github.com/cssr-tools/plopm>`_.
+
 ******
 pycopm
 ******

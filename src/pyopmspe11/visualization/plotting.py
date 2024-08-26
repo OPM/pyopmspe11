@@ -94,6 +94,7 @@ def plot_results(dic):
         "#bcbd22",
         "#17becf",
         "r",
+        "k",
     ]
     dic["linestyle"] = [
         "--",
@@ -264,11 +265,11 @@ def sparse_data(dic):
             axis.text(
                 0.7,
                 0.15 + nfol * 0.05,
-                fol,
+                dic["folders"][-1 - nfol],
                 transform=axis.transAxes,
                 verticalalignment="top",
                 bbox=dic["props"],
-                color=dic["colors"][nfol],
+                color=dic["colors"][len(dic["folders"]) - nfol - 1],
             )
             csv = np.genfromtxt(
                 f"{dic['exe']}/{fol}/data/{dic['case']}_time_series.csv",

@@ -503,12 +503,12 @@ def create_from_summary(dig, dil):
             ) * KMOL_TO_KG
             dil["sealt"] += sealbound
             dil["boundtot"] = sealbound
-        for i in dil["fip_bound_t"]:
-            dil["boundtot"] += (
-                dig["smspec"][f"RWCD:{i}"]
-                + dig["smspec"][f"RGKDM:{i}"]
-                + dig["smspec"][f"RGKDI:{i}"]
-            ) * KMOL_TO_KG
+            for i in dil["fip_bound_t"]:
+                dil["boundtot"] += (
+                    dig["smspec"][f"RWCD:{i}"]
+                    + dig["smspec"][f"RGKDM:{i}"]
+                    + dig["smspec"][f"RGKDI:{i}"]
+                ) * KMOL_TO_KG
     else:
         resdata_summary(dig, dil, names, sort)
 
