@@ -222,7 +222,7 @@ BCPROP
 
 % for j in range(len(dic['inj'])):
 TUNING
-1e-2 ${dic['inj'][j][2] / 86400.} 1e-10 2* 1e-12/
+${dic["tim_aft_eve"] if dic["tim_aft_eve"] else 1e-2} ${dic['inj'][j][2] / 86400.} 1e-10 2* 1e-12 ${dic["sol_res_fac"]}/
 /
 /
 % if max(dic['radius']) > 0:

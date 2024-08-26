@@ -243,3 +243,24 @@ def check_deck(dic):
             + "build flow from the master GitHub branches.\n"
         )
         sys.exit()
+
+
+def handle_tuning(dic):
+    """
+    If tuning is enable, then we write the entries corresponding to the maximum
+    length of the next time step after event and the solver restart factor.
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
+    dic["tim_aft_eve"], dic["sol_res_fac"] = "", ""
+    for value in dic["flow"].split():
+        if "solver-restart-factor" in value:
+            dic["sol_res_fac"] = float(value.split("=")[1])
+            continue
+        if "time-step-after-event-in-days" in value:
+            dic["tim_aft_eve"] = float(value.split("=")[1])
