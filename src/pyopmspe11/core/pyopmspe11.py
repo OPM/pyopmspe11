@@ -4,7 +4,7 @@
 """Main script for pyopmspe11"""
 import os
 import argparse
-from pyopmspe11.utils.inputvalues import process_input, check_deck
+from pyopmspe11.utils.inputvalues import process_input, check_deck, handle_tuning
 from pyopmspe11.utils.runs import simulations, plotting, data
 from pyopmspe11.visualization.plotting import plot_results
 from pyopmspe11.utils.writefile import opm_files, initial
@@ -56,6 +56,8 @@ def pyopmspe11():
             print("Files used to generate the corner-point grid (INITIAL.* files)")
         # Check the generated deck, flow version, and chosen co2store implementation
         check_deck(dic)
+        # Handle tuning
+        handle_tuning(dic)
         # Get the sand and well/sources positions
         positions(dic)
         # Write used opm related files

@@ -5,7 +5,7 @@
 
 # pyopmspe11: A Python framework using OPM Flow for the SPE11 benchmark project
 
-<img src="docs/text/figs/animationspe11a.gif" width="830" height="360">
+<img src="docs/text/figs/pyopmspe11c100Mcells.gif" width="830" height="462">
 
 This repository contains scripts to set up a workflow using Python for the three cases in the [_SPE11 project_](https://www.spe.org/en/csp/).
 Here we use the [_OPM-Flow_](https://opm-project.org/?page_id=19) simulator.
@@ -39,7 +39,7 @@ pip install -e .
 pip install -r dev-requirements.txt
 ``` 
 
-See the [_installation_](https://OPM.github.io/pyopmsep11/installation.html) for further details on building OPM Flow from the master branches in Linux, Windows, and macOS, as well as the OPM Python package.
+See the [_installation_](https://OPM.github.io/pyopmspe11/installation.html) for further details on building OPM Flow from the master branches in Linux, Windows, and macOS, as well as the OPM Python package.
 
 ## Running pyopmspe11
 You can run _pyopmspe11_ as a single command line:
