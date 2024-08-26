@@ -1,14 +1,14 @@
 """Set the full path to the flow executable and flags"""
-mpirun -np 12 flow --nonlinear-solver=nldd --matrix-add-well-contributions=1 --tolerance-mb=1e-7 --linear-solver=cpr_trueimpes --enable-tuning=true --solver-max-time-step-in-days=3650 --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations --newton-min-iterations=1 --threads-per-process=1 --time-step-control-target-newton-iterations=3 --time-step-control-growth-rate=1.15 --time-step-control-decay-rate=0.85 --newton-max-iterations=6 --relaxed-max-pv-fraction=0 --local-domains-ordering-measure=residual --time-step-control=newtoniterationcount --enable-drift-compensation=0 --time-step-after-event-in-days=1 --solver-restart-factor=0.33
+mpirun -np 12 flow --partition-method=2 --edge-weights-method=2 --imbalance-tol=1.1 --nonlinear-solver=nldd --matrix-add-well-contributions=1 --tolerance-mb=1e-7 --linear-solver=cpr_trueimpes --solver-max-time-step-in-days=3650 --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations --newton-min-iterations=1 --time-step-control-target-newton-iterations=3 --time-step-control-growth-rate=1.15 --time-step-control-decay-rate=0.85 --newton-max-iterations=6 --relaxed-max-pv-fraction=0 --local-domains-ordering-measure=residual --time-step-control=newtoniterationcount --enable-tuning=true --time-step-after-event-in-days=1 --solver-restart-factor=0.33
 
 """Set the model parameters"""
 spe11c master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
 complete gaswater #Name of the co2 model (immiscible or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
-cartesian         #Type of grid (cartesian, tensor, or corner-point)
+corner-point      #Type of grid (cartesian, tensor, or corner-point)
 8400 5000 1200    #Length, width, and depth [m]
 168               #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
 100               #If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for spe11c)
-120               #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
+9,7,1,5,5,3,7,7,10,7,7,8,6,15,5,24,24,7  #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
 70 36.12          #Temperature bottom and top rig [C]            
 300 3e7 0.1       #Datum [m], pressure at the datum [Pa], and multiplier for the permeability in the z direction [-] 
 1e-9 2e-8         #Diffusion (in liquid and gas) [m^2/s]
