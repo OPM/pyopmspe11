@@ -132,7 +132,8 @@ def load_parser():
         default="performance_sparse",
         help="Write only the 'dense', 'sparse', 'performance', 'performance-spatial', "
         "'dense_performance', 'dense_sparse', 'performance_sparse', "
-        "'dense_performance-spatial', or 'all' ('performance_sparse') by default",
+        "'dense_performance-spatial', 'dense_performance_sparse', or 'all' "
+        "('performance_sparse') by default",
     )
     parser.add_argument(
         "-u",

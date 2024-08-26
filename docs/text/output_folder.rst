@@ -17,5 +17,5 @@ run directly the simulations calling the Flow solvers, e.g., to add tracers
 (see the OPM Flow documentation `here <https://opm-project.org/?page_id=955>`_).
 
 .. tip::
-    If you install the dev-requirements.txt, executing **pytest --cov=pyopmspe11 --cov-report term-missing tests/** runs the
+    If you install the dev-requirements.txt, executing **pytest \-\-cov=pyopmspe11 \-\-cov-report term-missing tests/** runs the
     configuration files in the tests with different argument options for **pyopmspe11**, then one can see the different outputs.

@@ -1,7 +1,4 @@
-# SPDX-FileCopyrightText: 2023 NORCE
-# SPDX-License-Identifier: MIT
-
-name: Run the pyopmspe11 executable
+name: Run pyopmspe11
 
 on:
  push:
@@ -40,10 +37,11 @@ jobs:
         sudo apt-get install libopm-simulators-bin
         sudo apt-get install texlive-fonts-recommended texlive-fonts-extra dvipng cm-super
         
-    - name: Install test dependecies
+    - name: Install dependecies
       run: |
         pip install --upgrade pip setuptools wheel
         pip install -r dev-requirements.txt
+        pip install opm
         
     - name: Install pyopmspe11
       run: |
@@ -51,9 +49,9 @@ jobs:
         
     - name: Check code style and linting 
       run: |
-        black --check src/ tests/ setup.py
-        pylint src/ tests/ setup.py
-        mypy --ignore-missing-imports src/ tests/ setup.py
+        black --check src/ tests/
+        pylint src/ tests/
+        mypy --ignore-missing-imports src/ tests/
       
     - name: Run the tests
       run: |

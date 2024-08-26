@@ -48,8 +48,10 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
 <li class="toctree-l1"><a class="reference internal" href="related.html">Related</a></li>
@@ -86,6 +88,18 @@
   <section id="module-pyopmspe11.utils.mapproperties">
 <span id="pyopmspe11-utils-mapproperties-module"></span><h1>pyopmspe11.utils.mapproperties module<a class="headerlink" href="#module-pyopmspe11.utils.mapproperties" title="Link to this heading"></a></h1>
 <p>Utiliy function for the grid and locations in the geological models.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.add_pv_fipnum_front_back">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">add_pv_fipnum_front_back</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.add_pv_fipnum_front_back" title="Link to this definition"></a></dt>
+<dd><p>Add the buffer pore volume and bc labels also on the front and back boundaries.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.boxes">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">boxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">satnum</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.boxes" title="Link to this definition"></a></dt>
@@ -267,6 +281,25 @@ dic (dict): Global dictionary</p>
 <dd><p>Find the i,j,k sensor indices</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.mapproperties.set_back_front_fipnums">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.mapproperties.</span></span><span class="sig-name descname"><span class="pre">set_back_front_fipnums</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ind</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.mapproperties.set_back_front_fipnums" title="Link to this definition"></a></dt>
+<dd><p>For the front and back boundaries in spe11c:</p>
+<p>Box A: Fipnum 13</p>
+<p>Satnum 1 and Box A: Fipnum 14</p>
+<p>Box B: Fipnum 15</p>
+<p>Satnum 1 and Box B: Fipnum 16</p>
+<p>Box C: Fipnum 17</p>
+<p>Satnum 1 and Box C: Fipnum 18</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary
+ind (int): ID index for the property</p>
 </dd>
 <dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
 </dd>

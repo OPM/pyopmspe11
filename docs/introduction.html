@@ -22,7 +22,7 @@
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Configuration file" href="configuration_file.html" />
+    <link rel="next" title="Installation" href="installation.html" />
     <link rel="prev" title="Welcome to pyopmspe11’s documentation!" href="index.html" /> 
 </head>
 
@@ -50,11 +50,12 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#concept">Concept</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
 <li class="toctree-l1"><a class="reference internal" href="related.html">Related</a></li>
@@ -88,12 +89,11 @@
   <section id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h1>
 <img alt="_images/animationspe11a.gif" src="_images/animationspe11a.gif" />
-<p>This documentation describes the content of the <strong>pyopmspe11</strong> package.
-The numerical studies are performed using the <a class="reference external" href="https://opm-project.org/?page_id=19">OPM Flow simulator</a>.</p>
+<p>This documentation describes the <strong>pyopmspe11</strong> package hosted in <a class="reference external" href="https://github.com/OPM/pyopmspe11">https://github.com/OPM/pyopmspe11</a>.</p>
 <section id="concept">
 <h2>Concept<a class="headerlink" href="#concept" title="Link to this heading"></a></h2>
 <p>Simplified and flexible framework for the three cases in the <a class="reference external" href="https://www.spe.org/en/csp/">SPE Comparative Solution Project</a>
-via a <a class="reference internal" href="configuration_file.html"><span class="doc">configuration file</span></a>:</p>
+via a <a class="reference internal" href="configuration_file.html"><span class="doc">configuration file</span></a> using the <a class="reference external" href="https://opm-project.org/?page_id=19">OPM Flow simulator</a>:</p>
 <ul class="simple">
 <li><p>Set the path to the OPM Flow simulator and simulator flags.</p></li>
 <li><p>Set the grid type (Cartesian, tensor, or corner-point grid) and the number of cells.</p></li>
@@ -106,31 +106,41 @@ via a <a class="reference internal" href="configuration_file.html"><span class="
 </ul>
 </section>
 <section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<span id="id1"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
 <p>The current implementation supports the following executable with the argument options:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>input.txt<span class="w"> </span>-o<span class="w"> </span>output
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>configuration_file.txt
 </pre></div>
 </div>
 <p>where</p>
-<ul class="simple">
-<li><p>-i, --input: The base name of the <a class="reference internal" href="configuration_file.html"><span class="doc">configuration file</span></a> (‘input.txt’ by default).</p></li>
-<li><p>-o, --output: The base name of the <a class="reference internal" href="output_folder.html"><span class="doc">output folder</span></a> (‘output’ by default).</p></li>
-<li><p>-m, --mode: Run the whole framework (‘all’), only create decks (‘deck’), only run flow (‘flow’), only write benchmark data (‘data’), only create plots (‘plot’), deck and run (‘deck_flow’), data and plot (‘data_plot’), run and data (‘flow_data’), or deck, run, and data (‘deck_flow_data’) (‘deck_flow’ by default).</p></li>
-<li><p>-g, --generate: Write only the ‘dense’, ‘sparse’, ‘performance’, ‘performance-spatial’, ‘dense_performance’, ‘dense_sparse’, ‘performance_sparse’, ‘dense_performance-spatial’, ‘dense_performance_sparse’, or ‘all’ (‘performance_sparse’) by default.</p></li>
-<li><p>-r, --resolution: Number of x, y, and z elements to map the simulation results to the dense report data (‘8,1,5’ by default).</p></li>
-<li><p>-t, --time: If one number, time step for the spatial maps (spe11a [h]; spe11b/c [y]) (‘5’ by default); otherwise, times separated by commas.</p></li>
-<li><p>-u, --use: Using the ‘opm’ or ‘resdata’ python package (‘resdata’ by default).</p></li>
-<li><p>-w, --write: Time interval for the sparse and performance data (spe11a [h]; spe11b/c [y]) (‘0.1’ by default).</p></li>
-<li><p>-c, --compare: Generate a common plot for the current folders for ‘spe11a’, ‘spe11b’, or ‘spe11c’ (’’ by default).</p></li>
-</ul>
-</section>
-<section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
-<p>See the <a class="reference external" href="https://github.com/OPM/pyopmspe11">Github page</a>.</p>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>Check the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/.github/workflows/CI.yml">CI.yml</a> file.</p>
-</div>
+<dl class="option-list">
+<dt><kbd><span class="option">-i</span></kbd></dt>
+<dd><p>The base name of the <a class="reference internal" href="configuration_file.html"><span class="doc">configuration file</span></a> (‘input.txt’ by default).</p>
+</dd>
+<dt><kbd><span class="option">-o</span></kbd></dt>
+<dd><p>The base name of the <a class="reference internal" href="output_folder.html"><span class="doc">output folder</span></a> (‘output’ by default).</p>
+</dd>
+<dt><kbd><span class="option">-m</span></kbd></dt>
+<dd><p>Run the whole framework (‘all’), only create decks (‘deck’), only run flow (‘flow’), only write benchmark data (‘data’), only create plots (‘plot’), deck and run (‘deck_flow’), data and plot (‘data_plot’), run and data (‘flow_data’), deck, run, and data (‘deck_flow_data’), or flow, data, and plot (‘flow_data_plot’) (‘deck_flow’ by default).</p>
+</dd>
+<dt><kbd><span class="option">-g</span></kbd></dt>
+<dd><p>Write only the ‘dense’, ‘sparse’, ‘performance’, ‘performance-spatial’, ‘dense_performance’, ‘dense_sparse’, ‘performance_sparse’, ‘dense_performance-spatial’, ‘dense_performance_sparse’, or ‘all’ (‘performance_sparse’) by default.</p>
+</dd>
+<dt><kbd><span class="option">-r</span></kbd></dt>
+<dd><p>Number of x, y, and z elements to map the simulation results to the dense report data (‘8,1,5’ by default).</p>
+</dd>
+<dt><kbd><span class="option">-t</span></kbd></dt>
+<dd><p>If one number, time step for the spatial maps (spe11a [h]; spe11b/c [y]) (‘5’ by default); otherwise, times separated by commas.</p>
+</dd>
+<dt><kbd><span class="option">-u</span></kbd></dt>
+<dd><p>Using the ‘opm’ or ‘resdata’ python package (‘resdata’ by default).</p>
+</dd>
+<dt><kbd><span class="option">-w</span></kbd></dt>
+<dd><p>Time interval for the sparse and performance data (spe11a [h]; spe11b/c [y]) (‘0.1’ by default).</p>
+</dd>
+<dt><kbd><span class="option">-c</span></kbd></dt>
+<dd><p>Generate a common plot for the current folders for ‘spe11a’, ‘spe11b’, or ‘spe11c’ (’’ by default).</p>
+</dd>
+</dl>
 </section>
 </section>
 
@@ -139,7 +149,7 @@ via a <a class="reference internal" href="configuration_file.html"><span class="
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="Welcome to pyopmspe11’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="configuration_file.html" class="btn btn-neutral float-right" title="Configuration file" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

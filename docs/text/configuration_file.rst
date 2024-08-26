@@ -19,9 +19,9 @@ line as many flags as required (see the OPM Flow documentation `here <https://op
     parallel by adding **mpirun -np N flow ...** where N is the number of cpus.
 
 .. tip::
-    By executing flow --help you get an overview of the available flags in the
-    flow simulator to improve/fix convergence and mass issues (i.e., by setting the flag --linear-solver=cprw to change the linear solver,
-    by tightening the mb tolerances (--tolerance-mb), etc.).
+    By executing flow -h you get an overview of the available flags in the
+    flow simulator to improve/fix convergence and mass issues (i.e., by setting the flag \-\-linear-solver=cprw to change the linear solver,
+    by tightening the cnv tolerances (\-\-tolerance-cnv), etc.).
 
 ****************************
 Reservoir-related parameters
@@ -123,12 +123,13 @@ The last part of the configuration file sets the wells radius, location, and the
 
     """Define the injection values ([hours] for spe11a; [years] for spe11b/c)""" 
     """injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
-    1000 1000 0.1 1  0 10 1  0 10
-      25    5 0.1 1 50 10 1  0 10
-      25    5 0.1 1 50 10 1 50 10
-      50   25 0.1 1  0 10 1  0 10
-     400   50 0.1 1  0 10 1  0 10
-     500  100 0.1 1  0 10 1  0 10
+    999.9 999.9    10 1  0 10 1  0 10
+      0.1   0.1   0.1 1  0 10 1  0 10
+       25     5     5 1 50 10 1  0 10
+       25     5     5 1 50 10 1 50 10
+       50    25    25 1  0 10 1  0 10
+      400    50    50 1  0 10 1  0 10
+      500   100   100 1  0 10 1  0 10
     
 .. warning::
     Keep the linebreak between the sections (in the current implementation this is used for the reading of the parameters).
