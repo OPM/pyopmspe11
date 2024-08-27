@@ -73,9 +73,9 @@ def readthefirstpart(lol, dic):
     dic["spe11"] = row[0]  # Name of the spe case (spe11a, spe11b, or spe11c)
     dic["version"] = row[1]  # OPM Flow version (release or master)
     row = (lol[5][0].strip()).split()
-    dic["model"] = row[0]  # Model to run (immiscible or complete)
+    dic["model"] = row[0]  # Model to run (immiscible, convective, or complete)
     dic["co2store"] = row[1]  # co2store implementation (gaswater or gasoil)
-    dic["grid"] = str(lol[6][0]).strip()  # Type of grid (cartesian or corner-point)
+    dic["grid"] = str(lol[6][0]).strip()  # Grid (Cartesian, tensor, or corner-point)
     dic["dims"] = [float((lol[7][0].strip()).split()[j]) for j in range(3)]
     if dic["grid"] == "cartesian":
         dic["noCells"] = [int((lol[8 + j][0].strip()).split()[0]) for j in range(3)]
@@ -233,14 +233,22 @@ def check_deck(dic):
     """
     for value in dic["flow"].split():
         if "flow" in value:
-            flow = value
+            dic["only_flow"] = value
             break
-    with Popen(args=f"{flow} --version", stdout=PIPE, shell=True) as process:
+    with Popen(
+        args=f"{dic['only_flow']} --version", stdout=PIPE, shell=True
+    ) as process:
         dic["flow_version"] = str(process.communicate()[0])[7:-3]
     if dic["flow_version"] == "2023.10":
         print(
             "\nYou are using Flow 2023.10. Please update to Flow 2024.04, or "
-            + "build flow from the master GitHub branches.\n"
+            + "build Flow from the master GitHub branches.\n"
+        )
+        sys.exit()
+    if dic["flow_version"] == "2024.04" and dic["model"] == "convective":
+        print(
+            "\nThe convective option requires a Flow version newer than "
+            + "22-08-2024. Please build Flow from the master GitHub branches.\n"
         )
         sys.exit()
 

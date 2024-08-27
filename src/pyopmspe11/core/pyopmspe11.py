@@ -46,25 +46,29 @@ def pyopmspe11():
     os.chdir(f"{dic['exe']}/{dic['fol']}")
 
     if dic["mode"] == "all" or "deck" in dic["mode"]:
+        # Check the generated deck, flow version, and chosen co2store implementation
+        check_deck(dic)
         # Initialize the grid
         grid(dic)
         # For corner-point grids, get the cell centers by executing flow
         if dic["grid"] == "corner-point":
             initial(dic)
             os.chdir(f"{dic['exe']}/{dic['fol']}/deck")
-            simulations(dic, "INITIAL", "flow")
-            print("Files used to generate the corner-point grid (INITIAL.* files)")
-        # Check the generated deck, flow version, and chosen co2store implementation
-        check_deck(dic)
+            simulations(dic, "INITIAL", "flow", True)
+            print(
+                "Files used to generate the corner-point grid (INITIAL.* files).\n"
+                + "Please wait while pyopmspe11 is processing the deck files."
+            )
         # Handle tuning
         handle_tuning(dic)
         # Get the sand and well/sources positions
         positions(dic)
         # Write used opm related files
         opm_files(dic)
+        print(f"The deck files have been written to {dic['exe']}/{dic['fol']}/deck.")
     if dic["mode"] == "all" or "flow" in dic["mode"]:
         # Run the simulations
-        simulations(dic, dic["fol"].upper(), "flow")
+        simulations(dic, dic["fol"].upper(), "flow", False)
 
     if dic["mode"] == "all" or "data" in dic["mode"]:
         # Write the data

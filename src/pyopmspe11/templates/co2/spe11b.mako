@@ -41,7 +41,7 @@ DIFFUSE
 
 % if dic['model'] != 'immiscible':
 THERMAL
-%endif 
+% endif 
 
 METRIC
 
@@ -58,10 +58,10 @@ UNIFOUT
 GRID
 ----------------------------------------------------------------------------
 INIT
-%if dic["grid"] == 'corner-point':
+% if dic["grid"] == 'corner-point':
 INCLUDE
 'GRID.INC' /
-%elif dic["grid"] == 'tensor':
+% elif dic["grid"] == 'tensor':
 INCLUDE
 'DX.INC' /
 DY 
@@ -70,7 +70,7 @@ INCLUDE
 'DZ.INC' /
 TOPS
 ${dic['noCells'][0]}*0.0 /
-%else:
+% else:
 INCLUDE
 'DX.INC' /
 DY 
@@ -79,7 +79,7 @@ DZ
 ${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*${dic['dsize'][2]} /
 TOPS
 ${dic['noCells'][0]}*0.0 /
-%endif
+% endif
 
 INCLUDE
 'PERMX.INC' /
@@ -132,14 +132,14 @@ DIFFAWAT
 % if dic['model'] != 'convective':
 ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
 % else:
-%for i in range(dic['noSands']):
+% for i in range(dic['noSands']):
 ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
-%endfor
+% endfor
 % endif
 DIFFAGAS
 % if dic['model'] != 'convective':
 ${dic["diffusion"][1]} ${dic["diffusion"][1]} /
-%else:
+% else:
 % for i in range(dic['noSands']): 
 ${dic["diffusion"][1]} ${dic["diffusion"][1]} /
 % endfor
@@ -204,7 +204,7 @@ RVVD
 0   0.0
 ${dic['dims'][2]} 0.0 /
 % endif
-%endif
+% endif
 
 RTEMPVD
 0   ${dic["temperature"][1]}
@@ -260,9 +260,9 @@ DRSDTCON
 -1.0 /
 -1.0 /
 /
-%endif
+% endif
 
-% if dic['model'] != 'immiscible' and dic["flow_version"] != "2023.10":
+% if dic['model'] != 'immiscible':
 BCPROP
 1 THERMAL /
 2 THERMAL /

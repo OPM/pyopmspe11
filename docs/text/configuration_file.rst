@@ -35,7 +35,7 @@ The following input lines in the configuration file are:
 
     """Set the model parameters"""
     spe11c master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
-    complete gaswater #Name of the co2 model (immiscible or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
+    complete gaswater #Name of the co2 model (immiscible, convective [convective requires a Flow version newer than 22-08-2024], or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
     corner-point      #Type of grid (cartesian, tensor, or corner-point)
     8400 5000 1200    #Length, width, and depth [m]
     420               #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
@@ -52,7 +52,8 @@ In line 5 you specify if you are using OPM Flow from the master branch or from t
 This since there are continuous changues in the OPM master branch. Then we 
 will keep updating the decks for using Flow from master and also we will keep the framework to produce decks compatible for the latest OPM stable release.
 The immiscible model allows for faster prototyping while the complete model includes dissolution of the components in the
-gas and liquid phases, in addition to thermal effects. Regarding the grid type, the cartesian mode generates an uniform grid
+gas and liquid phases, in addition to thermal effects. The convective model requires a Flow version newer than 22-08-2024; details on the model and keyword can be found in this `link <https://github.com/OPM/opm-simulators/pull/3076>`_. 
+Regarding the grid type, the cartesian mode generates an uniform grid
 with the defined number of elements in lines 9 to 11. The tensor grid allows to define arrays in each direction where the grid
 is first divided with the number of entries in the array, and after it divides each of these elements by the assigned number in 
 the array entry. The corner-point mode generates a grid where the x and y direction are defined as in the array mode, but the 
