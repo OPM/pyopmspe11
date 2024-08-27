@@ -10,7 +10,11 @@ EQLDIMS
 /
 
 TABDIMS
+% if dic['model'] != 'convective':
 ${dic['noSands']} 1* ${dic['tabdims']} /
+% else:
+${dic['noSands']} ${dic['noSands']} ${dic['tabdims']} /
+% endif
 
 % if dic["co2store"] == "gaswater":
 WATER
@@ -19,7 +23,7 @@ OIL
 % endif
 GAS
 CO2STORE
-% if dic['model'] == 'complete':
+% if dic['model'] != 'immiscible':
 % if dic["co2store"] == "gaswater":
 DISGASW
 VAPWAT
@@ -112,16 +116,37 @@ PROPS
 INCLUDE
 'TABLES.INC' /
 
-% if dic['model'] == 'complete' and (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
+% if dic['model'] != 'immiscible':
 % if dic["co2store"] == "gaswater":
+% if (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
 DIFFAWAT
+% if dic['model'] != 'convective':
 ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
-
-DIFFAGAS
-${dic["diffusion"][1]} ${dic["diffusion"][1]} /
 % else:
+%for i in range(dic['noSands']):
+${dic["diffusion"][0]} ${dic["diffusion"][0]} /
+%endfor
+% endif
+DIFFAGAS
+% if dic['model'] != 'convective':
+${dic["diffusion"][1]} ${dic["diffusion"][1]} /
+%else:
+% for i in range(dic['noSands']): 
+${dic["diffusion"][1]} ${dic["diffusion"][1]} /
+% endfor
+% endif
+% endif
+% else:
+% if (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
 DIFFC
+% if dic['model'] != 'convective':
 18.01528E-3 44.018E-3 ${dic["diffusion"][1]} ${dic["diffusion"][1]} ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
+% else:
+% for i in range(dic['noSands']): 
+18.01528E-3 44.018E-3 ${dic["diffusion"][1]} ${dic["diffusion"][1]} ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
+% endfor
+% endif
+% endif
 % endif
 % endif
 
@@ -134,6 +159,12 @@ INCLUDE
 'SATNUM.INC' /
 INCLUDE
 'FIPNUM.INC' /
+
+% if dic['model'] == 'convective':
+COPY
+ SATNUM PVTNUM /
+/
+% endif
 ----------------------------------------------------------------------------
 SOLUTION
 ---------------------------------------------------------------------------
@@ -196,6 +227,18 @@ RPTRST
 'BASIC=2' FLOWS FLORES DEN/
 % else:
 'BASIC=2' DEN RESIDUAL ${'PCGW' if dic["co2store"] == "gaswater" else ''}  ${'RSWSAT' if dic["version"] == "master" and dic["co2store"] == "gaswater" else ''} ${'RSSAT' if dic["version"] == "master" and dic["co2store"] == "gasoil" else ''}/
+% endif
+
+% if dic['model'] == 'convective':
+DRSDTCON
+-1.0 /
+0.004 0.34 3.0e-09 ALL /
+0.004 0.34 3.0e-09 ALL /
+0.004 0.34 3.0e-09 ALL /
+0.004 0.34 3.0e-09 ALL /
+-1.0 /
+-1.0 /
+/
 % endif
 
 % if sum(dic['radius']) > 0:
