@@ -51,10 +51,10 @@ UNIFOUT
 GRID
 ----------------------------------------------------------------------------
 INIT
-%if dic["grid"] == 'corner-point':
+% if dic["grid"] == 'corner-point':
 INCLUDE
 'GRID.INC' /
-%elif dic["grid"] == 'tensor':
+% elif dic["grid"] == 'tensor':
 INCLUDE
 'DX.INC' /
 DY 
@@ -63,7 +63,7 @@ INCLUDE
 'DZ.INC' /
 TOPS
 ${dic['noCells'][0]}*0.0 /
-%else:
+% else:
 DX 
 ${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*${dic['dsize'][0]} /
 DY 
@@ -72,7 +72,7 @@ DZ
 ${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*${dic['dsize'][2]} /
 TOPS
 ${dic['noCells'][0]}*0.0 /
-%endif
+% endif
 
 INCLUDE
 'PERMX.INC' /
@@ -123,14 +123,14 @@ DIFFAWAT
 % if dic['model'] != 'convective':
 ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
 % else:
-%for i in range(dic['noSands']):
+% for i in range(dic['noSands']):
 ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
-%endfor
+% endfor
 % endif
 DIFFAGAS
 % if dic['model'] != 'convective':
 ${dic["diffusion"][1]} ${dic["diffusion"][1]} /
-%else:
+% else:
 % for i in range(dic['noSands']): 
 ${dic["diffusion"][1]} ${dic["diffusion"][1]} /
 % endfor
@@ -178,7 +178,7 @@ RPTRST
 'BASIC=2' DEN ${'PCGW' if dic["co2store"] == "gaswater" else ''}  ${'RSWSAT' if dic["version"] == "master" and dic["co2store"] == "gaswater" else ''} ${'RSSAT' if dic["version"] == "master" and dic["co2store"] == "gasoil" else ''}/
 % endif
 
-% if dic['model'] == 'complete':
+% if dic['model'] != 'immiscible':
 % if dic["co2store"] == "gasoil":
 RSVD
 0   0.0

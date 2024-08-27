@@ -110,14 +110,14 @@ DIFFAWAT
 % if dic['model'] != 'convective':
 ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
 % else:
-%for i in range(dic['noSands']):
+% for i in range(dic['noSands']):
 ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
-%endfor
+% endfor
 % endif
 DIFFAGAS
 % if dic['model'] != 'convective':
 ${dic["diffusion"][1]} ${dic["diffusion"][1]} /
-%else:
+% else:
 % for i in range(dic['noSands']): 
 ${dic["diffusion"][1]} ${dic["diffusion"][1]} /
 % endfor
@@ -142,10 +142,8 @@ ${dic["temperature"][1]} ${dic["rockExtra"][0]*dic["rockExtra"][1]}
 ${dic["temperature"][0]} ${dic["rockExtra"][0]*dic["rockExtra"][1]} /
 % endfor
 
-
 THCO2MIX
 NONE NONE NONE /
-
 % endif
 ----------------------------------------------------------------------------
 REGIONS
@@ -157,7 +155,7 @@ INCLUDE
 
 % if dic['model'] == 'convective':
 COPY
- SATNUM PVTNUM /
+SATNUM PVTNUM /
 /
 %endif
 
