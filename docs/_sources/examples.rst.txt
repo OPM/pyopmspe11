@@ -44,7 +44,7 @@ Before the 13.06.2024 workshop
 ==============================
 The results below are the ones presented in the second CSP workshop. There have been two bug fixes that change
 some of the results (see `this <https://github.com/OPM/pyopmspe11/pull/54>`_ and `this PR <https://github.com/OPM/pyopmspe11/pull/55>`_).
-See the results in :ref:`new_results` for the latest simulation results. 
+See the results in :doc:`benchmark <./benchmark>` for the final results. 
 
 ------
 SPE11A
@@ -119,8 +119,6 @@ and in a Cartesian grid with the same resolution as in the benchmark reporting d
     Performance data.
 
 .. image:: ./figs/spe11c.gif
-
-.. _new_results:
 
 =============================
 After the 13.06.2024 workshop 

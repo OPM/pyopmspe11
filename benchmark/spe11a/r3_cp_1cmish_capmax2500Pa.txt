@@ -1,5 +1,5 @@
 """Set the full path to the flow executable and flags"""
-mpirun -np 32 flow --partition-method=2 --edge-weights-method=2 --imbalance-tol=1.1 --min-strict-cnv-iter=5 --tolerance-cnv-relaxed=1e-2 --tolerance-cnv=1e-3 --tolerance-mb=1e-7 --linear-solver=cprw --newton-min-iterations=1 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations --enable-drift-compensation=0
+mpirun -np 32 flow --partition-method=2 --edge-weights-method=2 --imbalance-tol=1.1 --min-strict-cnv-iter=5 --tolerance-cnv-relaxed=1e-2 --tolerance-cnv=1e-3 --tolerance-mb=1e-7 --linear-solver=cprw --newton-min-iterations=1 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations
 
 """Set the model parameters"""
 spe11a master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
@@ -8,7 +8,7 @@ corner-point      #Type of grid (cartesian, tensor, or corner-point)
 2.8 0.01 1.2      #Length, width, and depth [m]
 280               #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
 1                 #If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for spe11c)
-20,7,1,5,6,3,8,8,12,8,10,10,6,16,6,28,28,1  #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
+20,7,1,5,6,3,8,8,12,8,10,10,6,16,6,28,28,1 #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
 20 20             #Temperature bottom and top rig [C]
 1.2 110000 1      #Datum [m], pressure at the datum [Pa], and multiplier for the permeability in the z direction [-] 
 1e-9 1.6e-5       #Diffusion (in liquid and gas) [m^2/s]
@@ -51,4 +51,4 @@ PERM7          0 PORO7    0 DISP7    0
 """injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
 2.5 0.5 0.5 1 1.7e-7 20 1      0 20
 2.5 0.5 0.5 1 1.7e-7 20 1 1.7e-7 20
-115   1   1 1      0 20 1      0 20
+115   1 0.5 1      0 20 1      0 20
