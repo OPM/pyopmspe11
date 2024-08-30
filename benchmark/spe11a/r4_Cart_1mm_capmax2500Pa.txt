@@ -1,14 +1,14 @@
 """Set the full path to the flow executable and flags"""
-mpirun -np 32 flow --partition-method=2 --edge-weights-method=2 --imbalance-tol=1.1 --nonlinear-solver=nldd --matrix-add-well-contributions=1 --tolerance-mb=1e-7 --linear-solver=cpr_trueimpes --enable-tuning=false --solver-max-time-step-in-days=0.02 --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations --newton-min-iterations=1 --time-step-control-target-newton-iterations=2 --time-step-control-growth-rate=1.15 --time-step-control-decay-rate=0.85 --newton-max-iterations=6 --relaxed-max-pv-fraction=0 --min-strict-cnv-iter=8 --tolerance-cnv-relaxed=1e-2 --tolerance-cnv=1e-3 --local-domains-ordering-measure=residual --time-step-control=newtoniterationcount --use-update-stabilization=0 --enable-drift-compensation=0 --max-local-solve-iterations=50 --linear-solver-max-iter=50
+mpirun -np 70 flow --partition-method=2 --edge-weights-method=2 --imbalance-tol=1.1 --tolerance-mb=1e-7 --linear-solver=cprw --newton-min-iterations=1 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations
 
 """Set the model parameters"""
 spe11a master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
 complete gaswater #Name of the co2 model (immiscible, convective [convective requires a Flow version newer than 22-08-2024], or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
 cartesian         #Type of grid (cartesian, tensor, or corner-point)
 2.8 0.01 1.2      #Length, width, and depth [m]
-280               #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
+2800              #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
 1                 #If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for spe11c)
-120               #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
+1200              #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
 20 20             #Temperature bottom and top rig [C]
 1.2 110000 1      #Datum [m], pressure at the datum [Pa], and multiplier for the permeability in the z direction [-] 
 1e-9 1.6e-5       #Diffusion (in liquid and gas) [m^2/s]
@@ -24,13 +24,13 @@ penmax * math.erf(pen * ((s_w-swi) / (1.-swi)) ** (-(1.0 / 2)) * math.pi**0.5 / 
 
 """Properties sat functions"""
 """swi [-], sni [-], pen [Pa], penmax [Pa], npoints [-]"""
-SWI1 0.32 SNI1 0.1 PEN1 1500 PENMAX1 9.5E4 NPOINTS1 1000
-SWI2 0.14 SNI2 0.1 PEN2  300 PENMAX2 9.5E4 NPOINTS2 1000
-SWI3 0.12 SNI3 0.1 PEN3  100 PENMAX3 9.5E4 NPOINTS3 1000
-SWI4 0.12 SNI4 0.1 PEN4   25 PENMAX4 9.5E4 NPOINTS4 1000
-SWI5 0.12 SNI5 0.1 PEN5   10 PENMAX5 9.5E4 NPOINTS5 1000
-SWI6 0.10 SNI6 0.1 PEN6    1 PENMAX6 9.5E4 NPOINTS6 1000
-SWI7    0 SNI7   0 PEN7    0 PENMAX7 9.5E4 NPOINTS7    2
+SWI1 0.32 SNI1 0.1 PEN1 1500 PENMAX1 2500 NPOINTS1 1000
+SWI2 0.14 SNI2 0.1 PEN2  300 PENMAX2 2500 NPOINTS2 1000
+SWI3 0.12 SNI3 0.1 PEN3  100 PENMAX3 2500 NPOINTS3 1000
+SWI4 0.12 SNI4 0.1 PEN4   25 PENMAX4 2500 NPOINTS4 1000
+SWI5 0.12 SNI5 0.1 PEN5   10 PENMAX5 2500 NPOINTS5 1000
+SWI6 0.10 SNI6 0.1 PEN6    1 PENMAX6 2500 NPOINTS6 1000
+SWI7    0 SNI7   0 PEN7    0 PENMAX7 2500 NPOINTS7    2
 
 """Properties rock"""
 """K [mD], phi [-], disp [m]"""
@@ -49,6 +49,6 @@ PERM7          0 PORO7    0 DISP7    0
 
 """Define the injection values ([hours] for spe11a; [years] for spe11b/c)""" 
 """injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
-2.5 0.5 0.5 1 1.7e-7 20 1      0 20
-2.5 0.5 0.5 1 1.7e-7 20 1 1.7e-7 20
-115   1   1 1      0 20 1      0 20
+2.5 0.5 .00006 1 1.7e-7 20 1      0 20
+2.5 0.5 .00006 1 1.7e-7 20 1 1.7e-7 20
+115   1 .00024 1      0 20 1      0 20
