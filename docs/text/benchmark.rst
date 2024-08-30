@@ -61,7 +61,7 @@ SPE11B
 * r2_cp_10mish   
     Corner-point grid of ca. 10 m size (1 m dx size on left and right boundaries)
 * r3_cp_10mish_convective 
-    Corner-point grid of ca. 10 m size (1 m dx size on left and right boundaries) using a subgrid model for convective mixing for facies 2 to 6.
+    Corner-point grid of ca. 10 m size (1 m dx size on left and right boundaries) using a subgrid model for convective mixing for facies 2 and 5.
 * r4_Cart_1m    
     Uniform grid of 1 m size
  
@@ -105,7 +105,7 @@ SPE11C
 * r2_cp_50m-50m-8mish   
     Corner-point grid of [50, 50, mean ca. 8] m size (1 m dx size on left and right boundaries and 1 m dy size on back and front boundaries)
 * r3_cp_50m-50m-8mish_convective 
-    Corner-point grid of [50, 50, mean ca. 8] m size (1 m dx size on left and right boundaries and 1 m dy size on back and front boundaries) using the convective model for facies 2 to 6, `link <https://github.com/OPM/opm-simulators/pull/3076>`_ for details.
+    Corner-point grid of [50, 50, mean ca. 8] m size (1 m dx size on left and right boundaries and 1 m dy size on back and front boundaries) using the convective model for facies 2 and 5.
 * r4_cp_8m-8mish-8mish    
     Corner-point grid of [8, mean ca. 8, mean ca. 8] m size (1 m dx size on left and right boundaries and 1 m dy size on back and front boundaries)
  
