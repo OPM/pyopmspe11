@@ -20,7 +20,7 @@ plopm
 
 .. image:: ./figs/plopm.png
 
-`Quick generation of PNG figures and VTKs from a OPM Flow type model <https://github.com/cssr-tools/plopm>`_.
+`Quick generation of PNGs, GIFs, and VTKs from a OPM Flow type model <https://github.com/cssr-tools/plopm>`_.
 
 ******
 pycopm
