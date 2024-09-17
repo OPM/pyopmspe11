@@ -384,23 +384,43 @@ def write_performance(dig, dil, interp_fgip, tcpu, infotimes):
             + "0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00"
         )
         dil["times_data"] = np.delete(dil["times_data"], 0)
+    freq = [0]
     for j, time in enumerate(dil["times_data"]):
-        ind = j == dil["map_info"]
         itd = j == dil["map_sum"]
-        dil["tstep"] = np.sum(dil["tsteps"][ind])
-        if dil["tstep"] > 0:
-            dil["tstep"] /= np.sum(ind)
+        if sum(tcpu[itd]) == 0:
+            freq.append(freq[-1] + 1)
+        else:
+            freq.append(0)
+    freq.pop(0)
+    weig = []
+    quan = 1
+    for val in freq[::-1]:
+        if val > 0 and quan == 1:
+            quan = val + 1.0
+        elif val == 0:
+            weig.append(quan)
+            quan = 1.0
+            continue
+        weig.append(quan)
+    weig = weig[::-1]
+    for j, time in enumerate(dil["times_data"]):
+        if freq[j] == 0:
+            ind = j == dil["map_info"]
+            itd = j == dil["map_sum"]
+            dil["tstep"] = np.sum(dil["tsteps"][ind])
+            if dil["tstep"] > 0:
+                dil["tstep"] /= np.sum(ind)
         dil["text"].append(
             f"{time:.3e}, "
-            + f"{dil['tstep']:.3e}, "
-            + f"{np.sum(dil['fsteps'][ind]):.3e}, "
+            + f"{dil['tstep']/weig[j]:.3e}, "
+            + f"{np.sum(dil['fsteps'][ind])/weig[j]:.3e}, "
             + f"{interp_fgip(time):.3e}, "
             + f"{dig['dof'] * dig['nocellsa']:.3e}, "
-            + f"{np.sum(dil['nliters'][ind]):.3e}, "
-            + f"{np.sum(dil['nress'][ind]):.3e}, "
-            + f"{np.sum(dil['liniters'][ind]):.3e}, "
-            + f"{np.sum(tcpu[itd]):.3e}, "
-            + f"{np.sum(dil['tlinsols'][ind]):.3e}"
+            + f"{np.sum(dil['nliters'][ind])/weig[j]:.3e}, "
+            + f"{np.sum(dil['nress'][ind])/weig[j]:.3e}, "
+            + f"{np.sum(dil['liniters'][ind])/weig[j]:.3e}, "
+            + f"{np.sum(tcpu[itd])/weig[j]:.3e}, "
+            + f"{np.sum(dil['tlinsols'][ind])/weig[j]:.3e}"
         )
     with open(
         f"{dig['where']}/{dig['case']}_performance_time_series.csv",
