@@ -16,6 +16,8 @@ SPE11A
     Corner-point grid of ca. 1 cm size (maximum capillary pressure of 2500 Pa instead of 95000 Pa following the remarks in the benchmark description)
 * r4_Cart_1mm_capmax2500Pa   
     Uniform grid of 1 mm size (maximum capillary pressure of 2500 Pa instead of 95000 Pa following the remarks in the benchmark description)
+* r5_Cart_1mm_capmax2500Pa_strictol   
+    Uniform grid of 1 mm size with stricter tolerances (maximum capillary pressure of 2500 Pa instead of 95000 Pa following the remarks in the benchmark description)
  
 To run the cases in the terminal:
 
@@ -25,10 +27,13 @@ To run the cases in the terminal:
     pyopmspe11 -i r2_Cart_1cm_capmax2500Pa.txt -o r2_Cart_1cm_capmax2500Pa -m all -g all -t 1 -r 280,1,120 -w 0.16666666666666666
     pyopmspe11 -i r3_cp_1cmish_capmax2500Pa.txt -o r3_cp_1cmish_capmax2500Pa -m all -g all -t 1 -r 280,1,120 -w 0.16666666666666666
     pyopmspe11 -i r4_Cart_1mm_capmax2500Pa.txt -o r4_Cart_1mm_capmax2500Pa -m all -g all -t 1 -r 280,1,120 -w 0.16666666666666666
+    pyopmspe11 -i r5_Cart_1mm_capmax2500Pa_strictol.txt -o r5_Cart_1mm_capmax2500Pa_strictol -m all -g all -t 1 -r 280,1,120 -w 0.16666666666666666
 
 As mentioned in the `CSP description <https://onepetro.org/SJ/article/29/05/2507/540636/The-11th-Society-of-Petroleum-Engineers>`_, using the maximum value of 2500 Pa instead of
 95000 Pa does not significantly impact the results (comparing r1 and r2), and this choice also reduces the simulation time. In addition, the corner-point grid results (r3) compare 
-very well to the fine-scale simulations (r4).
+very well to the fine-scale simulations (r4). Unfortunately, the fine-scale simulation with stricer tolerances (r5) finished after the benchmark submission deadline; nevertheless,
+we include it here for comparison to the other cases. While the case with stricter tolerances (r5) improves the mass issue compared to the previous case (r4), the simulation time 
+increased, which highlights the trade-off between simulation time and accuracy (i.e., which is relevant for optimization studies which require to run many simulations).
 
 ----------------
 Performance data
@@ -140,9 +145,9 @@ Spatial maps
     
     .. code-block:: bash
 
-        plopm -v xco2l -u opm -i 'r1_Cart_1cm/flow/R1_CART_1CM r2_Cart_1cm_capmax2500Pa/flow/R2_CART_1CM_CAPMAX2500PA r3_cp_1cmish_capmax2500Pa/flow/R3_CP_1CMISH_CAPMAX2500PA r4_Cart_1mm_capmax2500Pa/flow/R4_CART_1MM_CAPMAX2500PA' -dpi 2000 -c cet_diverging_protanopic_deuteranopic_bwy_60_95_c32 -cnum 3 -xlnum 8 -clabel 'SPE11A: CO$_2$ mass fraction (liquid phase) after 1 day' -d 16,6.5 -t "r1 Cart 1cm  r2 Cart 1cm capmax 2500 Pa  r3 cp 1cmish capmax 2500 Pa  r4 Cart 1mm capmax 2500 Pa" -yunits cm -xunits cm -yformat .0f -xformat .0f -r 29 -save massfracta -cformat .2e -mask satnum -maskthr 7e-5 -suptitle 0 -subfigs 2,2 -cbsfax 0.35,0.97,0.3,0.02
-        plopm -v xco2l -u opm -i "r1_Cart_10m/flow/R1_CART_10M r2_cp_10mish/flow/R2_CP_10MISH r3_cp_10mish_convective/flow/R3_CP_10MISH_CONVECTIVE r4_Cart_1m/flow/R4_CART_1M" -dpi 2000 -c cet_diverging_protanopic_deuteranopic_bwy_60_95_c32 -cnum 3 -xlnum 8 -clabel 'SPE11B: CO$_2$ mass fraction (liquid phase) after 500 years' -d 16,3 -t "r1 Cart 10m  r2 cp 10mish  r3 cp 10mish convective  r4 Cart 1m" -yunits km -xunits km -yformat .1f -xformat .1f -r 98 -save massfractb -cformat .2e -mask satnum -maskthr 5e-3 -suptitle 0 -subfigs 2,2 -cbsfax 0.35,0.97,0.3,0.02
-        plopm -v xco2l -u opm -i "r1_Cart_50m-50m-10m/flow/R1_CART_50M-50M-10M r2_cp_50m-50m-8mish/flow/R2_CP_50M-50M-8MISH r3_cp_50m-50m-8mish_convective/flow/R3_CP_50M-50M-8MISH_CONVECTIVE r4_cp_8m-8mish-8mish/flow/R4_CP_8M-8MISH-8MISH" -dpi 2000 -c cet_diverging_protanopic_deuteranopic_bwy_60_95_c32 -cnum 3 -xlnum 8 -clabel 'SPE11C: CO$_2$ mass fraction (liquid phase) after 1000 years (y=2.5 [km])' -d 16,3 -t "r1 Cart [50m,50m,10m]  r2 cp [50m,50m,8mish]  r3 cp [50m,50m,8mish] convective  r4 cp [8m,8mish,8mish]" -yunits km -xunits km -yformat .1f -xformat .1f -r 27 -save massfractc -cformat .2e -mask satnum -maskthr 1e-4 -suptitle 0 -subfigs 2,2 -cbsfax 0.30,0.97,0.4,0.02 -s ',51, ,51, ,51, ,304,'
+        plopm -v xco2l -i 'r1_Cart_1cm/flow/R1_CART_1CM r2_Cart_1cm_capmax2500Pa/flow/R2_CART_1CM_CAPMAX2500PA r3_cp_1cmish_capmax2500Pa/flow/R3_CP_1CMISH_CAPMAX2500PA r4_Cart_1mm_capmax2500Pa/flow/R4_CART_1MM_CAPMAX2500PA' -dpi 2000 -c cet_diverging_protanopic_deuteranopic_bwy_60_95_c32 -cnum 3 -xlnum 8 -clabel 'SPE11A: CO$_2$ mass fraction (liquid phase) after 1 day' -d 16,6.5 -t "r1 Cart 1cm  r2 Cart 1cm capmax 2500 Pa  r3 cp 1cmish capmax 2500 Pa  r4 Cart 1mm capmax 2500 Pa" -yunits cm -xunits cm -yformat .0f -xformat .0f -r 29 -save massfracta -cformat .2e -mask satnum -maskthr 7e-5 -suptitle 0 -subfigs 2,2 -cbsfax 0.35,0.97,0.3,0.02
+        plopm -v xco2l -i "r1_Cart_10m/flow/R1_CART_10M r2_cp_10mish/flow/R2_CP_10MISH r3_cp_10mish_convective/flow/R3_CP_10MISH_CONVECTIVE r4_Cart_1m/flow/R4_CART_1M" -dpi 2000 -c cet_diverging_protanopic_deuteranopic_bwy_60_95_c32 -cnum 3 -xlnum 8 -clabel 'SPE11B: CO$_2$ mass fraction (liquid phase) after 500 years' -d 16,3 -t "r1 Cart 10m  r2 cp 10mish  r3 cp 10mish convective  r4 Cart 1m" -yunits km -xunits km -yformat .1f -xformat .1f -r 98 -save massfractb -cformat .2e -mask satnum -maskthr 5e-3 -suptitle 0 -subfigs 2,2 -cbsfax 0.35,0.97,0.3,0.02
+        plopm -v xco2l -i "r1_Cart_50m-50m-10m/flow/R1_CART_50M-50M-10M r2_cp_50m-50m-8mish/flow/R2_CP_50M-50M-8MISH r3_cp_50m-50m-8mish_convective/flow/R3_CP_50M-50M-8MISH_CONVECTIVE r4_cp_8m-8mish-8mish/flow/R4_CP_8M-8MISH-8MISH" -dpi 2000 -c cet_diverging_protanopic_deuteranopic_bwy_60_95_c32 -cnum 3 -xlnum 8 -clabel 'SPE11C: CO$_2$ mass fraction (liquid phase) after 1000 years (y=2.5 [km])' -d 16,3 -t "r1 Cart [50m,50m,10m]  r2 cp [50m,50m,8mish]  r3 cp [50m,50m,8mish] convective  r4 cp [8m,8mish,8mish]" -yunits km -xunits km -yformat .1f -xformat .1f -r 27 -save massfractc -cformat .2e -mask satnum -maskthr 1e-4 -suptitle 0 -subfigs 2,2 -cbsfax 0.30,0.97,0.4,0.02 -s ',51, ,51, ,51, ,304,' -u opm
 
 .. tip::
-    You can install plopm by executing in the terminal: pip install git+https://github.com/cssr-tools/plopm.git.
+    You can install `plopm <https://github.com/cssr-tools/plopm>`_ by executing in the terminal: pip install git+https://github.com/cssr-tools/plopm.git.
