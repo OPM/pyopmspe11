@@ -2,8 +2,7 @@
 Related
 =======
 
-Below are some packages following the same configuration-file-to-postprocessing-folder approach; 
-check them out 🙂.
+Below are some tools that might be of interest; check them out 🙂.
 
 *************
 pyopmnearwell
@@ -27,7 +26,7 @@ pycopm
 ******
 
 .. image:: ./figs/pycopm.gif
-    :scale: 40%
+    :scale: 60%
 
 `Simplified and flexible framework for coarsening geological models <https://github.com/cssr-tools/pycopm>`_.
 

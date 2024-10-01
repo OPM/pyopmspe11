@@ -61,7 +61,7 @@ def main():
     parser.add_argument(
         "-t",
         "--time",
-        default="25",
+        default="24",
         help="If one number, time step for the spatial maps (spe11a [h]; spe11b/c "
         "[y]) ('24' by default); otherwise, times separated by commas.",
     )
