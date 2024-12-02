@@ -1,0 +1,488 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyopmspe11.visualization.data module &mdash; pyopmspe11  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pyopmspe11.visualization.plotting module" href="pyopmspe11.visualization.plotting.html" />
+    <link rel="prev" title="pyopmspe11.visualization package" href="pyopmspe11.visualization.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #aaaaaa" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="related.html">Related</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #aaaaaa" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyopmspe11</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api.html">pyopmspe11 Python API</a></li>
+          <li class="breadcrumb-item"><a href="pyopmspe11.html">pyopmspe11 package</a></li>
+          <li class="breadcrumb-item"><a href="pyopmspe11.visualization.html">pyopmspe11.visualization package</a></li>
+      <li class="breadcrumb-item active">pyopmspe11.visualization.data module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/pyopmspe11.visualization.data.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pyopmspe11.visualization.data">
+<span id="pyopmspe11-visualization-data-module"></span><h1>pyopmspe11.visualization.data module<a class="headerlink" href="#module-pyopmspe11.visualization.data" title="Link to this heading"></a></h1>
+<p>”
+Script to write the benchmark data</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.compute_m_c">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">compute_m_c</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.compute_m_c" title="Link to this definition"></a></dt>
+<dd><p>Normalized total variation of the concentration field within Box C</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dil (dict): Modified local dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.create_from_summary">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">create_from_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.create_from_summary" title="Link to this definition"></a></dt>
+<dd><p>Use the summary arrays for the sparse data interpolation</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dil (dict): Modified local dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.dense_data">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">dense_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.dense_data" title="Link to this definition"></a></dt>
+<dd><p>Generate the dense data within the benchmark format</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.generate_arrays">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">generate_arrays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.generate_arrays" title="Link to this definition"></a></dt>
+<dd><p>Arrays for the dense data</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+<p>names (list): Strings with the quantities for the spatial maps</p>
+<p>t_n (int): Index for the number of restart file</p>
+</dd>
+<dt>Returns:</dt><dd><p>dil (dict): Modified local dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.generate_arrays_performance_spatial">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">generate_arrays_performance_spatial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.generate_arrays_performance_spatial" title="Link to this definition"></a></dt>
+<dd><p>Arrays for the performance spatial data</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+<p>t_n (int): Index for the number of restart file</p>
+</dd>
+<dt>Returns:</dt><dd><p>dil (dict): Modified local dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.get_corners">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">get_corners</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.get_corners" title="Link to this definition"></a></dt>
+<dd><p>Get the cell corners from the simulation grid</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dil (dict): Modified local dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.get_header">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">get_header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.get_header" title="Link to this definition"></a></dt>
+<dd><p>Get the right csv file header</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>i (int): Number of csv file</p>
+</dd>
+<dt>Returns:</dt><dd><p>name_t (str): Name of the csv file</p>
+<p>text (str): Header for the csv file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.handle_fipnums">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">handle_fipnums</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.handle_fipnums" title="Link to this definition"></a></dt>
+<dd><p>Set the fipnum groups to compute the sparse data</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dil (dict): Modified local dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.handle_inactive_mapping">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">handle_inactive_mapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.handle_inactive_mapping" title="Link to this definition"></a></dt>
+<dd><p>Set to inf the inactive grid centers in the reporting grid</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dil (dict): Modified local dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.handle_performance_spatial">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">handle_performance_spatial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.handle_performance_spatial" title="Link to this definition"></a></dt>
+<dd><p>Create the performance spatial maps</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.handle_yaxis_mapping_extensive">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">handle_yaxis_mapping_extensive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.handle_yaxis_mapping_extensive" title="Link to this definition"></a></dt>
+<dd><p>Extend the indices accounting for the y direction (extensive quantities)</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dil (dict): Modified local dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.handle_yaxis_mapping_intensive">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">handle_yaxis_mapping_intensive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.handle_yaxis_mapping_intensive" title="Link to this definition"></a></dt>
+<dd><p>Extend the indices accounting for the y direction</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dil (dict): Modified local dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.main">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.main" title="Link to this definition"></a></dt>
+<dd><p>Postprocessing to generate the benchmark data</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.map_to_report_grid">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">map_to_report_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.map_to_report_grid" title="Link to this definition"></a></dt>
+<dd><p>Map the simulation grid to the reporting grid</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+<p>names (list): Strings with the quantities for the spatial maps</p>
+</dd>
+<dt>Returns:</dt><dd><p>dil (dict): Modified local dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.map_to_report_grid_performance_spatial">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">map_to_report_grid_performance_spatial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.map_to_report_grid_performance_spatial" title="Link to this definition"></a></dt>
+<dd><p>Map the simulation grid to the reporting grid</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+<p>names (list): Strings with the quantities for the spatial maps</p>
+<p>d_t (float): Time step size</p>
+</dd>
+<dt>Returns:</dt><dd><p>dil (dict): Modified local dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.max_xcw">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">max_xcw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.max_xcw" title="Link to this definition"></a></dt>
+<dd><p>Get the maximum CO2 mass fraction in the liquid phase</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dil (dict): Modified local dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.opm_files">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">opm_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.opm_files" title="Link to this definition"></a></dt>
+<dd><p>Read some of the data from the simulation output files</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dig (dict): Modified global dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.performance">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">performance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.performance" title="Link to this definition"></a></dt>
+<dd><p>Generate the performance within the benchmark format</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.read_opm">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">read_opm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.read_opm" title="Link to this definition"></a></dt>
+<dd><p>Read the simulation files using OPM</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dig (dict): Modified global dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.read_resdata">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">read_resdata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.read_resdata" title="Link to this definition"></a></dt>
+<dd><p>Read the simulation files using resdata</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dig (dict): Modified global dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.read_times">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">read_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.read_times" title="Link to this definition"></a></dt>
+<dd><p>Get the time for injection and restart number</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dig (dict): Modified global dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.resdata_summary">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">resdata_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.resdata_summary" title="Link to this definition"></a></dt>
+<dd><p>Read the summary arrays using resdata</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+<p>names (list): Strings with the sensors ijk locations</p>
+<p>sort (list): Integers with the right order for the sensors</p>
+</dd>
+<dt>Returns:</dt><dd><p>dil (dict): Modified local dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.sparse_data">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">sparse_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.sparse_data" title="Link to this definition"></a></dt>
+<dd><p>Generate the sparse data within the benchmark format</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.static_map_to_report_grid_performance_spatial">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">static_map_to_report_grid_performance_spatial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.static_map_to_report_grid_performance_spatial" title="Link to this definition"></a></dt>
+<dd><p>Map the no dynamic quantities to the reporting grid</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dil (dict): Modified local dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.write_dense_data">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">write_dense_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.write_dense_data" title="Link to this definition"></a></dt>
+<dd><p>Map the quantities to the cells</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+<p>i (int): Number of csv file</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.write_dense_data_performance_spatial">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">write_dense_data_performance_spatial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.write_dense_data_performance_spatial" title="Link to this definition"></a></dt>
+<dd><p>Write the dense performance data</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+<p>i (int): Number of csv file</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.write_performance">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">write_performance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_fgip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tcpu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infotimes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.write_performance" title="Link to this definition"></a></dt>
+<dd><p>Write the performance data</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+<p>interp_fgip (object): Interpolator (time) for the CO2 mass</p>
+<p>tcpu (array): Floats with the simulation times</p>
+<p>infotimes (array): Floats with the simulation time steps</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.write_sparse_data">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">write_sparse_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.write_sparse_data" title="Link to this definition"></a></dt>
+<dd><p>Write the sparse data</p>
+<dl>
+<dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
+<p>dil (dict): Local dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyopmspe11.visualization.html" class="btn btn-neutral float-left" title="pyopmspe11.visualization package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyopmspe11.visualization.plotting.html" class="btn btn-neutral float-right" title="pyopmspe11.visualization.plotting module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, NORCE Norwegian Research Centre AS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

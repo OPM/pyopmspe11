@@ -7,7 +7,7 @@ Hello world
 ===========
 
 The `examples/hello_world <https://github.com/OPM/pyopmspe11/blob/main/examples/hello_world>`_ folder contains configuration files
-with low grid resolution and shorter injetion times (for initial testing of the framework). For example, by executing:
+with low grid resolution and shorter injection times (for initial testing of the framework). For example, by executing:
 
 .. code-block:: bash
 

@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
@@ -6,18 +8,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Installation &mdash; pyopmspe11  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -62,6 +60,7 @@
 <li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="related.html">Related</a></li>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a></li>
 </ul>
@@ -92,19 +91,26 @@
              
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
+<p>The following steps work installing the dependencies in Linux via apt-get or in macOS using brew or macports.
+While using packages managers such as Anaconda, Miniforge, or Mamba might work, these are not tested.
+In addition, the current supported Python versions for macOS are 3.10 to 3.12 and for Linux 3.8 to 3.12.
+We will update the documentation when Python3.13 is supported (e.g., the resdata Python package is not yet available
+via pip install in Python 3.13).</p>
 <section id="python-package">
 <h2>Python package<a class="headerlink" href="#python-package" title="Link to this heading"></a></h2>
-<p>To install the <strong>pyopmspe11</strong> executable in an existing Python environment:</p>
+<p>To install the <strong>pyopmspe11</strong> executable from the development version:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/opm/pyopmspe11.git
 </pre></div>
 </div>
-<p>If you are interested in modifying the source code, then you can clone the repository and
+<p>If you are interested in a specific version (e.g., v2024.04) or in modifying the source code, then you can clone the repository and
 install the Python requirements in a virtual environment with the following commands:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>Clone<span class="w"> </span>the<span class="w"> </span>repo
 <span class="go">git clone https://github.com/opm/pyopmspe11.git</span>
 <span class="gp"># </span>Get<span class="w"> </span>inside<span class="w"> </span>the<span class="w"> </span>folder
 <span class="go">cd pyopmspe11</span>
-<span class="gp"># </span>Create<span class="w"> </span>virtual<span class="w"> </span>environment
+<span class="gp"># </span>For<span class="w"> </span>a<span class="w"> </span>specific<span class="w"> </span>version<span class="w"> </span><span class="o">(</span>e.g.,<span class="w"> </span>v2024.04<span class="o">)</span>,<span class="w"> </span>or<span class="w"> </span>skip<span class="w"> </span>this<span class="w"> </span>step<span class="w"> </span><span class="o">(</span>i.e.,<span class="w"> </span>edge<span class="w"> </span>version<span class="o">)</span>
+<span class="go">git checkout v2024.04</span>
+<span class="gp"># </span>Create<span class="w"> </span>virtual<span class="w"> </span>environment<span class="w"> </span><span class="o">(</span>to<span class="w"> </span>specific<span class="w"> </span>Python,<span class="w"> </span>python3.12<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>vpyopmspe11<span class="o">)</span>
 <span class="go">python3 -m venv vpyopmspe11</span>
 <span class="gp"># </span>Activate<span class="w"> </span>virtual<span class="w"> </span>environment
 <span class="go">source vpyopmspe11/bin/activate</span>
@@ -116,28 +122,36 @@ install the Python requirements in a virtual environment with the following comm
 <span class="go">pip install -r dev-requirements.txt</span>
 </pre></div>
 </div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Typing <strong>git tag -l</strong> writes all available specific versions.</p>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Regarding the reading of OPM Flow output files (i.e., .EGRID, .INIT, .UNRST), it is possible to use the OPM python library instead of resdata (e.g., it seems the OPM Python library
-is faster than resdata to read large simulation files). For not macOS users, to install the Python OPM package, execute in the terminal <strong>pip install opm</strong>.
-For macOS, see <a class="reference internal" href="#macos"><span class="std std-ref">Source build in macOS</span></a>.</p>
+<p>For not macOS users, to install the Python opm package (this is an alternative
+to <a class="reference external" href="https://github.com/equinor/resdata">resdata</a>, both are use to read OPM output files; while resdata is easier to
+install in macOS, opm seems to be faster), execute in the terminal</p>
+<p><strong>pip install opm</strong></p>
+<p>For not macOS users, to install the dependencies used for the figure’s LaTeX formatting, execute</p>
+<p><strong>sudo apt-get install texlive-fonts-recommended texlive-fonts-extra dvipng cm-super</strong></p>
+<p>For macOS users, see <a class="reference internal" href="#macos"><span class="std std-ref">Source build in macOS</span></a>.</p>
 </div>
 </section>
 <section id="opm-flow">
 <h2>OPM Flow<a class="headerlink" href="#opm-flow" title="Link to this heading"></a></h2>
 <p>You also need to install:</p>
 <ul class="simple">
-<li><p>OPM Flow (<a class="reference external" href="https://opm-project.org">https://opm-project.org</a>, Release 2024.04 or current master branches)</p></li>
+<li><p>OPM Flow (<a class="reference external" href="https://opm-project.org">https://opm-project.org</a>, Release 2024.10 or current master branches)</p></li>
 </ul>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>See the <a class="reference external" href="https://github.com/opm/pyopmspe11/blob/main/.github/workflows/CI.yml">CI.yml</a> script
-for installation of OPM Flow (binary packages) and the pyopmspe11 package in Linux.</p>
+for installation of OPM Flow (binary packages) and the pyopmspe11 package in Ubuntu.</p>
 </div>
 <section id="source-build-in-linux-windows">
 <h3>Source build in Linux/Windows<a class="headerlink" href="#source-build-in-linux-windows" title="Link to this heading"></a></h3>
 <p>If you are a Linux user (including the Windows subsystem for Linux), then you could try to build Flow (after installing the <a class="reference external" href="https://opm-project.org/?page_id=239">prerequisites</a>) from the master branches with mpi support by running
-in the terminal the following lines (which in turn should build flow in the folder ./build/opm-simulators/bin/flow.):</p>
+in the terminal the following lines (which in turn should build flow in the folder ./build/opm-simulators/bin/flow):</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">CURRENT_DIRECTORY=&quot;$PWD&quot;</span>
 
 <span class="go">for repo in common grid simulators</span>
@@ -211,8 +225,9 @@ package (see the <a class="reference external" href="https://opm-project.org/?pa
 </div>
 <p>This builds OPM Flow as well as the OPM Python library, and it exports the required PYTHONPATH. Then after execution, deactivate and activate the Python virtual environment.</p>
 <p>Regarding the resdata Python package, it might not be available depending on the Python version (e.g., it is not found using Python 3.9, but it is installed using Python 3.10).
-Then, it is recommended to use a Python version equal or higher than 3.10; otherwise, remove resdata from the requirements in the <a class="reference external" href="https://github.com/opm/pyopmspe11/blob/main/pyproject.toml">pyproject.toml</a>,
-and when executing <strong>pyopmspe11</strong> always set the flag <strong>-u opm</strong> (resdata is the default package for reading the simulation files, see the <a class="reference internal" href="introduction.html#overview"><span class="std std-ref">Overview</span></a>).</p>
+Then, for macOS users, you need to use a Python version equal or higher than 3.10.</p>
+<p>For macOS, the LaTeX dependency can be installed from <a class="reference external" href="https://www.tug.org/mactex/">https://www.tug.org/mactex/</a>. If after installation you still face an error due to LaTeX
+when executing pyopmspe11, then add the flag <strong>-l 0</strong> to pyopmspe11.</p>
 </section>
 </section>
 </section>

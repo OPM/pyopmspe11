@@ -13,6 +13,7 @@ Welcome to pyopmspe11's documentation!
    benchmark
    api
    output_folder
+   contributing
    related
    about
 

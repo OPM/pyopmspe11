@@ -9,6 +9,7 @@ Subpackages
 
    pyopmspe11.core
    pyopmspe11.utils
+   pyopmspe11.visualization
 
 Module contents
 ---------------
