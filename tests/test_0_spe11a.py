@@ -4,13 +4,15 @@
 """Test the spe11a case"""
 
 import os
+import pathlib
 import subprocess
+
+dirname: pathlib.Path = pathlib.Path(__file__).parent
 
 
 def test_spe11a():
     """See configs/spe11a_data_format.txt"""
-    cwd = os.getcwd()
-    os.chdir(f"{cwd}/tests/configs")
+    os.chdir(f"{dirname}/configs")
     subprocess.run(
         [
             "pyopmspe11",
@@ -33,5 +35,4 @@ def test_spe11a():
         ],
         check=True,
     )
-    assert os.path.exists(f"{cwd}/tests/configs/spe11a/data/spe11a_time_series.csv")
-    os.chdir(cwd)
+    assert os.path.exists(f"{dirname}/configs/spe11a/data/spe11a_time_series.csv")

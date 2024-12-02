@@ -4,16 +4,21 @@
 """Test the format of the generated data for the three cases"""
 
 import os
+import pathlib
 import subprocess
 from subprocess import PIPE, Popen
+
+dirname: pathlib.Path = pathlib.Path(__file__).parent
 
 
 def test_format():
     """See https://github.com/Simulation-Benchmarks/11thSPE-CSP/blob/
     main/evaluation/check_format.py"""
-    cwd = os.getcwd()
-    os.chdir(f"{cwd}/tests/configs")
-    os.system("rm -rf spe11c")
+    message = "Please run first test_0_spe11a"
+    assert os.path.exists(f"{dirname}/configs/spe11a"), message
+    os.chdir(f"{dirname}/configs")
+    if os.path.exists(f"{dirname}/configs/spe11c"):
+        os.system(f"rm -rf {dirname}/configs/spe11c")
     subprocess.run(
         [
             "pyopmspe11",
@@ -84,4 +89,3 @@ def test_format():
     ) as process:
         check = str(process.communicate()[0])[4:-3]
     assert check.count("Successfully") == 2
-    os.chdir(cwd)

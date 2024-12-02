@@ -4,20 +4,22 @@
 """Test the spe11c case"""
 
 import os
+import pathlib
 import subprocess
+
+dirname: pathlib.Path = pathlib.Path(__file__).parent
 
 
 def test_spe11c():
     """See configs/spe11c.txt"""
-    cwd = os.getcwd()
-    os.chdir(f"{os.getcwd()}/tests/configs")
+    os.chdir(f"{dirname}/configs")
     subprocess.run(
         [
             "pyopmspe11",
-            "-i",
-            "spe11c.txt",
             "-o",
             "spe11c",
+            "-i",
+            "spe11c.txt",
             "-m",
             "all",
             "-g",
@@ -29,5 +31,4 @@ def test_spe11c():
         ],
         check=True,
     )
-    assert os.path.exists(f"{cwd}/tests/configs/spe11c/figures/spe11c_temp_2Dmaps.png")
-    os.chdir(cwd)
+    assert os.path.exists(f"{dirname}/configs/spe11c/figures/spe11c_temp_2Dmaps.png")
