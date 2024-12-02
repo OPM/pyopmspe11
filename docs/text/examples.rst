@@ -13,8 +13,9 @@ with low grid resolution and shorter injetion times (for initial testing of the 
 
     pyopmspe11 -i spe11b.txt -o spe11b -m all -g all -t 5 -r 50,1,15 -w 1
 
-The following is one of the figures generated related to the CO2 mass in the domain over time (i.e., the simulations results from
-the corner-point grid mapped to the equidistance reporting grid of 50 x 15 as defined by the -r flag):
+The following is the figure `spe11b_tco2_2Dmaps`, which shows the CO2 mass in the domain over time (i.e., the simulations results from
+the corner-point grid mapped to the equidistance reporting grid of 50 x 15 as defined by the -r flag). You can
+compare your example results to this figure to evaluate if your example ran correctly:
 
 .. figure:: figs/spe11b_tco2_2Dmaps.png
 
