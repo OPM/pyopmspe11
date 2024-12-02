@@ -1,45 +1,35 @@
-Contributing to pyopmspe11
+# Contributing
 
-First of all, thank you for considering contributing to pyopmspe11! This project thrives thanks to the amazing community of contributors like you. Whether you’re fixing bugs, adding new features, improving documentation, or reviewing pull requests, your help makes a real difference. So, let’s get started!
+Contributions are more than welcome using the fork and pull request approach 🙂 (if you are not familiar with this approach, please visit [_GitHub Docs PRs_](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests) for an extended documentation about collaborating with pull request; also, looking at previous merged pull requests helps to get familiar with this).
 
-How to Contribute
-We’ve made contributing as simple as possible, and we’d love for you to jump in. Here’s how you can get started:
+## Ground Rules
 
-Fork the repository
-Click the "Fork" button at the top right of this page to create a personal copy of pyopmspe11 on your GitHub account.
+- We use Black code formatting
+- We use Pylint
+- We document our code
 
-Clone your fork
-Now, clone your fork to your local machine. Open a terminal and run:
+## Contribute to the software
 
-bash
-Copy code
-git clone https://github.com/[your-username]/pyopmspe11.git
-Set up your environment
-Follow the instructions in the README to install any dependencies you'll need to run the project.
+1. Work on your own fork of the main repo
+1. In the main repo execute:
+    1. **pip install -r dev-requirements.txt** (this installs the [_dev-requirements.txt_](https://github.com/cssr-tools/pyopmspe11/blob/main/dev-requirements.txt); in addition, both opm Python and LaTeX are required, then for not macOs users run **pip install opm** and **sudo apt-get install texlive-fonts-recommended texlive-fonts-extra dvipng cm-super**, or else follow the instructions in [_macOS installation_](https://cssr-tools.github.io/pyopmspe11/installation.html#source-build-in-macos))
+    1. **black src/ tests/** (this formats the code)
+    1. **pylint src/ tests/** (this analyses the code, and might rise issues that need to be fixed before the pull request)
+    1. **mypy --ignore-missing-imports src/ tests/** (this is a static checker, and might rise issues that need to be fixed before the pull request)
+    1. **pytest --cov=pyopmspe11 --cov-report term-missing tests/** (this runs locally the tests, and might rise issues that need to be fixed before the pull request)
+    1. **pushd docs & make html** (this generates the documentation, and might rise issues that need to be fixed before the pull request; if the build succeeds and if the contribution changes the documentation, then copy all content from the docs/_build/html/ folder and replace the files in the [_docs_](https://github.com/cssr-tools/pyopmspe11/tree/main/docs) folder)
+    * Tip: See the [_CI.yml_](https://github.com/cssr-tools/pyopmspe11/blob/main/.github/workflows/CI.yml) script and the [_Actions_](https://github.com/cssr-tools/pyopmspe11/actions) for installation of pyopmspe11, OPM Flow (binary packages), and dependencies, as well as the execution of the six previous steps in Ubuntu 24.10.
+1. Squash your commits into a single commit (see this [_nice tutorial_](https://gist.github.com/lpranam/4ae996b0a4bc37448dc80356efbca7fa) if you are not familiar with this)
+1. Push your commit and make a pull request
+1. The maintainers will review the pull request, and if the contribution is accepted, then it will be merge to the main repo 
 
-Create a new branch
-It’s best to create a new branch for each change or feature you’re working on:
+## Reporting issues or problems
 
-bash
-Copy code
-git checkout -b my-new-feature
-Make your changes
-Work on your code or documentation, and be sure to write meaningful commit messages.
+1. Issues or problems can be raised by creating a [_new issue_](https://github.com/cssr-tools/pyopmspe11/issues) in the repository GitHub page (if you are not familiar with this approach, please visit [_GitHub Docs Issues_](https://docs.github.com/en/issues/tracking-your-work-with-issues)).
+1. We will try to answer as soon as possible, but also any user is more than welcome to answer. 
 
-Run tests (if applicable)
-If your changes include code, make sure everything is working as expected by running the tests..
+## Seek support
 
-Commit your changes
-Once you're happy with your changes, commit them:
-
-bash
-Copy code
-git commit -m "Add feature X or fix bug Y"
-Push your branch
-Push your changes to your fork:
-
-bash
-Copy code
-git push origin my-new-feature
-Open a pull request
-Now, go to the original pyopmspe11 repository and open a pull request from your fork. In your PR description, explain what you’ve done and why it’s important.
+1. The preferred approach to seek support is to raise an issue as described in the previous lines.
+1. We will try to answer as soon as possible, but also any user is more than welcome to answer.
+- An alternative approach is to send an email to any of the [_mantainers_](https://github.com/cssr-tools/pyopmspe11/blob/main/pyproject.toml). 
