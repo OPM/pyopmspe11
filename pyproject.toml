@@ -9,7 +9,7 @@ authors = [{ name = "David Landa-Marbán", email = "dmar@norceresearch.no" },
 { name = "Tor Harald Sandve", email = "tosa@norceresearch.no" }]
 maintainers = [{ name = "David Landa-Marbán", email = "dmar@norceresearch.no" },
 { name = "Tor Harald Sandve", email = "tosa@norceresearch.no" }]
-version = "2024.04"
+dynamic = ["version"]
 readme = {file = "README.md", content-type = "text/markdown"}
 license = {text = "GPL-3.0"}
 keywords = ["csp11", "ccs", "cfd", "co2", "flow", "opm", "python", "spe11"]
@@ -37,6 +37,9 @@ dependencies = [
     "shapely",
 ]
 requires-python = ">=3.8"
+
+[tool.setuptools.dynamic]
+version = {attr = "pyopmspe11.__version__"}
 
 [project.scripts]
 pyopmspe11 = "pyopmspe11.core.pyopmspe11:main"
