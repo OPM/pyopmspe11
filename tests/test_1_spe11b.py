@@ -4,13 +4,14 @@
 """Test the spe11b case"""
 
 import os
+import pathlib
 from pyopmspe11.core.pyopmspe11 import main
+
+dirname: pathlib.Path = pathlib.Path(__file__).parent
 
 
 def test_spe11b():
     """See configs/input.txt"""
-    cwd = os.getcwd()
-    os.chdir(f"{os.getcwd()}/tests/configs")
+    os.chdir(f"{dirname}/configs")
     main()
-    os.chdir(cwd)
-    assert os.path.exists(f"{cwd}/tests/configs/output/flow/OUTPUT.UNRST")
+    assert os.path.exists(f"{dirname}/configs/output/flow/OUTPUT.UNRST")
