@@ -10,17 +10,14 @@ import csv
 import numpy as np
 import pandas as pd
 from shapely.geometry import Polygon
+from resdata.resfile import ResdataFile
+from resdata.grid import Grid
 
 try:
     from opm.io.ecl import EGrid as OpmGrid
     from opm.io.ecl import EclFile as OpmFile
 except ImportError:
-    print("The opm Python package was not found, using resdata")
-try:
-    from resdata.resfile import ResdataFile
-    from resdata.grid import Grid
-except ImportError:
-    print("The resdata Python package was not found, using opm")
+    pass
 
 
 def grid(dic):
@@ -461,11 +458,13 @@ def get_cell_info(dic, i):
     else:
         dic["xyz"] = dic["gridf"].get_xyz(global_index=i)
         dic["ijk"] = dic["gridf"].get_ijk(global_index=i)
-        vxyz = dic["gridf"].export_corners(dic["gridf"].export_index())[i]
+        if "vxyz" not in dic:
+            dic["vxyz"] = dic["gridf"].export_corners(dic["gridf"].export_index())
         dic["corns"] = (
-            f"{vxyz[0]}, {dic['dims'][2] -vxyz[2]}, {vxyz[3]}, "
-            + f"{dic['dims'][2] -vxyz[5]}, {vxyz[15]}, {dic['dims'][2] -vxyz[17]}, "
-            + f"{vxyz[12]}, {dic['dims'][2] - vxyz[14]}"
+            f"{dic['vxyz'][i][0]}, {dic['dims'][2] - dic['vxyz'][i][2]}, {dic['vxyz'][i][3]}, "
+            + f"{dic['dims'][2] - dic['vxyz'][i][5]}, {dic['vxyz'][i][15]}, "
+            + f"{dic['dims'][2] - dic['vxyz'][i][17]}, "
+            + f"{dic['vxyz'][i][12]}, {dic['dims'][2] - dic['vxyz'][i][14]}"
         )
 
 
