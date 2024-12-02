@@ -4,6 +4,7 @@
 """Main script for pyopmspe11"""
 import os
 import argparse
+import warnings
 from pyopmspe11.utils.inputvalues import process_input, check_deck, handle_tuning
 from pyopmspe11.utils.runs import simulations, plotting, data
 from pyopmspe11.visualization.plotting import plot_results
@@ -29,6 +30,9 @@ def pyopmspe11():
     dic["dt_data"] = float(
         cmdargs["write"].strip()
     )  # Temporal resolution to write the sparse and performance data
+    dic["showpywarn"] = int(cmdargs["showpywarn"])  # Show or hidde python warnings
+    if dic["showpywarn"] != 1:
+        warnings.warn = lambda *args, **kwargs: None
     # If the compare plots are generated, then we exit right afterwards
     if dic["compare"]:
         plot_results(dic)
@@ -153,6 +157,12 @@ def load_parser():
         default="0.1",
         help="Time interval for the sparse and performance data (spe11a [h]; spe11b/c [y]) "
         "('0.1' by default).",
+    )
+    parser.add_argument(
+        "-s",
+        "--showpywarn",
+        default=0,
+        help="Set to 1 to show Python warnings ('0' by default).",
     )
     return vars(parser.parse_known_args()[0])
 

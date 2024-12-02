@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
-# pylint: disable=C0302, R0912, R0914
+# pylint: disable=C0302, R0912, R0914, R0801
 
 """"
 Script to write the benchmark data
@@ -8,6 +8,7 @@ Script to write the benchmark data
 
 import os
 import argparse
+import warnings
 import csv
 from io import StringIO
 from shapely.geometry import Polygon
@@ -86,7 +87,15 @@ def main():
         default="resdata",
         help="Using the 'resdata' or python package (resdata by default).",
     )
+    parser.add_argument(
+        "-s",
+        "--showpywarn",
+        default=0,
+        help="Set to 1 to show Python warnings ('0' by default).",
+    )
     cmdargs = vars(parser.parse_known_args()[0])
+    if int(cmdargs["showpywarn"]) != 1:  # Show or hidde python warnings
+        warnings.warn = lambda *args, **kwargs: None
     dig = {"path": cmdargs["path"].strip()}
     dig["case"] = cmdargs["deck"].strip()
     dig["mode"] = cmdargs["generate"].strip()
