@@ -2,16 +2,22 @@
 Installation
 ============
 
+The following steps work installing the dependencies in Linux via apt-get or in macOS using brew or macports.
+While using packages managers such as Anaconda, Miniforge, or Mamba might work, these are not tested.
+In addition, the current supported Python versions for macOS are 3.10 to 3.12 and for Linux 3.8 to 3.12.
+We will update the documentation when Python3.13 is supported (e.g., the resdata Python package is not yet available
+via pip install in Python 3.13).
+
 Python package
 --------------
 
-To install the **pyopmspe11** executable in an existing Python environment: 
+To install the **pyopmspe11** executable from the development version: 
 
 .. code-block:: bash
 
     pip install git+https://github.com/opm/pyopmspe11.git
 
-If you are interested in modifying the source code, then you can clone the repository and 
+If you are interested in a specific version (e.g., v2024.04) or in modifying the source code, then you can clone the repository and 
 install the Python requirements in a virtual environment with the following commands:
 
 .. code-block:: console
@@ -20,7 +26,9 @@ install the Python requirements in a virtual environment with the following comm
     git clone https://github.com/opm/pyopmspe11.git
     # Get inside the folder
     cd pyopmspe11
-    # Create virtual environment
+    # For a specific version (e.g., v2024.04), or skip this step (i.e., edge version)
+    git checkout v2024.04
+    # Create virtual environment (to specific Python, python3.12 -m venv vpyopmspe11)
     python3 -m venv vpyopmspe11
     # Activate virtual environment
     source vpyopmspe11/bin/activate
@@ -31,27 +39,39 @@ install the Python requirements in a virtual environment with the following comm
     # For contributions/testing/linting, install the dev-requirements
     pip install -r dev-requirements.txt
 
+.. tip::
+
+    Typing **git tag -l** writes all available specific versions.
+
 .. note::
 
-    Regarding the reading of OPM Flow output files (i.e., .EGRID, .INIT, .UNRST), it is possible to use the OPM python library instead of resdata (e.g., it seems the OPM Python library 
-    is faster than resdata to read large simulation files). For not macOS users, to install the Python OPM package, execute in the terminal **pip install opm**.
-    For macOS, see :ref:`macOS`.
+    For not macOS users, to install the Python opm package (this is an alternative
+    to `resdata <https://github.com/equinor/resdata>`_, both are use to read OPM output files; while resdata is easier to
+    install in macOS, opm seems to be faster), execute in the terminal
+
+    **pip install opm**
+
+    For not macOS users, to install the dependencies used for the figure's LaTeX formatting, execute 
+    
+    **sudo apt-get install texlive-fonts-recommended texlive-fonts-extra dvipng cm-super**
+
+    For macOS users, see :ref:`macOS`.
 
 OPM Flow
 --------
 You also need to install:
 
-* OPM Flow (https://opm-project.org, Release 2024.04 or current master branches)
+* OPM Flow (https://opm-project.org, Release 2024.10 or current master branches)
 
 .. tip::
 
     See the `CI.yml <https://github.com/opm/pyopmspe11/blob/main/.github/workflows/CI.yml>`_ script 
-    for installation of OPM Flow (binary packages) and the pyopmspe11 package in Linux. 
+    for installation of OPM Flow (binary packages) and the pyopmspe11 package in Ubuntu. 
 
 Source build in Linux/Windows
 +++++++++++++++++++++++++++++
 If you are a Linux user (including the Windows subsystem for Linux), then you could try to build Flow (after installing the `prerequisites <https://opm-project.org/?page_id=239>`_) from the master branches with mpi support by running
-in the terminal the following lines (which in turn should build flow in the folder ./build/opm-simulators/bin/flow.): 
+in the terminal the following lines (which in turn should build flow in the folder ./build/opm-simulators/bin/flow): 
 
 .. code-block:: console
 
@@ -132,6 +152,8 @@ package (see the `prerequisites <https://opm-project.org/?page_id=239>`_, which 
 
 This builds OPM Flow as well as the OPM Python library, and it exports the required PYTHONPATH. Then after execution, deactivate and activate the Python virtual environment.
 
-Regarding the resdata Python package, it might not be available depending on the Python version (e.g., it is not found using Python 3.9, but it is installed using Python 3.10).
-Then, it is recommended to use a Python version equal or higher than 3.10; otherwise, remove resdata from the requirements in the `pyproject.toml <https://github.com/opm/pyopmspe11/blob/main/pyproject.toml>`_,
-and when executing **pyopmspe11** always set the flag **-u opm** (resdata is the default package for reading the simulation files, see the :ref:`overview`).
+Regarding the resdata Python package, it might not be available depending on the Python version (e.g., it is not found using Python 3.9, but it is installed using Python 3.10). 
+Then, for macOS users, you need to use a Python version equal or higher than 3.10.
+
+For macOS, the LaTeX dependency can be installed from https://www.tug.org/mactex/. If after installation you still face an error due to LaTeX 
+when executing pyopmspe11, then add the flag **-l 0** to pyopmspe11.

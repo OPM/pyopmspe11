@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
@@ -6,18 +8,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Examples &mdash; pyopmspe11  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -69,6 +67,7 @@
 <li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="related.html">Related</a></li>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a></li>
 </ul>
@@ -102,12 +101,13 @@
 <section id="hello-world">
 <h2>Hello world<a class="headerlink" href="#hello-world" title="Link to this heading"></a></h2>
 <p>The <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/hello_world">examples/hello_world</a> folder contains configuration files
-with low grid resolution and shorter injetion times (for initial testing of the framework). For example, by executing:</p>
+with low grid resolution and shorter injection times (for initial testing of the framework). For example, by executing:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.txt<span class="w"> </span>-o<span class="w"> </span>spe11b<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-r<span class="w"> </span><span class="m">50</span>,1,15<span class="w"> </span>-w<span class="w"> </span><span class="m">1</span>
 </pre></div>
 </div>
-<p>The following is one of the figures generated related to the CO2 mass in the domain over time (i.e., the simulations results from
-the corner-point grid mapped to the equidistance reporting grid of 50 x 15 as defined by the -r flag):</p>
+<p>The following is the figure <cite>spe11b_tco2_2Dmaps</cite>, which shows the CO2 mass in the domain over time (i.e., the simulations results from
+the corner-point grid mapped to the equidistance reporting grid of 50 x 15 as defined by the -r flag). You can
+compare your example results to this figure to evaluate if your example ran correctly:</p>
 <figure class="align-default">
 <img alt="_images/spe11b_tco2_2Dmaps.png" src="_images/spe11b_tco2_2Dmaps.png" />
 </figure>

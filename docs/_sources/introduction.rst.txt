@@ -42,3 +42,5 @@ where
 -u  Using the 'opm' or 'resdata' python package ('resdata' by default).
 -w  Time interval for the sparse and performance data (spe11a [h]; spe11b/c [y]) ('0.1' by default).
 -c  Generate a common plot for the current folders for 'spe11a', 'spe11b', or 'spe11c' ('' by default).
+-s  Set to 1 to show Python warnings ('0' by default).
+-l  Set to 0 to not use LaTeX formatting ('1' by default).
