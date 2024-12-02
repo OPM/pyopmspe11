@@ -16,6 +16,9 @@ from rtree import index
 import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
+from resdata.grid import Grid
+from resdata.resfile import ResdataFile
+from resdata.summary import Summary
 
 try:
     from opm.io.ecl import EclFile as OpmFile
@@ -23,13 +26,7 @@ try:
     from opm.io.ecl import ERst as OpmRestart
     from opm.io.ecl import ESmry as OpmSummary
 except ImportError:
-    print("The Python package opm was not found, using resdata")
-try:
-    from resdata.grid import Grid
-    from resdata.resfile import ResdataFile
-    from resdata.summary import Summary
-except ImportError:
-    print("The resdata Python package was not found, using opm")
+    pass
 
 GAS_DEN_REF = 1.86843
 WAT_DEN_REF = 998.108
