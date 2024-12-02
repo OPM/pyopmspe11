@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
-# pylint: disable=R0912
+# pylint: disable=R0912, R0801
 
 """"
 Script to plot the results
@@ -8,6 +8,7 @@ Script to plot the results
 
 import argparse
 import os
+import warnings
 import math as mt
 import numpy as np
 import matplotlib
@@ -62,7 +63,15 @@ def main():
         "'dense_performance', 'dense_sparse', 'performance_sparse', "
         "'dense_performance-spatial', 'dense_performance_sparse', or 'all'",
     )
+    parser.add_argument(
+        "-s",
+        "--showpywarn",
+        default=0,
+        help="Set to 1 to show Python warnings ('0' by default).",
+    )
     cmdargs = vars(parser.parse_known_args()[0])
+    if int(cmdargs["showpywarn"]) != 1:  # Show or hidde python warnings
+        warnings.warn = lambda *args, **kwargs: None
     dic = {"folders": [cmdargs["folder"].strip()]}
     dic["case"] = cmdargs["deck"].strip()
     dic["generate"] = cmdargs["generate"].strip()
