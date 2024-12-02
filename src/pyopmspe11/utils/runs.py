@@ -53,6 +53,7 @@ def plotting(dic):
         "-g " + f"{dic['generate']}",
         "-r " + f"{dic['resolution']}",
         "-s " + f"{dic['showpywarn']}",
+        "-l " + f"{dic['latex']}",
     ]
     print(" ".join(plot_exe))
     prosc = subprocess.run(plot_exe, check=True)
