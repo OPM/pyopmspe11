@@ -51,3 +51,6 @@ Repository = "https://github.com/cssr-tools/pyopmspe11"
 [tool.setuptools]
 packages.find.where = ["src"]
 platforms = ["all"]
+
+[project.optional-dependencies]
+opm = ["opm"]
