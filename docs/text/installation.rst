@@ -51,6 +51,8 @@ install the Python requirements in a virtual environment with the following comm
 
     **pip install opm**
 
+    This is equivalent to execute **pip install -e .[opm]** in the installation process.  
+
     For not macOS users, to install the dependencies used for the figure's LaTeX formatting, execute 
     
     **sudo apt-get install texlive-fonts-recommended texlive-fonts-extra dvipng cm-super**
