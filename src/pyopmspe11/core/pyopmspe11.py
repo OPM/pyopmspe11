@@ -45,7 +45,7 @@ def pyopmspe11():
     # Make the output folders
     if not os.path.exists(f"{dic['exe']}/{dic['fol']}"):
         os.system(f"mkdir {dic['exe']}/{dic['fol']}")
-    for fil in ["deck", "flow"]:
+    for fil in ["deck", "flow" if dic["mode"] != "deck" else ""]:
         if not os.path.exists(f"{dic['exe']}/{dic['fol']}/{fil}"):
             os.system(f"mkdir {dic['exe']}/{dic['fol']}/{fil}")
     os.chdir(f"{dic['exe']}/{dic['fol']}")

@@ -1,9 +1,9 @@
 """Set the full path to the flow executable and flags"""
-flow --tolerance-mb=1e-7 --linear-solver=cprw --enable-tuning=true --newton-min-iterations=1 --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations  --enable-well-operability-check=false --min-time-step-before-shutting-problematic-wells-in-days=1e-99
+flow --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations --enable-well-operability-check=false --min-time-step-before-shutting-problematic-wells-in-days=1e-99
 
 """Set the model parameters"""
 spe11a release    #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
-complete gaswater #Name of the co2 model (immiscible, convective [convective requires a Flow version newer than 22-08-2024], or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
+complete gaswater #Name of the co2 model (immiscible, convective, or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
 tensor            #Type of grid (cartesian, tensor, or corner-point)
 2.8 0.01 1.2      #Length, width, and depth [m]
 4,15,10,10,9,7    #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
@@ -49,4 +49,4 @@ PERM7          0 PORO7    0 DISP7    0
 
 """Define the injection values ([hours] for spe11a; [years] for spe11b/c)""" 
 """injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
-5 0.5 1e-4 1 1.7e-7 20 1 1.7e-7 20
+5 0.5 1e-2 1 1.7e-7 20 1 1.7e-7 20

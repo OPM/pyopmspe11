@@ -19,6 +19,12 @@ compare your example results to this figure to evaluate if your example ran corr
 
 .. figure:: figs/spe11b_tco2_2Dmaps.png
 
+Using the :ref:`toml` format, the previous run is equivalent to:
+
+.. code-block:: bash
+
+    pyopmspe11 -i spe11b.toml -o spe11b -m all -g all -t 5 -r 50,1,15 -w 1
+
 Let us now change the grid type from corner-point to tensor in line 7 of the configuration file.
 Then, we run the simulations and we save the results in a different output folder:
 

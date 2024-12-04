@@ -180,9 +180,7 @@ examples/hello_world/spe11a
 examples/hello_world/spe11b
 examples/hello_world/spe11c
 playground
-tests/configs/test_compare
-tests/configs/output
-tests/configs/spe11a
-tests/configs/spe11b
-tests/configs/spe11c
+
+# Tests
 tests/configs/check_format.py
+**/tests/configs/*/

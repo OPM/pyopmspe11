@@ -7,6 +7,7 @@ Utiliy functions to set the requiried input values by pyopmspe11.
 
 import csv
 import sys
+import tomllib
 from io import StringIO
 from subprocess import PIPE, Popen
 import numpy as np
@@ -24,11 +25,62 @@ def process_input(dic, in_file):
         dic (dict): Modified global dictionary
 
     """
-    lol = []  # List of lines
-    with open(in_file, "r", encoding="utf8") as file:
-        for row in csv.reader(file, delimiter="#"):
-            lol.append(row)
-    readthefirstpart(lol, dic)
+    if in_file.endswith(".toml"):
+        with open(in_file, "rb") as file:
+            dic.update(tomllib.load(file))
+        setcaseproperties(dic)
+        postprocesstoml(dic)
+    else:
+        lol = []  # List of lines
+        with open(in_file, "r", encoding="utf8") as file:
+            for row in csv.reader(file, delimiter="#"):
+                lol.append(row)
+        readthefirstpart(lol, dic)
+        setcaseproperties(dic)
+        readthesecondpart(lol, dic)
+
+
+def postprocesstoml(dic):
+    """
+    Perform the unit convertions and generation of needed variables
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
+    dic["noCells"] = [sum(dic["x_n"]), sum(dic["y_n"]), sum(dic["z_n"])]
+    dic["diffusion"] = np.array(dic["diffusion"]) * 86400  # To [m^2/day]
+    dic["noSands"] = len(dic["safu"])
+    dic["tabdims"] = 1
+    for row in dic["safu"]:
+        dic["tabdims"] = max(dic["tabdims"], row[4])
+    for i in range(len(dic["inj"])):  # To [s]
+        dic["inj"][i][0] *= dic["time"]
+        dic["inj"][i][1] *= dic["time"]
+        dic["inj"][i][2] *= dic["time"]
+    dic["wellCoord"][0][-1] = dic["dims"][2] - dic["wellCoord"][0][-1]
+    dic["wellCoord"][1][-1] = dic["dims"][2] - dic["wellCoord"][1][-1]
+    if dic["spe11"] == "spe11c":
+        dic["wellCoordF"][0][-1] = dic["dims"][2] - dic["wellCoordF"][0][-1]
+        dic["wellCoordF"][1][-1] = dic["dims"][2] - dic["wellCoordF"][1][-1]
+    if dic["spe11"] in ["spe11b", "spe11c"]:
+        dic["rockCond"] = np.array(dic["rockCond"]) * 86400.0 / 1e3  # To [kJ/(m day K)]
+
+
+def setcaseproperties(dic):
+    """
+    Set the time scale, box, and sensor locations
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
     dic["maxelevation"] = 0.0
     if dic["spe11"] == "spe11a":
         dic["sensors"] = [[1.5, 0.005, 0.5], [1.7, 0.005, 1.1]]
@@ -53,7 +105,6 @@ def process_input(dic, in_file):
         dic["boxb"] = [[100.0, 0.0, 750.0], [3300.0, 5000.0, 1350.0]]
         dic["boxc"] = [[3300.0, 0.0, 250.0], [7800.0, 5000.0, 550.0]]
         dic["time"] = 31536000.0  # year to seconds
-    readthesecondpart(lol, dic)
 
 
 def readthefirstpart(lol, dic):
@@ -79,7 +130,6 @@ def readthefirstpart(lol, dic):
     dic["dims"] = [float((lol[7][0].strip()).split()[j]) for j in range(3)]
     if dic["grid"] == "cartesian":
         dic["noCells"] = [int((lol[8 + j][0].strip()).split()[0]) for j in range(3)]
-        dic["dsize"] = [1.0 * dic["dims"][i] / dic["noCells"][i] for i in range(3)]
     else:
         dic["x_n"] = np.genfromtxt(StringIO(lol[8][0]), delimiter=",", dtype=int)
         dic["y_n"] = np.genfromtxt(StringIO(lol[9][0]), delimiter=",", dtype=int)
@@ -166,17 +216,13 @@ def readthesecondpart(lol, dic):
         row = list((lol[dic["index"] + i][0].strip()).split())
         dic["rock"].append(
             [
-                row[1],
-                row[3],
+                str(float(row[1])),
+                str(float(row[3])),
             ]
         )
         dic["dispersion"].append(float(row[5]))
         if dic["spe11"] != "spe11a":
-            dic["rockCond"].append(
-                [
-                    float(row[7]) * 86400.0 / 1e3,
-                ]
-            )
+            dic["rockCond"].append(float(row[7]) * 86400.0 / 1e3)
     dic["index"] += 3 + dic["noSands"]
     column = []
     columnf = []
@@ -202,7 +248,7 @@ def readthesecondpart(lol, dic):
                 ]
             )
     dic["wellCoord"] = column
-    dic["wellCoordf"] = columnf
+    dic["wellCoordF"] = columnf
     dic["index"] += len(dic["wellCoord"]) + 3
     column = []
     for i in range(len(lol) - dic["index"]):

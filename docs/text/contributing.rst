@@ -25,7 +25,7 @@ Contribute to the software
     #. **black src/ tests/** (this formats the code)
     #. **pylint src/ tests/** (this analyses the code, and might rise issues that need to be fixed before the pull request)
     #. **mypy --ignore-missing-imports src/ tests/** (this is a static checker, and might rise issues that need to be fixed before the pull request)
-    #. **pytest --cov=pyopmspe11 --cov-report term-missing tests/** (this runs locally the tests, and might rise issues that need to be fixed before the pull request)
+    #. **pytest --cov=pyopmspe11 --cov-report term-missing tests/** (this runs locally the tests, and might rise issues that need to be fixed before the pull request; to save the files, add the flag **--basetemp=test_outputs**)
     #. **pushd docs & make html** (this generates the documentation, and might rise issues that need to be fixed before the pull request; if the build succeeds and if the contribution changes the documentation, then delete all content from the `docs <https://github.com/cssr-tools/pyopmspe11/tree/main/docs>`_ folder except `Makefile <https://github.com/OPM/pyopmspe11/blob/main/docs/Makefile>`_, `text <https://github.com/OPM/pyopmspe11/blob/main/docs/text>`_, and `.nojekyll <https://github.com/OPM/pyopmspe11/blob/main/docs/.nojekyll>`_, after copy all contents from the docs/_build/html/ folder, and finally paste them in the `docs <https://github.com/cssr-tools/pyopmspe11/tree/main/docs>`_ folder)
     
     .. tip::
