@@ -3,7 +3,7 @@ flow --tolerance-mb=1e-7 --linear-solver=cprw --enable-tuning=true --newton-min-
 
 """Set the model parameters"""
 spe11b release     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
-complete gaswater #Name of the co2 model (immiscible, convective [convective requires a Flow version newer than 22-08-2024], or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
+complete gaswater #Name of the co2 model (immiscible, convective, or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
 corner-point      #Type of grid (cartesian, tensor, or corner-point)
 8400 1 1200       #Length, width, and depth [m]
 8,10,15,15,15,10,8 #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment

@@ -29,7 +29,7 @@ The current implementation supports the following executable with the argument o
 
 .. code-block:: bash
 
-    pyopmspe11 -i configuration_file.txt
+    pyopmspe11 -i configuration_file
 
 where 
 

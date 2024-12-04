@@ -46,10 +46,10 @@ See the [_installation_](https://OPM.github.io/pyopmspe11/installation.html) for
 ## Running pyopmspe11
 You can run _pyopmspe11_ as a single command line:
 ```
-pyopmspe11 -i configuration_file.txt
+pyopmspe11 -i configuration_file
 ```
 Run `pyopmspe11 --help` to see all possible command line 
-argument options. Inside the `configuration_file.txt` you provide the path to the flow executable and simulation parameters. See the .txt files in the [_examples_](https://github.com/OPM/pyopmspe11/tree/main/examples), [_benchmark_](https://github.com/OPM/pyopmspe11/tree/main/benchmark), and [_tests_](https://github.com/OPM/pyopmspe11/tree/main/tests/configs) folders.
+argument options. Inside the `configuration_file` you provide the path to the flow executable and simulation parameters. See the .txt and .toml files in the [_examples_](https://github.com/OPM/pyopmspe11/tree/main/examples), [_benchmark_](https://github.com/OPM/pyopmspe11/tree/main/benchmark), and [_tests_](https://github.com/OPM/pyopmspe11/tree/main/tests/configs) folders.
 
 ## Getting started
 See the [_examples_](https://OPM.github.io/pyopmspe11/examples.html) in the [_documentation_](https://OPM.github.io/pyopmspe11/introduction.html). 
