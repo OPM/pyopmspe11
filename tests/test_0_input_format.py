@@ -4,6 +4,7 @@
 """Test the parsing of .txt and .toml configuration files"""
 
 import os
+import sys
 import filecmp
 import pathlib
 import subprocess
@@ -13,6 +14,14 @@ dirname: pathlib.Path = pathlib.Path(__file__).parent
 
 def test_txt_toml():
     """See configs/spe11x_data_format.y (x in [a, b, c]; y in [txt, toml])"""
+    if sys.version_info[1] < 11:
+        print(
+            "\nInput configuration files with toml extension requieres "
+            + "a Python version of at least 3.11.\nTo run this test, "
+            + "please update your Python version.\nYour Python version is "
+            + f"3.{sys.version_info[1]}.{sys.version_info[2]}."
+        )
+        sys.exit()
     os.chdir(f"{dirname}/configs")
     for spe in ["spe11a", "spe11b", "spe11c"]:
         folder = []

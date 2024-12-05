@@ -7,10 +7,14 @@ Utiliy functions to set the requiried input values by pyopmspe11.
 
 import csv
 import sys
-import tomllib
 from io import StringIO
 from subprocess import PIPE, Popen
 import numpy as np
+
+try:
+    import tomllib
+except ImportError:
+    pass
 
 
 def process_input(dic, in_file):
@@ -26,6 +30,15 @@ def process_input(dic, in_file):
 
     """
     if in_file.endswith(".toml"):
+        if sys.version_info[1] < 11:
+            print(
+                "\nInput configuration files with toml extension requieres "
+                + "a Python version of at least 3.11.\nYou could either use "
+                + "configuration files with txt extension or use a higher "
+                + "Python version.\nYour Python version is "
+                + f"3.{sys.version_info[1]}.{sys.version_info[2]}.\n"
+            )
+            sys.exit()
         with open(in_file, "rb") as file:
             dic.update(tomllib.load(file))
         setcaseproperties(dic)

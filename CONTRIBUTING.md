@@ -9,6 +9,7 @@ Contributions are more than welcome using the fork and pull request approach ðŸ™
 - We document our code
 
 ## Contribute to the software
+This requires a Python version of at least 3.11 (due to [_tomllib_](https://toml.io/en/)).
 
 1. Work on your own fork of the main repo
 1. In the main repo execute:
@@ -18,7 +19,7 @@ Contributions are more than welcome using the fork and pull request approach ðŸ™
     1. **mypy --ignore-missing-imports src/ tests/** (this is a static checker, and might rise issues that need to be fixed before the pull request)
     1. **pytest --cov=pyopmspe11 --cov-report term-missing tests/** (this runs locally the tests, and might rise issues that need to be fixed before the pull request)
     1. **pushd docs & make html** (this generates the documentation, and might rise issues that need to be fixed before the pull request; if the build succeeds and if the contribution changes the documentation, then delete all content from the [_docs_](https://github.com/cssr-tools/pyopmspe11/tree/main/docs) folder except [_Makefile_](https://github.com/OPM/pyopmspe11/blob/main/docs/Makefile), [_text_](https://github.com/OPM/pyopmspe11/blob/main/docs/text), and [_.nojekyll_](https://github.com/OPM/pyopmspe11/blob/main/docs/.nojekyll), after copy all contents from the docs/_build/html/ folder, and finally paste them in the [_docs_](https://github.com/cssr-tools/pyopmspe11/tree/main/docs) folder)
-    * Tip: See the [_CI.yml_](https://github.com/cssr-tools/pyopmspe11/blob/main/.github/workflows/CI.yml) script and the [_Actions_](https://github.com/cssr-tools/pyopmspe11/actions) for installation of pyopmspe11, OPM Flow (binary packages), and dependencies, as well as the execution of the six previous steps in Ubuntu 24.10.
+    * Tip: See the [_CI.yml_](https://github.com/cssr-tools/pyopmspe11/blob/main/.github/workflows/CI.yml) script and the [_Actions_](https://github.com/cssr-tools/pyopmspe11/actions) for installation of pyopmspe11, OPM Flow (binary packages), and dependencies, as well as the execution of the six previous steps in Ubuntu 24.10 using Python3.11.
 1. Squash your commits into a single commit (see this [_nice tutorial_](https://gist.github.com/lpranam/4ae996b0a4bc37448dc80356efbca7fa) if you are not familiar with this)
 1. Push your commit and make a pull request
 1. The maintainers will review the pull request, and if the contribution is accepted, then it will be merge to the main repo 
