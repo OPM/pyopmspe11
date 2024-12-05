@@ -19,7 +19,7 @@ compare your example results to this figure to evaluate if your example ran corr
 
 .. figure:: figs/spe11b_tco2_2Dmaps.png
 
-Using the :ref:`toml` format, the previous run is equivalent to:
+Using the :ref:`toml` format, the previous run is equivalent to (this requires a Python version of at least 3.11 [due to `tomllib <https://toml.io/en/>`_]):
 
 .. code-block:: bash
 
