@@ -183,4 +183,5 @@ playground
 
 # Tests
 tests/configs/check_format.py
+tests/configs/is_notebook.py
 **/tests/configs/*/

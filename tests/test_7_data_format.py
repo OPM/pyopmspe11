@@ -64,16 +64,17 @@ def test_format():
         ],
         check=True,
     )
-    subprocess.run(
-        [
-            "curl",
-            "-o",
-            "./check_format.py",
-            "https://raw.githubusercontent.com/Simulation-Benchmarks/11thSPE-CSP/"
-            + "main/evaluation/check_format.py",
-        ],
-        check=True,
-    )
+    for file in ["check_format", "is_notebook"]:
+        subprocess.run(
+            [
+                "curl",
+                "-o",
+                f"./{file}.py",
+                "https://raw.githubusercontent.com/Simulation-Benchmarks/11thSPE-CSP/"
+                + f"main/evaluation/{file}.py",
+            ],
+            check=True,
+        )
     with Popen(
         args="python3 check_format.py -f ./spe11a/data -c A", stdout=PIPE, shell=True
     ) as process:
