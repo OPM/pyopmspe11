@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 # pylint: disable=R0912, R0801
 
-""""
+""" "
 Script to plot the results
 """
 

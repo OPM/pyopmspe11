@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 # pylint: disable=C0302, R0912, R0914, R0801
 
-""""
+""" "
 Script to write the benchmark data
 """
 
