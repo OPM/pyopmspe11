@@ -4,14 +4,14 @@ Related
 
 Below are some tools that might be of interest; check them out 🙂.
 
-*************
-pyopmnearwell
-*************
+******
+pycopm
+******
 
-.. image:: ./figs/pyopmnearwell.gif
-    :scale: 50%
+.. image:: ./figs/pycopm.png
+    :scale: 32%
 
-`A framework to simulate near well dynamics using OPM Flow <https://github.com/cssr-tools/pyopmnearwell>`_.
+`An open-source tool to tailor OPM Flow geological models <https://github.com/cssr-tools/pycopm>`_.
 
 *****
 plopm
@@ -21,14 +21,14 @@ plopm
 
 `Quick generation of PNGs, GIFs, and VTKs from a OPM Flow type model <https://github.com/cssr-tools/plopm>`_.
 
-******
-pycopm
-******
+*************
+pyopmnearwell
+*************
 
-.. image:: ./figs/pycopm.gif
-    :scale: 60%
+.. image:: ./figs/pyopmnearwell.gif
+    :scale: 50%
 
-`Simplified and flexible framework for coarsening geological models <https://github.com/cssr-tools/pycopm>`_.
+`A framework to simulate near well dynamics using OPM Flow <https://github.com/cssr-tools/pyopmnearwell>`_.
 
 ********
 expreccs

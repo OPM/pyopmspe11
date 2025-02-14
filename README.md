@@ -55,6 +55,10 @@ argument options. Inside the `configuration_file` you provide the path to the fl
 ## Getting started
 See the [_examples_](https://OPM.github.io/pyopmspe11/examples.html) in the [_documentation_](https://OPM.github.io/pyopmspe11/introduction.html) and the [_journal paper_](https://joss.theoj.org/papers/10.21105/joss.07357).
 
+## Citing
+
+* Landa-Marbán, D. and Sandve, T.H. 2025. pyopmspe11: A Python framework using OPM Flow for the SPE11 benchmark project. Journal of Open Source Software, 10(105), 7357, https://doi.org/10.21105/joss.07357.
+
 ## About pyopmspe11
 The pyopmspe11 package is being funded by the [_HPC Simulation Software for the Gigatonne Storage Challenge project_](https://www.norceresearch.no/en/projects/hpc-simulation-software-for-the-gigatonne-storage-challenge) [project number 622059] and [_Center for Sustainable Subsurface Resources (CSSR)_](https://cssr.no) 
 [project no. 331841].
