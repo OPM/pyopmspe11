@@ -20,7 +20,7 @@ The first input parameter in the configuration file is:
     :linenos:
 
     """Set the full path to the flow executable and flags"""
-    flow --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations
+    flow --relaxed-max-pv-fraction=0 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations
 
 If **flow** is not in your path, then write the full path to the executable
 (e.g., /Users/dmar/opm/build/opm-simulators/bin/flow). We also add in the same 
@@ -32,7 +32,7 @@ line as many flags as required (see the OPM Flow documentation `here <https://op
 
 .. tip::
     By executing flow -h you get an overview of the available flags in the
-    flow simulator to improve/fix convergence and mass issues (i.e., by setting the flag \-\-linear-solver=cprw to change the linear solver,
+    flow simulator to improve/fix convergence and mass issues (i.e., by setting the flag \-\-linear-solver=cpr_trueimpes to change the linear solver,
     by tightening the cnv tolerances (\-\-tolerance-cnv), etc.).
 
 ----------------------------
@@ -50,9 +50,9 @@ The following input lines in the configuration file are:
     complete gaswater #Name of the co2 model (immiscible, convective, or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
     corner-point      #Type of grid (cartesian, tensor, or corner-point)
     8400 5000 1200    #Length, width, and depth [m]
-    420               #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
-    30,40,50,40,30    #If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for spe11c)
-    5,3,1,2,3,2,4,4,10,4,6,6,4,8,4,15,30,9 #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
+    420               #If cartesian, number of x cells [-]; otherwise, variable array of x-refinement
+    30,40,50,40,30    #If cartesian, number of y cells [-]; otherwise, variable array of y-refinement [-] (for spe11c)
+    5,3,1,2,3,2,4,4,10,4,6,6,4,8,4,15,30,9 #If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (18 entries)
     70 36.12          #Temperature bottom and top rig [C]            
     300 3e7 0.1       #Datum [m], pressure at the datum [Pa], and multiplier for the permeability in the z direction [-] 
     1e-9 2e-8         #Diffusion (in liquid and gas) [m^2/s]
@@ -64,13 +64,13 @@ In line 5 you specify if you are using OPM Flow from the master branch or from t
 This since there are continuous changues in the OPM master branch. Then we 
 will keep updating the decks for using Flow from master and also we will keep the framework to produce decks compatible for the latest OPM stable release.
 The immiscible model allows for faster prototyping while the complete model includes dissolution of the components in the
-gas and liquid phases, in addition to thermal effects. The convective model requires a Flow version newer than 22-08-2024; details on the model and keyword can be found in this `link <https://github.com/OPM/opm-simulators/pull/3076>`_. 
+gas and liquid phases, in addition to thermal effects. Details on the convective model can be found in `Mykkeltvedt et al. (2025) <https://link.springer.com/article/10.1007/s11242-024-02141-5>`_. 
 Regarding the grid type, the cartesian mode generates an uniform grid
 with the defined number of elements in lines 9 to 11. The tensor grid allows to define arrays in each direction where the grid
 is first divided with the number of entries in the array, and after it divides each of these elements by the assigned number in 
 the array entry. The corner-point mode generates a grid where the x and y direction are defined as in the array mode, but the 
 cell faces in the z-direction follows the lines as defined in the `lines_coordinates.geo <https://github.com/OPM/pyopmspe11/blob/main/src/pyopmspe11/reference_mesh/lines_coordinates.geo>`_ script,
-resulting in 18 levels. Then, the z-refinment in each of these levels is set. See the configuration files in the `tests <https://github.com/OPM/pyopmspe11/blob/main/tests>`_ and 
+resulting in 18 levels. Then, the z-refinement in each of these levels is set. See the configuration files in the `tests <https://github.com/OPM/pyopmspe11/blob/main/tests>`_ and 
 `examples <https://github.com/OPM/pyopmspe11/blob/main/examples>`_ folder for the setting of these grids.
 
 .. figure:: figs/satnum.png
@@ -136,7 +136,7 @@ The last part of the configuration file sets the wells radius, location, and the
 
     """Define the injection values ([hours] for spe11a; [years] for spe11b/c)""" 
     """injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
-    999.9 999.9    10 1  0 10 1  0 10
+    999.9 999.9   100 1  0 10 1  0 10
       0.1   0.1   0.1 1  0 10 1  0 10
        25     5     5 1 50 10 1  0 10
        25     5     5 1 50 10 1 50 10
@@ -159,7 +159,7 @@ The previous configuration file can be written using the widely in-use `toml for
     :linenos:
 
     # Set the full path to the flow executable and flags
-    flow = "flow --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations"
+    flow = "flow --relaxed-max-pv-fraction=0 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations"
 
     # Set the model parameters
     spe11 = "spe11c" # Name of the spe case (spe11a, spe11b, or spe11c)
@@ -168,9 +168,9 @@ The previous configuration file can be written using the widely in-use `toml for
     co2store = "gaswater" # co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
     grid = "corner-point" # Type of grid (cartesian, tensor, or corner-point)
     dims = [8400.0, 5000.0, 1200.0] # Length, width, and depth [m]
-    x_n = [420] # If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
-    y_n = [30, 40, 50, 40, 30] # If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for spe11c)
-    z_n = [5, 3, 1, 2, 3, 2, 4, 4, 10, 4, 6, 6, 4, 8, 4, 15, 30, 9] # If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
+    x_n = [420] # If cartesian, number of x cells [-]; otherwise, variable array of x-refinement
+    y_n = [30, 40, 50, 40, 30] # If cartesian, number of y cells [-]; otherwise, variable array of y-refinement [-] (for spe11c)
+    z_n = [5, 3, 1, 2, 3, 2, 4, 4, 10, 4, 6, 6, 4, 8, 4, 15, 30, 9] # If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (18 entries)
     temperature = [70.0, 36.12] # Temperature bottom and top rig [C]
     datum = 300 # Datum [m]
     pressure = 3e7 # Pressure at the datum [Pa]

@@ -1,5 +1,5 @@
 # Set the full path to the flow executable and flags
-flow = "flow --tolerance-mb=1e-7 --linear-solver=cprw --enable-tuning=true --newton-min-iterations=1 --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations  --enable-well-operability-check=false --min-time-step-before-shutting-problematic-wells-in-days=1e-99"
+flow = "flow --relaxed-max-pv-fraction=0 --newton-min-iterations=1 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations --enable-well-operability-check=false --min-time-step-before-shutting-problematic-wells-in-days=1e-99"
 
 # Set the model parameters
 spe11 = "spe11b" # Name of the spe case (spe11a, spe11b, or spe11c)
@@ -8,9 +8,9 @@ model = "complete" # Name of the co2 model (immiscible, convective, or complete)
 co2store = "gaswater" # co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
 grid = "corner-point" # Type of grid (cartesian, tensor, or corner-point)
 dims = [8400.0, 1.0, 1200.0] # Length, width, and depth [m]
-x_n = [8, 10, 15, 15, 15, 10, 8] # If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
-y_n = [1] # If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for spe11c)
-z_n = [2, 2, 1, 1, 2, 1, 3, 2, 6, 2, 3, 2, 2, 8, 4, 8, 8, 1] # If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
+x_n = [8, 10, 15, 15, 15, 10, 8] # If cartesian, number of x cells [-]; otherwise, variable array of x-refinement
+y_n = [1] # If cartesian, number of y cells [-]; otherwise, variable array of y-refinement [-] (for spe11c)
+z_n = [2, 2, 1, 1, 2, 1, 3, 2, 6, 2, 3, 2, 2, 8, 4, 8, 8, 1] # If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (18 entries)
 temperature = [70, 40] # Temperature bottom and top rig [C]
 datum = 300 # Datum [m]
 pressure = 3e7 # Pressure at the datum [Pa]

@@ -18,4 +18,4 @@ run directly the simulations calling the Flow solvers, e.g., to add tracers
 
 .. tip::
     If you install the dev-requirements.txt, executing **pytest \-\-cov=pyopmspe11 \-\-cov-report term-missing tests/** runs the
-    configuration files in the tests with different argument options for **pyopmspe11**, then one can see the different outputs.
+    configuration files in the tests with different argument options for **pyopmspe11** in ca. 30 minutes, then one can see the different outputs.

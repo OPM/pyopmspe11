@@ -1,14 +1,14 @@
 """Set the full path to the flow executable and flags"""
-mpirun -np 12 flow --nonlinear-solver=nldd --matrix-add-well-contributions=1 --tolerance-mb=1e-7 --linear-solver=cpr_trueimpes --enable-tuning=false --solver-max-time-step-in-days=0.02 --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations --newton-min-iterations=1 --threads-per-process=1 --time-step-control-target-newton-iterations=2 --time-step-control-growth-rate=1.15 --time-step-control-decay-rate=0.85 --newton-max-iterations=6 --min-time-step-before-shutting-problematic-wells-in-days=1e-99 --relaxed-max-pv-fraction=0 --min-strict-cnv-iter=8 --tolerance-cnv-relaxed=1e-2 --tolerance-cnv=1e-3 --local-domains-ordering-measure=residual --time-step-control=newtoniterationcount --use-update-stabilization=0 --enable-drift-compensation=0 --max-local-solve-iterations=50 --linear-solver-max-iter=50
+mpirun -np 12 flow --nonlinear-solver=nldd --matrix-add-well-contributions=1 --tolerance-mb=1e-7 --linear-solver=cpr_trueimpes --solver-max-time-step-in-days=0.02 --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations --newton-min-iterations=1 --threads-per-process=1 --time-step-control-target-newton-iterations=2 --time-step-control-growth-rate=1.15 --time-step-control-decay-rate=0.85 --newton-max-iterations=6 --min-time-step-before-shutting-problematic-wells-in-days=1e-99 --relaxed-max-pv-fraction=0 --min-strict-cnv-iter=8 --tolerance-cnv-relaxed=1e-2 --tolerance-cnv=1e-3 --local-domains-ordering-measure=residual --time-step-control=newtoniterationcount --use-update-stabilization=0 --enable-drift-compensation=0 --max-local-solve-iterations=50 --linear-solver-max-iter=50
 
 """Set the model parameters"""
 spe11a master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
-complete gaswater #Name of the co2 model (immiscible, convective [convective requires a Flow version newer than 22-08-2024], or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
+complete gaswater #Name of the co2 model (immiscible, convective, or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
 cartesian         #Type of grid (cartesian, tensor, or corner-point)
 2.8 0.01 1.2      #Length, width, and depth [m]
-2800              #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
-1                 #If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for spe11c)
-1200               #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
+2800              #If cartesian, number of x cells [-]; otherwise, variable array of x-refinement
+1                 #If cartesian, number of y cells [-]; otherwise, variable array of y-refinement [-] (for spe11c)
+1200              #If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (18 entries)
 20 20             #Temperature bottom and top rig [C]
 1.2 110000 1      #Pressure on the top [Pa] and multiplier for the permeability in the z direction [-] 
 1e-9 1.6e-5       #Diffusion (in liquid and gas) [m^2/s]
