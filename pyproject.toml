@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyopmspe11"
-description = "A framework using OPM Flow for the SPE11 benchmark project"
+description = "A Python framework using OPM Flow for the SPE11 benchmark project"
 authors = [{ name = "David Landa-Marbán", email = "dmar@norceresearch.no" },
 { name = "Tor Harald Sandve", email = "tosa@norceresearch.no" }]
 maintainers = [{ name = "David Landa-Marbán", email = "dmar@norceresearch.no" },
