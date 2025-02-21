@@ -70,7 +70,6 @@ def main():
     dic["generate"] = cmdargs["generate"].strip()
     dic["compare"] = cmdargs["compare"]  # No empty, then the create compare folder
     dic["latex"] = int(cmdargs["latex"])  # LaTeX formatting
-    dic["exe"] = os.getcwd()  # Path to the folder of the configuration file
     plot_results(dic)
 
 
@@ -139,11 +138,11 @@ def plot_results(dic):
             [name for name in os.listdir(".") if os.path.isdir(name)]
         )
         if "compare" not in dic["folders"]:
-            os.system(f"mkdir {dic['exe']}/compare")
+            os.system("mkdir compare")
         else:
             dic["folders"].remove("compare")
     else:
-        dic["where"] = f"{dic['exe']}/{dic['folders'][0]}/figures"
+        dic["where"] = f"{dic['folders'][0]}/figures"
     if dic["case"] == "spe11a":
         dic["tlabel"] = "h"
         dic["dims"] = 2
@@ -214,7 +213,7 @@ def performance(dic):
             axis = dic["fig"].add_subplot(9, 5, k + 1)
             for nfol, fol in enumerate(dic["folders"]):
                 csv = np.genfromtxt(
-                    f"{dic['exe']}/{fol}/data/{dic['case']}_performance_time_series{kind}.csv",
+                    f"{fol}/data/{dic['case']}_performance_time_series{kind}.csv",
                     delimiter=",",
                     skip_header=1,
                 )
@@ -230,7 +229,7 @@ def performance(dic):
                     f"sum={sum((csv[i][9] for i in range(csv.shape[0]))):.3e}",
                 ]
                 times = [csv[i][0] / dic["tscale"] for i in range(csv.shape[0])]
-                labels[k] += f" ({fol})"
+                labels[k] += f" ({fol.split('/')[-1]})"
                 axis.step(
                     times,
                     [csv[i][k + 1] for i in range(csv.shape[0])],
@@ -281,14 +280,14 @@ def sparse_data(dic):
             axis.text(
                 0.7,
                 0.15 + nfol * 0.05,
-                dic["folders"][-1 - nfol],
+                dic["folders"][-1 - nfol].split("/")[-1],
                 transform=axis.transAxes,
                 verticalalignment="top",
                 bbox=dic["props"],
                 color=dic["colors"][len(dic["folders"]) - nfol - 1],
             )
             csv = np.genfromtxt(
-                f"{dic['exe']}/{fol}/data/{dic['case']}_time_series.csv",
+                f"{fol}/data/{dic['case']}_time_series.csv",
                 delimiter=",",
                 skip_header=1,
             )
@@ -339,7 +338,7 @@ def generate_grid(dic):
     """
     dic["files"] = [
         f
-        for f in os.listdir(f"{dic['exe']}/{dic['folders'][0]}/data")
+        for f in os.listdir(f"{dic['folders'][0]}/data")
         if f.endswith(f"{dic['tlabel']}.csv")
     ]
     dic["times"] = np.array(
@@ -350,7 +349,7 @@ def generate_grid(dic):
     dic["sort_ind"] = np.argsort(dic["times"])
     dic["times"] = [dic["times"][i] for i in dic["sort_ind"]]
     csv = np.genfromtxt(
-        f"{dic['exe']}/{dic['folders'][0]}/data/{dic['files'][0]}",
+        f"{dic['folders'][0]}/data/{dic['files'][0]}",
         delimiter=",",
         skip_header=1,
     )
@@ -471,7 +470,7 @@ def dense_data(dic):
             dic["ptimes"] = dic["times"][: dic["allplots"][k]] + [dic["times"][-1]]
             ini_quantity_plot(dic)
             csv = np.genfromtxt(
-                f"{dic['exe']}/{dic['folders'][0]}/data/{dic['case']}{kind}_spatial_map_"
+                f"{dic['folders'][0]}/data/{dic['case']}{kind}_spatial_map_"
                 + f"0{dic['tlabel']}.csv",
                 delimiter=",",
                 skip_header=1,
@@ -483,7 +482,7 @@ def dense_data(dic):
             )
             for tmap in dic["ptimes"]:
                 csv = np.genfromtxt(
-                    f"{dic['exe']}/{dic['folders'][0]}/data/{dic['case']}{kind}_spatial_map_"
+                    f"{dic['folders'][0]}/data/{dic['case']}{kind}_spatial_map_"
                     + f"{tmap}{dic['tlabel']}.csv",
                     delimiter=",",
                     skip_header=1,
@@ -527,7 +526,7 @@ def dense_data(dic):
                         f"{time}{dic['tlabel']}, {quantity} "
                         + dic["units"][k]
                         + f"(sum={dic['sum'][j]:.1E})"
-                        + f", {dic['case']} ({dic['folders'][0]})"
+                        + f", {dic['case']} ({dic['folders'][0].split('/')[-1]})"
                     )
                 else:
                     if dic["allplots"][k] == -1:
@@ -539,7 +538,7 @@ def dense_data(dic):
                         + f"{quantity} "
                         + dic["units"][k]
                         + f"(min={dic['min'][j]:.1E}, max={dic['max'][j]:.1E})"
-                        + f", {dic['case']} ({dic['folders'][0]})"
+                        + f", {dic['case']} ({dic['folders'][0].split('/')[-1]})"
                     )
                 axis.axis("scaled")
                 divider = make_axes_locatable(axis)

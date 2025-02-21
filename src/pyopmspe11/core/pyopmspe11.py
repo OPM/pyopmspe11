@@ -16,9 +16,8 @@ def pyopmspe11():
     """Main function for the pyopmspe11 executable"""
     cmdargs = load_parser()
     file = cmdargs["input"].strip()  # Name of the input file
-    dic = {"fol": cmdargs["output"].strip()}  # Name for the output folder
+    dic = {"fol": os.path.abspath(cmdargs["output"])}  # Name for the output folder
     dic["generate"] = cmdargs["generate"].strip()  # What data to write
-    dic["exe"] = os.getcwd()  # Path to the folder of the input.txt file
     dic["mode"] = cmdargs["mode"].strip()  # Parts of the workflow to run
     dic["pat"] = os.path.dirname(__file__)[:-5]  # Path to the pyopmspe11 folder
     dic["compare"] = cmdargs["compare"].strip()  # Make common figures for comparison
@@ -43,12 +42,12 @@ def pyopmspe11():
     process_input(dic, file)
 
     # Make the output folders
-    if not os.path.exists(f"{dic['exe']}/{dic['fol']}"):
-        os.system(f"mkdir {dic['exe']}/{dic['fol']}")
+    if not os.path.exists(f"{dic['fol']}"):
+        os.system(f"mkdir {dic['fol']}")
     for fil in ["deck", "flow" if dic["mode"] != "deck" else ""]:
-        if not os.path.exists(f"{dic['exe']}/{dic['fol']}/{fil}"):
-            os.system(f"mkdir {dic['exe']}/{dic['fol']}/{fil}")
-    os.chdir(f"{dic['exe']}/{dic['fol']}")
+        if not os.path.exists(f"{dic['fol']}/{fil}"):
+            os.system(f"mkdir {dic['fol']}/{fil}")
+    os.chdir(f"{dic['fol']}")
 
     if dic["mode"] == "all" or "deck" in dic["mode"]:
         # Check the generated deck, flow version, and chosen co2store implementation
@@ -58,7 +57,7 @@ def pyopmspe11():
         # For corner-point grids, get the cell centers by executing flow
         if dic["grid"] == "corner-point":
             initial(dic)
-            os.chdir(f"{dic['exe']}/{dic['fol']}/deck")
+            os.chdir(f"{dic['fol']}/deck")
             simulations(dic, "INITIAL", "flow", True)
             print(
                 "Files used to generate the corner-point grid (INITIAL.* files).\n"
@@ -70,21 +69,21 @@ def pyopmspe11():
         positions(dic)
         # Write used opm related files
         opm_files(dic)
-        print(f"The deck files have been written to {dic['exe']}/{dic['fol']}/deck.")
+        print(f"The deck files have been written to {dic['fol']}/deck.")
     if dic["mode"] == "all" or "flow" in dic["mode"]:
         # Run the simulations
-        simulations(dic, dic["fol"].upper(), "flow", False)
+        simulations(dic, dic["fol"].split("/")[-1].upper(), "flow", False)
 
     if dic["mode"] == "all" or "data" in dic["mode"]:
         # Write the data
-        if not os.path.exists(f"{dic['exe']}/{dic['fol']}/data"):
-            os.system(f"mkdir {dic['exe']}/{dic['fol']}/data")
+        if not os.path.exists(f"{dic['fol']}/data"):
+            os.system(f"mkdir {dic['fol']}/data")
         data(dic)
 
     if dic["mode"] == "all" or "plot" in dic["mode"]:
         # Make some useful plots after the studies
-        if not os.path.exists(f"{dic['exe']}/{dic['fol']}/figures"):
-            os.system(f"mkdir {dic['exe']}/{dic['fol']}/figures")
+        if not os.path.exists(f"{dic['fol']}/figures"):
+            os.system(f"mkdir {dic['fol']}/figures")
         plotting(dic)
 
 

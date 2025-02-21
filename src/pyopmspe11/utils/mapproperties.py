@@ -121,13 +121,13 @@ def structured_handling_spe11a(dic):
     sensors(dic)
     wells(dic)
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/centers.txt",
+        f"{dic['fol']}/deck/centers.txt",
         "w",
         encoding="utf8",
     ) as file:
         file.write("\n".join(centers))
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/corners.txt",
+        f"{dic['fol']}/deck/corners.txt",
         "w",
         encoding="utf8",
     ) as file:
@@ -251,13 +251,13 @@ def structured_handling_spe11bc(dic):
     sensors(dic)
     wells(dic)
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/centers.txt",
+        f"{dic['fol']}/deck/centers.txt",
         "w",
         encoding="utf8",
     ) as file:
         file.write("\n".join(centers))
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/corners.txt",
+        f"{dic['fol']}/deck/corners.txt",
         "w",
         encoding="utf8",
     ) as file:
@@ -406,13 +406,13 @@ def corner_point_handling_spe11a(dic):
     dic["wellijk"][0] = [well1ijk[0] + 1, 1, well1ijk[2] + 1]
     dic["wellijk"][1] = [well2ijk[0] + 1, 1, well2ijk[2] + 1]
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/centers.txt",
+        f"{dic['fol']}/deck/centers.txt",
         "w",
         encoding="utf8",
     ) as file:
         file.write("\n".join(centers))
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/corners.txt",
+        f"{dic['fol']}/deck/corners.txt",
         "w",
         encoding="utf8",
     ) as file:
@@ -580,13 +580,13 @@ def corner_point_handling_spe11bc(dic):
     dic["well2"] = pd.Series(well2).argmin()
     locate_wells_sensors(dic)
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/centers.txt",
+        f"{dic['fol']}/deck/centers.txt",
         "w",
         encoding="utf8",
     ) as file:
         file.write("\n".join(centers))
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/corners.txt",
+        f"{dic['fol']}/deck/corners.txt",
         "w",
         encoding="utf8",
     ) as file:
@@ -637,16 +637,9 @@ def locate_wells_sensors(dic):
             get_cell_info(dic, well1ijk[0] + k * dic["noCells"][0])
             z_centers.append(dic["xyz"][2])
         for j in range(dic["wellijk"][0][1], dic["wellijkf"][0][1] + 1):
-            midpoints = z_centers - map_z(dic, j - 1)
+            midpoints = z_centers - map_z(dic, j - 1) - dic["maxelevation"]
             dic["wellkh"].append(
-                pd.Series(
-                    abs(
-                        dic["wellCoord"][0][2]
-                        - map_z(dic, dic["wellijk"][0][1] - 1)
-                        - midpoints
-                    )
-                ).argmin()
-                + 1
+                pd.Series(abs(dic["wellCoord"][0][2] - midpoints)).argmin() + 1
             )
     dic["fipnum"][
         dic["sensorijk"][0][0]
@@ -741,8 +734,8 @@ def positions(dic):
         dic[f"{names}"] = []
     if dic["grid"] == "corner-point":
         if dic["use"] == "opm":
-            dic["gridf"] = OpmGrid(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.EGRID")
-            dic["initf"] = OpmFile(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.INIT")
+            dic["gridf"] = OpmGrid(f"{dic['fol']}/flow/INITIAL.EGRID")
+            dic["initf"] = OpmFile(f"{dic['fol']}/flow/INITIAL.INIT")
             dic["no_cells"] = (
                 dic["gridf"].dimension[0]
                 * dic["gridf"].dimension[1]
@@ -753,8 +746,8 @@ def positions(dic):
             dic["d_z"] = np.array([0.0] * dic["no_cells"])
             dic["d_z"][dic["actind"]] = list(dic["initf"]["DZ"])
         else:
-            dic["gridf"] = Grid(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.EGRID")
-            dic["initf"] = ResdataFile(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.INIT")
+            dic["gridf"] = Grid(f"{dic['fol']}/flow/INITIAL.EGRID")
+            dic["initf"] = ResdataFile(f"{dic['fol']}/flow/INITIAL.INIT")
             dic["actnum"] = list(dic["gridf"].export_actnum())
             dic["no_cells"] = dic["gridf"].nx * dic["gridf"].ny * dic["gridf"].nz
             dic["actind"] = list(i for i, act in enumerate(dic["actnum"]) if act == 1)
@@ -769,9 +762,7 @@ def positions(dic):
             structured_handling_spe11a(dic)
         else:
             structured_handling_spe11bc(dic)
-    np.savetxt(
-        f"{dic['exe']}/{dic['fol']}/deck/ycenters.txt", dic["ymy_center"], fmt="%.8E"
-    )
+    np.savetxt(f"{dic['fol']}/deck/ycenters.txt", dic["ymy_center"], fmt="%.8E")
 
 
 def sensors(dic):
@@ -847,16 +838,9 @@ def wells(dic):
     if dic["spe11"] == "spe11c":
         dic["wellkh"] = []
         for j in range(dic["wellijk"][0][1], dic["wellijkf"][0][1] + 1):
-            midpoints = dic["zmz_center"] - map_z(dic, j - 1)
+            midpoints = dic["zmz_center"] - map_z(dic, j - 1) - dic["maxelevation"]
             dic["wellkh"].append(
-                pd.Series(
-                    abs(
-                        dic["wellCoord"][0][2]
-                        - map_z(dic, dic["wellijk"][0][1] - 1)
-                        - midpoints
-                    )
-                ).argmin()
-                + 1
+                pd.Series(abs(dic["wellCoord"][0][2] - midpoints)).argmin() + 1
             )
 
 
