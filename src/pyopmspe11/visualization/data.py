@@ -6,7 +6,6 @@
 Script to write the benchmark data
 """
 
-import os
 import argparse
 import warnings
 import csv
@@ -96,13 +95,12 @@ def main():
     dig = {"path": cmdargs["path"].strip()}
     dig["case"] = cmdargs["deck"].strip()
     dig["mode"] = cmdargs["generate"].strip()
-    dig["exe"] = os.getcwd()
-    dig["where"] = f"{dig['exe']}/{dig['path']}/data"
+    dig["where"] = f"{dig['path']}/data"
     dig["use"] = cmdargs["use"].strip()
     dig["nxyz"] = np.genfromtxt(
         StringIO(cmdargs["resolution"]), delimiter=",", dtype=int
     )
-    dig["sim"] = "./" + dig["path"] + "/flow/" + f"{dig['path'].upper()}"
+    dig["sim"] = dig["path"] + "/flow/" + f"{dig['path'].split('/')[-1].upper()}"
     if dig["case"] == "spe11a":
         dig["dense_t"] = (
             np.genfromtxt(StringIO(cmdargs["time"]), delimiter=",", dtype=float) * 3600
@@ -293,7 +291,9 @@ def performance(dig):
         0, dig["times"][-1], round(dig["times"][-1] / dig["sparse_t"]) + 1
     )
     with open(
-        f"{dig['path']}/flow/{dig['path'].upper()}.INFOSTEP", "r", encoding="utf8"
+        f"{dig['path']}/flow/{dig['path'].split('/')[-1].upper()}.INFOSTEP",
+        "r",
+        encoding="utf8",
     ) as file:
         for j, row in enumerate(csv.reader(file)):
             if j > 0:
@@ -1148,7 +1148,9 @@ def static_map_to_report_grid_performance_spatial(dig, dil):
     """
     dil["latest_dts"], infotimes, tsteps = [], [], []
     with open(
-        f"{dig['path']}/flow/{dig['path'].upper()}.INFOSTEP", "r", encoding="utf8"
+        f"{dig['path']}/flow/{dig['path'].split('/')[-1].upper()}.INFOSTEP",
+        "r",
+        encoding="utf8",
     ) as file:
         for j, row in enumerate(csv.reader(file)):
             if j > 0:

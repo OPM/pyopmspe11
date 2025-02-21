@@ -28,8 +28,8 @@ def simulations(dic, deck, folder, dryrun):
         flow = dic["only_flow"]
         flag = "--enable-dry-run=1"
     os.system(
-        f"{flow} --output-dir={dic['exe']}/{dic['fol']}/{folder} "
-        f"{dic['exe']}/{dic['fol']}/deck/{deck}.DATA {flag} & wait\n"
+        f"{flow} --output-dir={dic['fol']}/{folder} "
+        f"{dic['fol']}/deck/{deck}.DATA {flag} & wait\n"
     )
 
 
@@ -44,7 +44,6 @@ def plotting(dic):
         None
 
     """
-    os.chdir(f"{dic['exe']}")
     plot_exe = [
         "python3",
         f"{dic['pat']}/visualization/plotting.py",
@@ -72,7 +71,6 @@ def data(dic):
         None
 
     """
-    os.chdir(f"{dic['exe']}")
     data_exe = [
         "python3",
         f"{dic['pat']}/visualization/data.py",

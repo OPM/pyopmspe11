@@ -57,7 +57,7 @@ def safu_evaluation():
     % endfor
 
     with open(
-        "${dic['exe']}/${dic['fol']}/deck/TABLES.INC",
+        "${dic['fol']}/deck/TABLES.INC",
         "w",
         encoding="utf8",
     ) as file:

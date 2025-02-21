@@ -25,7 +25,7 @@ def initial(dic):
     mytemplate = Template(filename=f"{dic['pat']}/templates/common/grid_initial.mako")
     filledtemplate = mytemplate.render(**var)
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/GRID.INC",
+        f"{dic['fol']}/deck/GRID.INC",
         "w",
         encoding="utf8",
     ) as file:
@@ -33,9 +33,7 @@ def initial(dic):
     mytemplate = Template(filename=f"{dic['pat']}/templates/common/deck_initial.mako")
     var = {"dic": dic}
     filledtemplate = mytemplate.render(**var)
-    with open(
-        f"{dic['exe']}/{dic['fol']}/deck/INITIAL.DATA", "w", encoding="utf8"
-    ) as file:
+    with open(f"{dic['fol']}/deck/INITIAL.DATA", "w", encoding="utf8") as file:
         file.write(filledtemplate)
 
 
@@ -87,7 +85,7 @@ def write_keywords(dic):
         dic[f"{names}"].insert(0, "-- Copyright (C) 2023 NORCE")
         dic[f"{names}"].append("/")
         with open(
-            f"{dic['exe']}/{dic['fol']}/deck/{names.upper()}.INC",
+            f"{dic['fol']}/deck/{names.upper()}.INC",
             "w",
             encoding="utf8",
         ) as file:
@@ -111,7 +109,7 @@ def added_pv(dic, git):
     dic["porv"].insert(0, "-- Copyright (C) 2023 NORCE")
     dic["porv"].append("/")
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/PVBOUNDARIES.INC",
+        f"{dic['fol']}/deck/PVBOUNDARIES.INC",
         "w",
         encoding="utf8",
     ) as file:
@@ -134,7 +132,7 @@ def opm_files(dic):
     var = {"dic": dic}
     filledtemplate = mytemplate.render(**var)
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/{dic['fol'].upper()}.DATA",
+        f"{dic['fol']}/deck/{dic['fol'].split('/')[-1].upper()}.DATA",
         "w",
         encoding="utf8",
     ) as file:
@@ -150,7 +148,7 @@ def opm_files(dic):
             )
         filledtemplate = mytemplate.render(**var)
         with open(
-            f"{dic['exe']}/{dic['fol']}/deck/GRID.INC",
+            f"{dic['fol']}/deck/GRID.INC",
             "w",
             encoding="utf8",
         ) as file:
@@ -160,19 +158,19 @@ def opm_files(dic):
     )
     filledtemplate = mytemplate.render(**var)
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/saturation_functions.py",
+        f"{dic['fol']}/deck/saturation_functions.py",
         "w",
         encoding="utf8",
     ) as file:
         file.write(filledtemplate)
-    os.system(f"chmod u+x {dic['exe']}/{dic['fol']}/deck/saturation_functions.py")
+    os.system(f"chmod u+x {dic['fol']}/deck/saturation_functions.py")
     prosc = subprocess.run(
-        ["python3", f"{dic['exe']}/{dic['fol']}/deck/saturation_functions.py"],
+        ["python3", f"{dic['fol']}/deck/saturation_functions.py"],
         check=True,
     )
     if prosc.returncode != 0:
         raise ValueError(f"Invalid result: { prosc.returncode }")
-    os.system(f"rm -rf {dic['exe']}/{dic['fol']}/deck/saturation_functions.py")
+    os.system(f"rm -rf {dic['fol']}/deck/saturation_functions.py")
     inj_t = 0.0
     skip_unrst = 0
     ini_count = 0
@@ -186,7 +184,7 @@ def opm_files(dic):
             for _ in range(int(inj[0] / inj[1])):
                 times.append(f"{inj[1] + float(times[-1])}")
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/dt.txt",
+        f"{dic['fol']}/deck/dt.txt",
         "w",
         encoding="utf8",
     ) as file:
