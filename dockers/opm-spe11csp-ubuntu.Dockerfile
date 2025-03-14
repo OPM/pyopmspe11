@@ -14,10 +14,12 @@ RUN apt install -y mpi-default-bin libopm-simulators-bin
 FROM system_stage AS spe11csp_stage
 
 ENV SPE_CASE=a
+ENV INPUT_PATH=/opt/spe11csp/examples/hello_world/
+ENV CASEFILE=spe11${SPE_CASE}.txt
 
 RUN apt install -y python3 python3-venv python3-pip git
 ARG SPE11_DIR=/opt/spe11csp
-RUN git clone https://github.com/daavid00/pyopmcsp11.git ${SPE11_DIR}
+RUN git clone https://github.com/OPM/pyopmspe11.git ${SPE11_DIR}
 
 WORKDIR ${SPE11_DIR}
 RUN python3 -m venv venv
@@ -33,4 +35,4 @@ RUN pip install -r dev-requirements.txt
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 RUN update-alternatives --config python
 
-CMD ["sh", "-c", "/usr/local/bin/pyopmcsp11 -i /opt/spe11csp/examples/csp11${SPE_CASE}.txt -o output_csp11${SPE_CASE}"]
+CMD ["sh", "-c", "/usr/local/bin/pyopmspe11 -i ${INPUT_PATH}/${CASEFILE} -o output_csp11${SPE_CASE}"]
