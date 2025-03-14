@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
@@ -5,24 +7,20 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>pyopmspe11.utils.writefile module &mdash; pyopmspe11  documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Output folder" href="output_folder.html" />
+    <link rel="next" title="pyopmspe11.visualization package" href="pyopmspe11.visualization.html" />
     <link rel="prev" title="pyopmspe11.utils.runs module" href="pyopmspe11.utils.runs.html" /> 
 </head>
 
@@ -48,10 +46,13 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="related.html">Related</a></li>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a></li>
 </ul>
@@ -85,19 +86,28 @@
              
   <section id="module-pyopmspe11.utils.writefile">
 <span id="pyopmspe11-utils-writefile-module"></span><h1>pyopmspe11.utils.writefile module<a class="headerlink" href="#module-pyopmspe11.utils.writefile" title="Link to this heading"></a></h1>
-<p>Utiliy functions for necessary files and variables to run OPM Flow.</p>
+<p>Utiliy functions to write necessary files and variables</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.writefile.added_pv">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.writefile.</span></span><span class="sig-name descname"><span class="pre">added_pv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">git</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.writefile.added_pv" title="Link to this definition"></a></dt>
 <dd><p>Write the added pore volume on the boundaries</p>
+<dl>
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
+<p>git (str): Link to the pyopmspe11 GitHub repository</p>
+</dd>
+<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.writefile.initial">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.writefile.</span></span><span class="sig-name descname"><span class="pre">initial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.writefile.initial" title="Link to this definition"></a></dt>
-<dd><p>Function to run Flow to generate output files used for e.g., find cell coordinates</p>
+<dd><p>Write the initial deck to generate output files used for e.g., find cell coordinates</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters</p>
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -105,11 +115,11 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.writefile.opm_files">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.writefile.</span></span><span class="sig-name descname"><span class="pre">opm_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.writefile.opm_files" title="Link to this definition"></a></dt>
-<dd><p>Function to write opm-related files by running mako templates</p>
+<dd><p>Write opm-related files by running mako templates</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters</p>
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
 </dd>
-<dt>Returns:</dt><dd><p>dic (dict): Global dictionary with new added parameters</p>
+<dt>Returns:</dt><dd><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -117,9 +127,11 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.writefile.write_keywords">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.writefile.</span></span><span class="sig-name descname"><span class="pre">write_keywords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.writefile.write_keywords" title="Link to this definition"></a></dt>
-<dd><p>Function to write some of the used keywords and values</p>
+<dd><p>Write some of the used keywords and values for OPM Flow</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters</p>
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
 </dd>
 </dl>
 </dd></dl>
@@ -131,13 +143,13 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="pyopmspe11.utils.runs.html" class="btn btn-neutral float-left" title="pyopmspe11.utils.runs module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="output_folder.html" class="btn btn-neutral float-right" title="Output folder" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pyopmspe11.visualization.html" class="btn btn-neutral float-right" title="pyopmspe11.visualization package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, NORCE Norwegian Research Centre AS.</p>
+    <p>&#169; Copyright 2023-2025, NORCE Norwegian Research Centre AS.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

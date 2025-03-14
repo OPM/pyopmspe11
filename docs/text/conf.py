@@ -7,12 +7,12 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'pyopmspe11'
-copyright = '2023, NORCE Norwegian Research Centre AS'
+copyright = '2023-2025, NORCE Norwegian Research Centre AS'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.autodoc']
+extensions = ['sphinx.ext.autodoc', 'numpydoc', 'sphinx.ext.doctest']
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']

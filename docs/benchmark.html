@@ -1,0 +1,319 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Benchmark &mdash; pyopmspe11  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pyopmspe11 Python API" href="api.html" />
+    <link rel="prev" title="Examples" href="examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #aaaaaa" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Benchmark</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#spe11a">SPE11A</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#performance-data">Performance data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sparse-data">Sparse data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#spatial-maps">Spatial maps</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#spe11b">SPE11B</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Performance data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Sparse data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Spatial maps</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#spe11c">SPE11C</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id5">Performance data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">Sparse data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">Spatial maps</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="related.html">Related</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #aaaaaa" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyopmspe11</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Benchmark</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/benchmark.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="benchmark">
+<h1>Benchmark<a class="headerlink" href="#benchmark" title="Link to this heading"></a></h1>
+<p>All configuration files are located in the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/benchmark">benchmark</a> folder.</p>
+<section id="spe11a">
+<h2>SPE11A<a class="headerlink" href="#spe11a" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt>r1_Cart_1cm</dt><dd><p>Uniform grid of 1 cm size</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>r2_Cart_1cm_capmax2500Pa</dt><dd><p>Uniform grid of 1 cm size (maximum capillary pressure of 2500 Pa instead of 95000 Pa following the remarks in the benchmark description)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>r3_cp_1cmish_capmax2500Pa</dt><dd><p>Corner-point grid of ca. 1 cm size (maximum capillary pressure of 2500 Pa instead of 95000 Pa following the remarks in the benchmark description)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>r4_Cart_1mm_capmax2500Pa</dt><dd><p>Uniform grid of 1 mm size (maximum capillary pressure of 2500 Pa instead of 95000 Pa following the remarks in the benchmark description)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>r5_Cart_1mm_capmax2500Pa_strictol</dt><dd><p>Uniform grid of 1 mm size with stricter tolerances (maximum capillary pressure of 2500 Pa instead of 95000 Pa following the remarks in the benchmark description)</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>To run the cases in the terminal:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>r1_Cart_1cm.txt<span class="w"> </span>-o<span class="w"> </span>r1_Cart_1cm<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">1</span><span class="w"> </span>-r<span class="w"> </span><span class="m">280</span>,1,120<span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.16666666666666666
+pyopmspe11<span class="w"> </span>-i<span class="w"> </span>r2_Cart_1cm_capmax2500Pa.txt<span class="w"> </span>-o<span class="w"> </span>r2_Cart_1cm_capmax2500Pa<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">1</span><span class="w"> </span>-r<span class="w"> </span><span class="m">280</span>,1,120<span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.16666666666666666
+pyopmspe11<span class="w"> </span>-i<span class="w"> </span>r3_cp_1cmish_capmax2500Pa.txt<span class="w"> </span>-o<span class="w"> </span>r3_cp_1cmish_capmax2500Pa<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">1</span><span class="w"> </span>-r<span class="w"> </span><span class="m">280</span>,1,120<span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.16666666666666666
+pyopmspe11<span class="w"> </span>-i<span class="w"> </span>r4_Cart_1mm_capmax2500Pa.txt<span class="w"> </span>-o<span class="w"> </span>r4_Cart_1mm_capmax2500Pa<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">1</span><span class="w"> </span>-r<span class="w"> </span><span class="m">280</span>,1,120<span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.16666666666666666
+pyopmspe11<span class="w"> </span>-i<span class="w"> </span>r5_Cart_1mm_capmax2500Pa_strictol.txt<span class="w"> </span>-o<span class="w"> </span>r5_Cart_1mm_capmax2500Pa_strictol<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">1</span><span class="w"> </span>-r<span class="w"> </span><span class="m">280</span>,1,120<span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.16666666666666666
+</pre></div>
+</div>
+<p>As mentioned in the <a class="reference external" href="https://onepetro.org/SJ/article/29/05/2507/540636/The-11th-Society-of-Petroleum-Engineers">CSP description</a>, using the maximum value of 2500 Pa instead of
+95000 Pa does not significantly impact the results (comparing r1 and r2), and this choice also reduces the simulation time. In addition, the corner-point grid results (r3) compare
+very well to the fine-scale simulations (r4). Unfortunately, the fine-scale simulation with stricer tolerances (r5) finished after the benchmark submission deadline; nevertheless,
+we include it here for comparison to the other cases. While the case with stricter tolerances (r5) improves the mass issue compared to the previous case (r4), the simulation time
+increased, which highlights the trade-off between simulation time and accuracy (i.e., which is relevant for optimization studies which require to run many simulations).</p>
+<section id="performance-data">
+<h3>Performance data<a class="headerlink" href="#performance-data" title="Link to this heading"></a></h3>
+<figure class="align-default">
+<img alt="_images/benchmark_spe11a_performance.png" src="_images/benchmark_spe11a_performance.png" />
+</figure>
+</section>
+<section id="sparse-data">
+<h3>Sparse data<a class="headerlink" href="#sparse-data" title="Link to this heading"></a></h3>
+<figure class="align-default">
+<img alt="_images/benchmark_spe11a_sparse_data.png" src="_images/benchmark_spe11a_sparse_data.png" />
+</figure>
+</section>
+<section id="spatial-maps">
+<h3>Spatial maps<a class="headerlink" href="#spatial-maps" title="Link to this heading"></a></h3>
+<figure class="align-default">
+<img alt="_images/massfracta.png" src="_images/massfracta.png" />
+</figure>
+</section>
+</section>
+<section id="spe11b">
+<h2>SPE11B<a class="headerlink" href="#spe11b" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt>r1_Cart_10m</dt><dd><p>Uniform grid of 10 m size (1 m dx size on left and right boundaries)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>r2_cp_10mish</dt><dd><p>Corner-point grid of ca. 10 m size (1 m dx size on left and right boundaries)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>r3_cp_10mish_convective</dt><dd><p>Corner-point grid of ca. 10 m size (1 m dx size on left and right boundaries) using a subgrid model for convective mixing for facies 2 and 5.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>r4_Cart_1m</dt><dd><p>Uniform grid of 1 m size</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>To run the cases in the terminal:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>r1_Cart_10m.txt<span class="w"> </span>-o<span class="w"> </span>r1_Cart_10m<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">840</span>,1,120<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.1
+pyopmspe11<span class="w"> </span>-i<span class="w"> </span>r2_cp_10mish.txt<span class="w"> </span>-o<span class="w"> </span>r2_cp_10mish<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">840</span>,1,120<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.1
+pyopmspe11<span class="w"> </span>-i<span class="w"> </span>r3_cp_10mish_convective.txt<span class="w"> </span>-o<span class="w"> </span>r3_cp_10mish_convective<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">840</span>,1,120<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.1
+pyopmspe11<span class="w"> </span>-i<span class="w"> </span>r4_Cart_1m.txt<span class="w"> </span>-o<span class="w"> </span>r4_Cart_1m<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">840</span>,1,120<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.1
+</pre></div>
+</div>
+<p>For the box A quantities, the convective model results (r3) compare very well to the fine-scale simulations (r4), which runs ca. 500 times faster. Details on the convective model
+can be found in <a class="reference external" href="https://link.springer.com/article/10.1007/s11242-024-02141-5">Mykkeltvedt et al. (2025)</a>. For the implementation in OPM Flow of this model, it is work in progress to handle better the zones in the geological model where
+dissolve CO2 accumulates.</p>
+<section id="id2">
+<h3>Performance data<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<figure class="align-default">
+<img alt="_images/benchmark_spe11b_performance.png" src="_images/benchmark_spe11b_performance.png" />
+</figure>
+</section>
+<section id="id3">
+<h3>Sparse data<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<figure class="align-default">
+<img alt="_images/benchmark_spe11b_sparse_data.png" src="_images/benchmark_spe11b_sparse_data.png" />
+</figure>
+</section>
+<section id="id4">
+<h3>Spatial maps<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<figure class="align-default">
+<img alt="_images/massfractb.png" src="_images/massfractb.png" />
+</figure>
+</section>
+</section>
+<section id="spe11c">
+<h2>SPE11C<a class="headerlink" href="#spe11c" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt>r1_Cart_50m-50m-10m</dt><dd><p>Grid of [50, 50, 10] m size (1 m dx size on left and right boundaries and 1 m dy size on back and front boundaries)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>r2_cp_50m-50m-8mish</dt><dd><p>Corner-point grid of [50, 50, mean ca. 8] m size (1 m dx size on left and right boundaries and 1 m dy size on back and front boundaries)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>r3_cp_50m-50m-8mish_convective</dt><dd><p>Corner-point grid of [50, 50, mean ca. 8] m size (1 m dx size on left and right boundaries and 1 m dy size on back and front boundaries) using the convective model for facies 2 and 5.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>r4_cp_8m-8mish-8mish</dt><dd><p>Corner-point grid of [8, mean ca. 8, mean ca. 8] m size (1 m dx size on left and right boundaries and 1 m dy size on back and front boundaries)</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>To run the cases in the terminal:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>r1_Cart_50m-50m-10m.txt<span class="w"> </span>-o<span class="w"> </span>r1_Cart_50m-50m-10m<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">168</span>,100,120<span class="w"> </span>-t<span class="w"> </span><span class="m">0</span>,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000<span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.1
+pyopmspe11<span class="w"> </span>-i<span class="w"> </span>r2_cp_50m-50m-8mish.txt<span class="w"> </span>-o<span class="w"> </span>r2_cp_50m-50m-8mish<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">168</span>,100,120<span class="w"> </span>-t<span class="w"> </span><span class="m">0</span>,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000<span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.1
+pyopmspe11<span class="w"> </span>-i<span class="w"> </span>r3_cp_50m-50m-8mish_convective.txt<span class="w"> </span>-o<span class="w"> </span>r3_cp_50m-50m-8mish_convective<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">168</span>,100,120<span class="w"> </span>-t<span class="w"> </span><span class="m">0</span>,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000<span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.1
+pyopmspe11<span class="w"> </span>-i<span class="w"> </span>r4_cp_8m-8mish-8mish.txt<span class="w"> </span>-o<span class="w"> </span>r4_cp_8m-8mish-8mish<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-r<span class="w"> </span><span class="m">168</span>,100,120<span class="w"> </span>-t<span class="w"> </span><span class="m">0</span>,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000<span class="w"> </span>-w<span class="w"> </span><span class="m">0</span>.1<span class="w"> </span>-u<span class="w"> </span>opm
+</pre></div>
+</div>
+<p>To run the case with more than 100 million cells (r4), it required improvements in the OPM Flow simulator (e.g., <a class="reference external" href="https://github.com/OPM/opm-grid/pull/738">METIS support</a>), as well as in the <strong>pyopmspe11</strong> pre- and postprocessing functionality
+(and of course a big computer, the <a class="reference external" href="https://www.norceresearch.no">NORCE</a> HPC cluster). See <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/docs/text/figs/pyopmspe11c100Mcells.gif">this gif</a> for visualization in <a class="reference external" href="https://www.paraview.org">ParaView</a> of the CO2 molar fraction (liquid phase) over time.</p>
+<section id="id5">
+<h3>Performance data<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<figure class="align-default">
+<img alt="_images/benchmark_spe11c_performance.png" src="_images/benchmark_spe11c_performance.png" />
+</figure>
+</section>
+<section id="id6">
+<h3>Sparse data<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<figure class="align-default">
+<img alt="_images/benchmark_spe11c_sparse_data.png" src="_images/benchmark_spe11c_sparse_data.png" />
+</figure>
+</section>
+<section id="id7">
+<h3>Spatial maps<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<figure class="align-default">
+<img alt="_images/massfractc.png" src="_images/massfractc.png" />
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To show the high resolution results, all spatial maps (spe11a, spe11b, and spe11c) corresponds to the actual simulation grid (not the benchmark reporting grid), and can be generated by typing in the terminal:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>plopm<span class="w"> </span>-v<span class="w"> </span>xco2l<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;r1_Cart_1cm/flow/R1_CART_1CM r2_Cart_1cm_capmax2500Pa/flow/R2_CART_1CM_CAPMAX2500PA r3_cp_1cmish_capmax2500Pa/flow/R3_CP_1CMISH_CAPMAX2500PA r4_Cart_1mm_capmax2500Pa/flow/R4_CART_1MM_CAPMAX2500PA&#39;</span><span class="w"> </span>-dpi<span class="w"> </span><span class="m">300</span><span class="w"> </span>-c<span class="w"> </span>cet_diverging_protanopic_deuteranopic_bwy_60_95_c32<span class="w"> </span>-cnum<span class="w"> </span><span class="m">3</span><span class="w"> </span>-xlnum<span class="w"> </span><span class="m">8</span><span class="w"> </span>-clabel<span class="w"> </span><span class="s1">&#39;SPE11A: CO$_2$ mass fraction (liquid phase) after 1 day&#39;</span><span class="w"> </span>-d<span class="w"> </span><span class="m">16</span>,6.5<span class="w"> </span>-t<span class="w"> </span><span class="s2">&quot;r1 Cart 1cm  r2 Cart 1cm capmax 2500 Pa  r3 cp 1cmish capmax 2500 Pa  r4 Cart 1mm capmax 2500 Pa&quot;</span><span class="w"> </span>-yunits<span class="w"> </span>cm<span class="w"> </span>-xunits<span class="w"> </span>cm<span class="w"> </span>-yformat<span class="w"> </span>.0f<span class="w"> </span>-xformat<span class="w"> </span>.0f<span class="w"> </span>-r<span class="w"> </span><span class="m">29</span><span class="w"> </span>-save<span class="w"> </span>massfracta<span class="w"> </span>-cformat<span class="w"> </span>.2e<span class="w"> </span>-mask<span class="w"> </span>satnum<span class="w"> </span>-maskthr<span class="w"> </span>7e-5<span class="w"> </span>-suptitle<span class="w"> </span><span class="m">0</span><span class="w"> </span>-subfigs<span class="w"> </span><span class="m">2</span>,2<span class="w"> </span>-cbsfax<span class="w"> </span><span class="m">0</span>.35,0.97,0.3,0.02<span class="w"> </span>-delax<span class="w"> </span><span class="m">1</span>
+plopm<span class="w"> </span>-v<span class="w"> </span>xco2l<span class="w"> </span>-i<span class="w"> </span><span class="s2">&quot;r1_Cart_10m/flow/R1_CART_10M r2_cp_10mish/flow/R2_CP_10MISH r3_cp_10mish_convective/flow/R3_CP_10MISH_CONVECTIVE r4_Cart_1m/flow/R4_CART_1M&quot;</span><span class="w"> </span>-dpi<span class="w"> </span><span class="m">300</span><span class="w"> </span>-c<span class="w"> </span>cet_diverging_protanopic_deuteranopic_bwy_60_95_c32<span class="w"> </span>-cnum<span class="w"> </span><span class="m">3</span><span class="w"> </span>-xlnum<span class="w"> </span><span class="m">8</span><span class="w"> </span>-clabel<span class="w"> </span><span class="s1">&#39;SPE11B: CO$_2$ mass fraction (liquid phase) after 500 years&#39;</span><span class="w"> </span>-d<span class="w"> </span><span class="m">16</span>,3<span class="w"> </span>-t<span class="w"> </span><span class="s2">&quot;r1 Cart 10m  r2 cp 10mish  r3 cp 10mish convective  r4 Cart 1m&quot;</span><span class="w"> </span>-yunits<span class="w"> </span>km<span class="w"> </span>-xunits<span class="w"> </span>km<span class="w"> </span>-yformat<span class="w"> </span>.1f<span class="w"> </span>-xformat<span class="w"> </span>.1f<span class="w"> </span>-r<span class="w"> </span><span class="m">98</span><span class="w"> </span>-save<span class="w"> </span>massfractb<span class="w"> </span>-cformat<span class="w"> </span>.2e<span class="w"> </span>-mask<span class="w"> </span>satnum<span class="w"> </span>-maskthr<span class="w"> </span>5e-3<span class="w"> </span>-suptitle<span class="w"> </span><span class="m">0</span><span class="w"> </span>-subfigs<span class="w"> </span><span class="m">2</span>,2<span class="w"> </span>-cbsfax<span class="w"> </span><span class="m">0</span>.35,0.97,0.3,0.02<span class="w"> </span>-delax<span class="w"> </span><span class="m">1</span>
+plopm<span class="w"> </span>-v<span class="w"> </span>xco2l<span class="w"> </span>-i<span class="w"> </span><span class="s2">&quot;r1_Cart_50m-50m-10m/flow/R1_CART_50M-50M-10M r2_cp_50m-50m-8mish/flow/R2_CP_50M-50M-8MISH r3_cp_50m-50m-8mish_convective/flow/R3_CP_50M-50M-8MISH_CONVECTIVE r4_cp_8m-8mish-8mish/flow/R4_CP_8M-8MISH-8MISH&quot;</span><span class="w"> </span>-dpi<span class="w"> </span><span class="m">300</span><span class="w"> </span>-c<span class="w"> </span>cet_diverging_protanopic_deuteranopic_bwy_60_95_c32<span class="w"> </span>-cnum<span class="w"> </span><span class="m">3</span><span class="w"> </span>-xlnum<span class="w"> </span><span class="m">8</span><span class="w"> </span>-clabel<span class="w"> </span><span class="s1">&#39;SPE11C: CO$_2$ mass fraction (liquid phase) after 1000 years (y=2.5 [km])&#39;</span><span class="w"> </span>-d<span class="w"> </span><span class="m">16</span>,3<span class="w"> </span>-t<span class="w"> </span><span class="s2">&quot;r1 Cart [50m,50m,10m]  r2 cp [50m,50m,8mish]  r3 cp [50m,50m,8mish] convective  r4 cp [8m,8mish,8mish]&quot;</span><span class="w"> </span>-yunits<span class="w"> </span>km<span class="w"> </span>-xunits<span class="w"> </span>km<span class="w"> </span>-yformat<span class="w"> </span>.1f<span class="w"> </span>-xformat<span class="w"> </span>.1f<span class="w"> </span>-r<span class="w"> </span><span class="m">27</span><span class="w"> </span>-save<span class="w"> </span>massfractc<span class="w"> </span>-cformat<span class="w"> </span>.2e<span class="w"> </span>-mask<span class="w"> </span>satnum<span class="w"> </span>-maskthr<span class="w"> </span>1e-4<span class="w"> </span>-suptitle<span class="w"> </span><span class="m">0</span><span class="w"> </span>-subfigs<span class="w"> </span><span class="m">2</span>,2<span class="w"> </span>-cbsfax<span class="w"> </span><span class="m">0</span>.30,0.97,0.4,0.02<span class="w"> </span>-delax<span class="w"> </span><span class="m">1</span><span class="w"> </span>-s<span class="w"> </span><span class="s1">&#39;,51, ,51, ,51, ,304,&#39;</span><span class="w"> </span>-u<span class="w"> </span>opm
+</pre></div>
+</div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You can install <a class="reference external" href="https://github.com/cssr-tools/plopm">plopm</a> by executing in the terminal: pip install git+https://github.com/cssr-tools/plopm.git.</p>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="examples.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="pyopmspe11 Python API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, NORCE Norwegian Research Centre AS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

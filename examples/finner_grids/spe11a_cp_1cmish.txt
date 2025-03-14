@@ -1,14 +1,14 @@
 """Set the full path to the flow executable and flags"""
-mpirun -np 33 flow --tolerance-mb=1e-7 --linear-solver=cprw --newton-min-iterations=1 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations
+mpirun -np 33 flow --newton-min-iterations=1 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations
 
 """Set the model parameters"""
 spe11a master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
-complete gaswater #Name of the co2 model (immiscible or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
+complete gaswater #Name of the co2 model (immiscible, convective, or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
 corner-point      #Type of grid (cartesian, tensor, or corner-point)
 2.8 0.01 1.2      #Length, width, and depth [m]
-280               #If cartesian, number of x cells [-]; otherwise, variable array of x-refinment
-1                 #If cartesian, number of y cells [-]; otherwise, variable array of y-refinment [-] (for spe11c)
-20,7,1,5,6,3,8,8,12,8,10,10,6,16,6,28,28,1  #If cartesian, number of z cells [-]; if tensor, variable array of z-refinment; if corner-point, fix array of z-refinment (18 entries)
+280               #If cartesian, number of x cells [-]; otherwise, variable array of x-refinement
+1                 #If cartesian, number of y cells [-]; otherwise, variable array of y-refinement [-] (for spe11c)
+20,7,1,5,6,3,8,8,12,8,10,10,6,16,6,28,28,1  #If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (18 entries)
 20 20             #Temperature bottom and top rig [C]
 1.2 110000 1      #Datum [m], pressure at the datum [Pa], and multiplier for the permeability in the z direction [-] 
 1e-9 1.6e-5       #Diffusion (in liquid and gas) [m^2/s]

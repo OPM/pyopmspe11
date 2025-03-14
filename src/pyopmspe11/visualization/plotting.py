@@ -1,13 +1,14 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
-# pylint: disable=R0912
+# pylint: disable=R0912, R0801
 
-""""
+""" "
 Script to plot the results
 """
 
 import argparse
 import os
+import warnings
 import math as mt
 import numpy as np
 import matplotlib
@@ -16,25 +17,12 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 font = {"family": "normal", "weight": "normal", "size": 20}
 matplotlib.rc("font", **font)
-plt.rcParams.update(
-    {
-        "text.usetex": True,
-        "font.family": "monospace",
-        "legend.columnspacing": 0.9,
-        "legend.handlelength": 3.5,
-        "legend.fontsize": 15,
-        "lines.linewidth": 4,
-        "axes.titlesize": 20,
-        "axes.grid": True,
-        "figure.figsize": (10, 5),
-    }
-)
 
 SECONDS_IN_YEAR = 31536000.0
 
 
 def main():
-    """Postprocessing"""
+    """Generate figures"""
     parser = argparse.ArgumentParser(description="Main script to plot the results")
     parser.add_argument(
         "-p",
@@ -62,17 +50,53 @@ def main():
         "'dense_performance', 'dense_sparse', 'performance_sparse', "
         "'dense_performance-spatial', 'dense_performance_sparse', or 'all'",
     )
+    parser.add_argument(
+        "-s",
+        "--showpywarn",
+        default=0,
+        help="Set to 1 to show Python warnings ('0' by default).",
+    )
+    parser.add_argument(
+        "-l",
+        "--latex",
+        default=1,
+        help="Set to 0 to not use LaTeX formatting ('1' by default).",
+    )
     cmdargs = vars(parser.parse_known_args()[0])
+    if int(cmdargs["showpywarn"]) != 1:  # Show or hidde python warnings
+        warnings.warn = lambda *args, **kwargs: None
     dic = {"folders": [cmdargs["folder"].strip()]}
     dic["case"] = cmdargs["deck"].strip()
     dic["generate"] = cmdargs["generate"].strip()
     dic["compare"] = cmdargs["compare"]  # No empty, then the create compare folder
-    dic["exe"] = os.getcwd()  # Path to the folder of the configuration file
+    dic["latex"] = int(cmdargs["latex"])  # LaTeX formatting
     plot_results(dic)
 
 
 def plot_results(dic):
-    """Make the figures"""
+    """
+    Make some figures using the csv files from the benchmark data
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        None
+
+    """
+    plt.rcParams.update(
+        {
+            "text.usetex": dic["latex"] not in [0],
+            "font.family": "monospace",
+            "legend.columnspacing": 0.9,
+            "legend.handlelength": 3.5,
+            "legend.fontsize": 15,
+            "lines.linewidth": 4,
+            "axes.titlesize": 20,
+            "axes.grid": True,
+            "figure.figsize": (10, 5),
+        }
+    )
     dic["colors"] = [
         "#1f77b4",
         "#ff7f0e",
@@ -85,6 +109,7 @@ def plot_results(dic):
         "#bcbd22",
         "#17becf",
         "r",
+        "k",
     ]
     dic["linestyle"] = [
         "--",
@@ -113,11 +138,11 @@ def plot_results(dic):
             [name for name in os.listdir(".") if os.path.isdir(name)]
         )
         if "compare" not in dic["folders"]:
-            os.system(f"mkdir {dic['exe']}/compare")
+            os.system("mkdir compare")
         else:
             dic["folders"].remove("compare")
     else:
-        dic["where"] = f"{dic['exe']}/{dic['folders'][0]}/figures"
+        dic["where"] = f"{dic['folders'][0]}/figures"
     if dic["case"] == "spe11a":
         dic["tlabel"] = "h"
         dic["dims"] = 2
@@ -160,7 +185,16 @@ def plot_results(dic):
 
 
 def performance(dic):
-    """time solver plots"""
+    """
+    Make the plots related to the performance data (e.g., number of Newton iterations)
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        None
+
+    """
     for kind in ["", "_detailed"]:
         dic["fig"] = plt.figure(figsize=(40, 75))
         plots = [
@@ -179,7 +213,7 @@ def performance(dic):
             axis = dic["fig"].add_subplot(9, 5, k + 1)
             for nfol, fol in enumerate(dic["folders"]):
                 csv = np.genfromtxt(
-                    f"{dic['exe']}/{fol}/data/{dic['case']}_performance_time_series{kind}.csv",
+                    f"{fol}/data/{dic['case']}_performance_time_series{kind}.csv",
                     delimiter=",",
                     skip_header=1,
                 )
@@ -195,7 +229,7 @@ def performance(dic):
                     f"sum={sum((csv[i][9] for i in range(csv.shape[0]))):.3e}",
                 ]
                 times = [csv[i][0] / dic["tscale"] for i in range(csv.shape[0])]
-                labels[k] += f" ({fol})"
+                labels[k] += f" ({fol.split('/')[-1]})"
                 axis.step(
                     times,
                     [csv[i][k + 1] for i in range(csv.shape[0])],
@@ -213,7 +247,16 @@ def performance(dic):
 
 
 def sparse_data(dic):
-    """time plots"""
+    """
+    Make the plots related to the sparse data (e.g., pressure in sensors over time)
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        None
+
+    """
     dic["fig"] = plt.figure(figsize=(25, 40))
     plots = ["sensors", "boxA", "boxB", "boxC", "facie 1"]
     ylabels = ["Presure [Pa]", "Mass [kg]", "Mass [kg]", "Area [m$^2$]", "Mass [kg]"]
@@ -237,14 +280,14 @@ def sparse_data(dic):
             axis.text(
                 0.7,
                 0.15 + nfol * 0.05,
-                fol,
+                dic["folders"][-1 - nfol].split("/")[-1],
                 transform=axis.transAxes,
                 verticalalignment="top",
                 bbox=dic["props"],
-                color=dic["colors"][nfol],
+                color=dic["colors"][len(dic["folders"]) - nfol - 1],
             )
             csv = np.genfromtxt(
-                f"{dic['exe']}/{fol}/data/{dic['case']}_time_series.csv",
+                f"{fol}/data/{dic['case']}_time_series.csv",
                 delimiter=",",
                 skip_header=1,
             )
@@ -283,10 +326,19 @@ def sparse_data(dic):
 
 
 def generate_grid(dic):
-    """Create the grid and load the times"""
+    """
+    Create the plotting grid and load the times
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
     dic["files"] = [
         f
-        for f in os.listdir(f"{dic['exe']}/{dic['folders'][0]}/data")
+        for f in os.listdir(f"{dic['folders'][0]}/data")
         if f.endswith(f"{dic['tlabel']}.csv")
     ]
     dic["times"] = np.array(
@@ -297,7 +349,7 @@ def generate_grid(dic):
     dic["sort_ind"] = np.argsort(dic["times"])
     dic["times"] = [dic["times"][i] for i in dic["sort_ind"]]
     csv = np.genfromtxt(
-        f"{dic['exe']}/{dic['folders'][0]}/data/{dic['files'][0]}",
+        f"{dic['folders'][0]}/data/{dic['files'][0]}",
         delimiter=",",
         skip_header=1,
     )
@@ -330,11 +382,20 @@ def generate_grid(dic):
         "turbo",
         "coolwarm",
     ]
-    return dic
 
 
 def handle_kind(dic, kind):
-    """Identify between dense and performance-spatial"""
+    """
+    Identify between dense and performance-spatial
+
+    Args:
+        dic (dict): Global dictionary\n
+        kind (list): Strings with the type of data to generate
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
     if kind == "":
         dic["quantities"] = [
             "pressure",
@@ -370,30 +431,46 @@ def handle_kind(dic, kind):
         ]
         dic["units"] = [r"[m$^3$]", "[-]", "[-]", "[-]", "[-]", "[-]"]
         dic["allplots"] = [0, 0, -1, -1, -1, -1]
-    return dic
 
 
 def ini_quantity_plot(dic):
-    """Initialize the figure"""
+    """
+    Initialized the size of the Figure according to the spe case
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
     if dic["case"] != "spe11a":
         dic["fig"] = plt.figure(figsize=(50, 3 * len(dic["ptimes"])))
     else:
         dic["fig"] = plt.figure(figsize=(45, 6.5 * len(dic["ptimes"])), dpi=80)
     for name in ["plot", "min", "max", "sum"]:
         dic[f"{name}"] = []
-    return dic
 
 
 def dense_data(dic):
-    """2D spatial maps"""
-    dic = generate_grid(dic)
+    """
+    Make the plots related to the dense data (e.g., saturation maps)
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        None
+
+    """
+    generate_grid(dic)
     for kind in dic["kinds"]:
-        dic = handle_kind(dic, kind)
+        handle_kind(dic, kind)
         for k, quantity in enumerate(dic["quantities"]):
             dic["ptimes"] = dic["times"][: dic["allplots"][k]] + [dic["times"][-1]]
-            dic = ini_quantity_plot(dic)
+            ini_quantity_plot(dic)
             csv = np.genfromtxt(
-                f"{dic['exe']}/{dic['folders'][0]}/data/{dic['case']}{kind}_spatial_map_"
+                f"{dic['folders'][0]}/data/{dic['case']}{kind}_spatial_map_"
                 + f"0{dic['tlabel']}.csv",
                 delimiter=",",
                 skip_header=1,
@@ -405,7 +482,7 @@ def dense_data(dic):
             )
             for tmap in dic["ptimes"]:
                 csv = np.genfromtxt(
-                    f"{dic['exe']}/{dic['folders'][0]}/data/{dic['case']}{kind}_spatial_map_"
+                    f"{dic['folders'][0]}/data/{dic['case']}{kind}_spatial_map_"
                     + f"{tmap}{dic['tlabel']}.csv",
                     delimiter=",",
                     skip_header=1,
@@ -449,7 +526,7 @@ def dense_data(dic):
                         f"{time}{dic['tlabel']}, {quantity} "
                         + dic["units"][k]
                         + f"(sum={dic['sum'][j]:.1E})"
-                        + f", {dic['case']} ({dic['folders'][0]})"
+                        + f", {dic['case']} ({dic['folders'][0].split('/')[-1]})"
                     )
                 else:
                     if dic["allplots"][k] == -1:
@@ -461,7 +538,7 @@ def dense_data(dic):
                         + f"{quantity} "
                         + dic["units"][k]
                         + f"(min={dic['min'][j]:.1E}, max={dic['max'][j]:.1E})"
-                        + f", {dic['case']} ({dic['folders'][0]})"
+                        + f", {dic['case']} ({dic['folders'][0].split('/')[-1]})"
                     )
                 axis.axis("scaled")
                 divider = make_axes_locatable(axis)

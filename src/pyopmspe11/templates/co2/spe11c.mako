@@ -10,7 +10,11 @@ EQLDIMS
 /
 
 TABDIMS
+% if dic['model'] != 'convective':
 ${dic['noSands']} 1* ${dic['tabdims']} /
+% else:
+${dic['noSands']} ${dic['noSands']} ${dic['tabdims']} /
+% endif
 
 % if dic["co2store"] == "gaswater":
 WATER
@@ -19,7 +23,7 @@ OIL
 % endif
 GAS
 CO2STORE
-% if dic['model'] == 'complete':
+% if dic['model'] != 'immiscible':
 % if dic["co2store"] == "gaswater":
 DISGASW
 VAPWAT
@@ -46,7 +50,6 @@ WELLDIMS
 ${len(dic['wellijk'])} ${1+max(dic['wellijkf'][0][1]-dic['wellijk'][0][1], dic['wellijkf'][1][1]-dic['wellijk'][1][1])} ${len(dic['wellijk'])} ${len(dic['wellijk'])} /
 % endif
 
-UNIFIN
 UNIFOUT
 ----------------------------------------------------------------------------
 GRID
@@ -73,12 +76,12 @@ PERMZ ${dic["kzMult"]} /
 INCLUDE
 'PORO.INC' /
 
-% if dic['model'] == 'complete':
+% if dic['model'] != 'immiscible':
 INCLUDE
 'THCONR.INC' /
 % endif
 
-% if dic['model'] == 'complete':
+% if dic['model'] != 'immiscible':
 BCCON 
 1 1 ${dic['noCells'][0]} 1 ${dic['noCells'][1]} 1 1 Z-/
 2 1 ${dic['noCells'][0]} 1 ${dic['noCells'][1]} ${dic['noCells'][2]} ${dic['noCells'][2]} Z/
@@ -100,31 +103,48 @@ PROPS
 INCLUDE
 'TABLES.INC' /
 
-% if dic['model'] == 'complete':
+% if dic['model'] != 'immiscible':
 % if dic["co2store"] == "gaswater":
 % if (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
 DIFFAWAT
+% if dic['model'] != 'convective':
 ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
-
+% else:
+% for i in range(dic['noSands']):
+${dic["diffusion"][0]} ${dic["diffusion"][0]} /
+% endfor
+% endif
 DIFFAGAS
+% if dic['model'] != 'convective':
 ${dic["diffusion"][1]} ${dic["diffusion"][1]} /
+% else:
+% for i in range(dic['noSands']): 
+${dic["diffusion"][1]} ${dic["diffusion"][1]} /
+% endfor
+% endif
 % endif
 % else:
 % if (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
 DIFFC
+% if dic['model'] != 'convective':
 18.01528E-3 44.018E-3 ${dic["diffusion"][1]} ${dic["diffusion"][1]} ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
+% else:
+% for i in range(dic['noSands']): 
+18.01528E-3 44.018E-3 ${dic["diffusion"][1]} ${dic["diffusion"][1]} ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
+% endfor
+% endif
 % endif
 % endif
 
 SPECROCK
 % for i in range(dic['noSands']): 
-${dic["temperature"][1]} ${dic["rockExtra"][0]}
-${dic["temperature"][0]} ${dic["rockExtra"][0]} /
+${dic["temperature"][1]} ${dic["rockExtra"][0]*dic["rockExtra"][1]}
+${dic["temperature"][0]} ${dic["rockExtra"][0]*dic["rockExtra"][1]} /
 % endfor
-% endif
 
 THCO2MIX
 NONE NONE NONE /
+% endif
 ----------------------------------------------------------------------------
 REGIONS
 ----------------------------------------------------------------------------
@@ -132,6 +152,13 @@ INCLUDE
 'SATNUM.INC' /
 INCLUDE
 'FIPNUM.INC' /
+
+% if dic['model'] == 'convective':
+COPY
+SATNUM PVTNUM /
+/
+%endif
+
 ----------------------------------------------------------------------------
 SOLUTION
 ---------------------------------------------------------------------------
@@ -142,10 +169,10 @@ RPTRST
 % if dic['model'] == 'immiscible': 
 'BASIC=2' FLOWS FLORES DEN/
 % else:
-'BASIC=2' DEN ${'PCGW' if dic["co2store"] == "gaswater" else ''}/
+'BASIC=2' DEN ${'PCGW' if dic["co2store"] == "gaswater" else ''} ${'RSWSAT' if dic["version"] == "master" and dic["co2store"] == "gaswater" else ''} ${'RSSAT' if dic["version"] == "master" and dic["co2store"] == "gasoil" else ''}/
 % endif
 
-% if dic['model'] == 'complete':
+% if dic['model'] != 'immiscible':
 % if dic["co2store"] == "gasoil":
 RSVD
 0   0.0
@@ -193,10 +220,22 @@ RPTRST
 % if dic['model'] == 'immiscible': 
 'BASIC=2' FLOWS FLORES DEN/
 % else:
-'BASIC=2' DEN RESIDUAL ${'PCGW' if dic["co2store"] == "gaswater" else ''}/
+'BASIC=2' DEN RESIDUAL ${'PCGW' if dic["co2store"] == "gaswater" else ''} ${'RSWSAT' if dic["version"] == "master" and dic["co2store"] == "gaswater" else ''} ${'RSSAT' if dic["version"] == "master" and dic["co2store"] == "gasoil" else ''}/
 % endif
 
-% if dic['model'] == 'complete':
+% if dic['model'] == 'convective':
+DRSDTCON
+-1.0 /
+0.04 0.34 3.0e-09 ALL /
+-1.0 /
+-1.0 /
+0.04 0.34 3.0e-09 ALL /
+-1.0 /
+-1.0 /
+/
+%endif
+
+% if dic['model'] != 'immiscible':
 BCPROP
 1 THERMAL /
 2 THERMAL /
@@ -228,7 +267,7 @@ COMPDAT
 
 % for j in range(len(dic['inj'])):
 TUNING
-1e-2 ${dic['inj'][j][2] / 86400.} 1e-10 2* 1e-12/
+${dic["tim_aft_eve"] if dic["tim_aft_eve"] else 1e-2} ${dic['inj'][j][2] / 86400.} 1e-10 2* 1e-12 ${dic["sol_res_fac"]}/
 /
 /
 % if max(dic['radius']) > 0:
@@ -261,7 +300,7 @@ ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]+k} ${dic['wellijk'][i][2] if i==1
 % endfor
 /
 % endif
-% if dic['model'] == 'complete' and max(dic['radius']) > 0:
+% if dic['model'] != 'immiscible' and max(dic['radius']) > 0:
 WTEMP
 % for i in range(len(dic['wellijk'])):
 % if dic['radius'][i] > 0:

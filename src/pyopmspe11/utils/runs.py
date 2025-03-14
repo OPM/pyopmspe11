@@ -2,37 +2,48 @@
 # SPDX-License-Identifier: MIT
 
 """
-Utiliy functions to run the studies.
+Utiliy functions for the simulations, data processing, and plotting.
 """
 import os
 import subprocess
 
 
-def simulations(dic, deck, folder):
+def simulations(dic, deck, folder, dryrun):
     """
-    Function to run OPM Flow
+    Run OPM Flow
 
     Args:
-        dic (dict): Global dictionary with required parameters
-        deck: Name of the input deck
-        folder: destination of the output files
+        dic (dict): Global dictionary\n
+        deck (str): Name of the input deck\n
+        folder (str): Name of destination of the output files\n
+        dryrun (bool): Run a dry simulation for the initial files.
+
+    Returns:
+        None
 
     """
+    flag = ""
+    flow = dic["flow"]
+    if dryrun:
+        flow = dic["only_flow"]
+        flag = "--enable-dry-run=1"
     os.system(
-        f"{dic['flow']} --output-dir={dic['exe']}/{dic['fol']}/{folder} "
-        f"{dic['exe']}/{dic['fol']}/deck/{deck}.DATA  & wait\n"
+        f"{flow} --output-dir={dic['fol']}/{folder} "
+        f"{dic['fol']}/deck/{deck}.DATA {flag} & wait\n"
     )
 
 
 def plotting(dic):
     """
-    Function to generate and run the plotting.py file
+    Generate the figures
 
     Args:
-        dic (dict): Global dictionary with required parameters
+        dic (dict): Global dictionary
+
+    Returns:
+        None
 
     """
-    os.chdir(f"{dic['exe']}")
     plot_exe = [
         "python3",
         f"{dic['pat']}/visualization/plotting.py",
@@ -40,6 +51,8 @@ def plotting(dic):
         "-d " + f"{dic['spe11']}",
         "-g " + f"{dic['generate']}",
         "-r " + f"{dic['resolution']}",
+        "-s " + f"{dic['showpywarn']}",
+        "-l " + f"{dic['latex']}",
     ]
     print(" ".join(plot_exe))
     prosc = subprocess.run(plot_exe, check=True)
@@ -49,13 +62,15 @@ def plotting(dic):
 
 def data(dic):
     """
-    Function to write the sparse and dense benchmark data
+    Write the benchmark data
 
     Args:
-        dic (dict): Global dictionary with required parameters
+        dic (dict): Global dictionary
+
+    Returns:
+        None
 
     """
-    os.chdir(f"{dic['exe']}")
     data_exe = [
         "python3",
         f"{dic['pat']}/visualization/data.py",
@@ -66,6 +81,7 @@ def data(dic):
         "-t " + f"{dic['time_data']}",
         "-w " + f"{dic['dt_data']}",
         "-u " + f"{dic['use']}",
+        "-s " + f"{dic['showpywarn']}",
     ]
     print(" ".join(data_exe))
     prosc = subprocess.run(data_exe, check=True)

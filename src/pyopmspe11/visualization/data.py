@@ -1,13 +1,13 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
-# pylint: disable=C0302, R0912, R0914
+# pylint: disable=C0302, R0912, R0914, R0801
 
-""""
+""" "
 Script to write the benchmark data
 """
 
-import os
 import argparse
+import warnings
 import csv
 from io import StringIO
 from shapely.geometry import Polygon
@@ -15,6 +15,9 @@ from rtree import index
 import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
+from resdata.grid import Grid
+from resdata.resfile import ResdataFile
+from resdata.summary import Summary
 
 try:
     from opm.io.ecl import EclFile as OpmFile
@@ -22,22 +25,17 @@ try:
     from opm.io.ecl import ERst as OpmRestart
     from opm.io.ecl import ESmry as OpmSummary
 except ImportError:
-    print("The Python package opm was not found, using resdata")
-try:
-    from resdata.grid import Grid
-    from resdata.resfile import ResdataFile
-    from resdata.summary import Summary
-except ImportError:
-    print("The resdata Python package was not found, using opm")
+    pass
 
 GAS_DEN_REF = 1.86843
 WAT_DEN_REF = 998.108
 SECONDS_IN_YEAR = 31536000
 KMOL_TO_KG = 1e3 * 0.044
+SGAS_THR = 0.097
 
 
 def main():
-    """Postprocessing"""
+    """Postprocessing to generate the benchmark data"""
     parser = argparse.ArgumentParser(description="Main script to process the data")
     parser.add_argument(
         "-p",
@@ -60,7 +58,7 @@ def main():
     parser.add_argument(
         "-t",
         "--time",
-        default="25",
+        default="24",
         help="If one number, time step for the spatial maps (spe11a [h]; spe11b/c "
         "[y]) ('24' by default); otherwise, times separated by commas.",
     )
@@ -85,17 +83,24 @@ def main():
         default="resdata",
         help="Using the 'resdata' or python package (resdata by default).",
     )
+    parser.add_argument(
+        "-s",
+        "--showpywarn",
+        default=0,
+        help="Set to 1 to show Python warnings ('0' by default).",
+    )
     cmdargs = vars(parser.parse_known_args()[0])
+    if int(cmdargs["showpywarn"]) != 1:  # Show or hidde python warnings
+        warnings.warn = lambda *args, **kwargs: None
     dig = {"path": cmdargs["path"].strip()}
     dig["case"] = cmdargs["deck"].strip()
     dig["mode"] = cmdargs["generate"].strip()
-    dig["exe"] = os.getcwd()
-    dig["where"] = f"{dig['exe']}/{dig['path']}/data"
+    dig["where"] = f"{dig['path']}/data"
     dig["use"] = cmdargs["use"].strip()
     dig["nxyz"] = np.genfromtxt(
         StringIO(cmdargs["resolution"]), delimiter=",", dtype=int
     )
-    dig["sim"] = "./" + dig["path"] + "/flow/" + f"{dig['path'].upper()}"
+    dig["sim"] = dig["path"] + "/flow/" + f"{dig['path'].split('/')[-1].upper()}"
     if dig["case"] == "spe11a":
         dig["dense_t"] = (
             np.genfromtxt(StringIO(cmdargs["time"]), delimiter=",", dtype=float) * 3600
@@ -115,11 +120,11 @@ def main():
         dig["dims"][1] = 5000.0
     dig["nocellsr"] = dig["nxyz"][0] * dig["nxyz"][1] * dig["nxyz"][2]
     dig["noxzr"] = dig["nxyz"][0] * dig["nxyz"][2]
-    dig = read_times(dig)
+    read_times(dig)
     if dig["use"] == "opm":
-        dig = read_opm(dig)
+        read_opm(dig)
     else:
-        dig = read_resdata(dig)
+        read_resdata(dig)
     if dig["mode"] in [
         "performance",
         "all",
@@ -154,7 +159,16 @@ def main():
 
 
 def read_times(dig):
-    """Get the time for injection and restart number"""
+    """
+    Get the time for injection and restart number
+
+    Args:
+        dig (dict): Global dictionary
+
+    Returns:
+        dig (dict): Modified global dictionary
+
+    """
     with open(f"{dig['path']}/deck/dt.txt", "r", encoding="utf8") as file:
         for i, value in enumerate(csv.reader(file)):
             if i == 0:
@@ -165,11 +179,19 @@ def read_times(dig):
                 dig["times"] = list(
                     np.genfromtxt(StringIO(value[0]), delimiter=" ", dtype=float)
                 )
-    return dig
 
 
 def read_resdata(dig):
-    """Using resdata"""
+    """
+    Read the simulation files using resdata
+
+    Args:
+        dig (dict): Global dictionary
+
+    Returns:
+        dig (dict): Modified global dictionary
+
+    """
     dig["unrst"] = ResdataFile(f"{dig['sim']}.UNRST")
     dig["init"] = ResdataFile(f"{dig['sim']}.INIT")
     dig["egrid"] = Grid(f"{dig['sim']}.EGRID")
@@ -198,16 +220,24 @@ def read_resdata(dig):
         dig["egrid"].nz,
     ]
     dig["noxz"] = dig["egrid"].nx * dig["egrid"].nz
-    return dig
 
 
 def read_opm(dig):
-    """Using opm"""
+    """
+    Read the simulation files using OPM
+
+    Args:
+        dig (dict): Global dictionary
+
+    Returns:
+        dig (dict): Modified global dictionary
+
+    """
     dig["unrst"] = OpmRestart(f"{dig['sim']}.UNRST")
     dig["init"] = OpmFile(f"{dig['sim']}.INIT")
     dig["egrid"] = OpmGrid(f"{dig['sim']}.EGRID")
     dig["smspec"] = OpmSummary(f"{dig['sim']}.SMSPEC")
-    dig = opm_files(dig)
+    opm_files(dig)
     dig["actind"] = list(i for i, porv in enumerate(dig["porv"]) if porv > 0)
     dig["porva"] = np.array([porv for porv in dig["porv"] if porv > 0])
     dig["nocellst"], dig["nocellsa"] = (
@@ -222,11 +252,19 @@ def read_opm(dig):
         dig["egrid"].dimension[2],
     ]
     dig["noxz"] = dig["egrid"].dimension[0] * dig["egrid"].dimension[2]
-    return dig
 
 
 def opm_files(dig):
-    """Extract the data from the opm output files"""
+    """
+    Read some of the data from the simulation output files
+
+    Args:
+        dig (dict): Global dictionary
+
+    Returns:
+        dig (dict): Modified global dictionary
+
+    """
     dig["norst"] = len(dig["unrst"].report_steps)
     if dig["unrst"].count("WAT_DEN", 0):
         dig["watDen"], dig["r_s"], dig["r_v"] = "wat_den", "rsw", "rvw"
@@ -235,17 +273,27 @@ def opm_files(dig):
         dig["watDen"], dig["r_s"], dig["r_v"] = "oil_den", "rs", "rv"
         dig["bpr"] = "BPR"
     dig["porv"] = np.array(dig["init"]["PORV"])
-    return dig
 
 
 def performance(dig):
-    """Write the performance within the benchmark format"""
+    """
+    Generate the performance within the benchmark format
+
+    Args:
+        dig (dict): Global dictionary
+
+    Returns:
+        None
+
+    """
     dil = {"infosteps": []}
     dil["times_data"] = np.linspace(
         0, dig["times"][-1], round(dig["times"][-1] / dig["sparse_t"]) + 1
     )
     with open(
-        f"{dig['path']}/flow/{dig['path'].upper()}.INFOSTEP", "r", encoding="utf8"
+        f"{dig['path']}/flow/{dig['path'].split('/')[-1].upper()}.INFOSTEP",
+        "r",
+        encoding="utf8",
     ) as file:
         for j, row in enumerate(csv.reader(file)):
             if j > 0:
@@ -281,9 +329,6 @@ def performance(dig):
     )
     dil["nress"] = np.array([infostep[8] for infostep in dil["infosteps"]])
     dil["tlinsols"] = np.array([infostep[4] for infostep in dil["infosteps"]])
-    # dil["runtimes"] = np.array(
-    #     [sum(infostep[i] for i in [2, 3, 4, 5, 6]) for infostep in dil["infosteps"]]
-    # )
     dil["liniters"] = np.array([infostep[10] for infostep in dil["infosteps"]])
     dil["nliters"] = np.array([infostep[9] for infostep in dil["infosteps"]])
     dil["tsteps"] = np.array(
@@ -319,7 +364,20 @@ def performance(dig):
 
 
 def write_performance(dig, dil, interp_fgip, tcpu, infotimes):
-    """Write the performance data"""
+    """
+    Write the performance data
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary\n
+        interp_fgip (object): Interpolator (time) for the CO2 mass\n
+        tcpu (array): Floats with the simulation times\n
+        infotimes (array): Floats with the simulation time steps
+
+    Returns:
+        None
+
+    """
     dil["text"] = []
     dil["text"].append(
         "# t [s], tstep [s], fsteps [-], mass [kg], dof [-], nliter [-], "
@@ -332,23 +390,43 @@ def write_performance(dig, dil, interp_fgip, tcpu, infotimes):
             + "0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00"
         )
         dil["times_data"] = np.delete(dil["times_data"], 0)
+    freq = [0]
     for j, time in enumerate(dil["times_data"]):
-        ind = j == dil["map_info"]
         itd = j == dil["map_sum"]
-        dil["tstep"] = np.sum(dil["tsteps"][ind])
-        if dil["tstep"] > 0:
-            dil["tstep"] /= np.sum(ind)
+        if sum(tcpu[itd]) == 0:
+            freq.append(freq[-1] + 1)
+        else:
+            freq.append(0)
+    freq.pop(0)
+    weig = []
+    quan = 1
+    for val in freq[::-1]:
+        if val > 0 and quan == 1:
+            quan = val + 1.0
+        elif val == 0:
+            weig.append(quan)
+            quan = 1.0
+            continue
+        weig.append(quan)
+    weig = weig[::-1]
+    for j, time in enumerate(dil["times_data"]):
+        if freq[j] == 0:
+            ind = j == dil["map_info"]
+            itd = j == dil["map_sum"]
+            dil["tstep"] = np.sum(dil["tsteps"][ind])
+            if dil["tstep"] > 0:
+                dil["tstep"] /= np.sum(ind)
         dil["text"].append(
             f"{time:.3e}, "
-            + f"{dil['tstep']:.3e}, "
-            + f"{np.sum(dil['fsteps'][ind]):.3e}, "
+            + f"{dil['tstep']/weig[j]:.3e}, "
+            + f"{np.sum(dil['fsteps'][ind])/weig[j]:.3e}, "
             + f"{interp_fgip(time):.3e}, "
             + f"{dig['dof'] * dig['nocellsa']:.3e}, "
-            + f"{np.sum(dil['nliters'][ind]):.3e}, "
-            + f"{np.sum(dil['nress'][ind]):.3e}, "
-            + f"{np.sum(dil['liniters'][ind]):.3e}, "
-            + f"{np.sum(tcpu[itd]):.3e}, "
-            + f"{np.sum(dil['tlinsols'][ind]):.3e}"
+            + f"{np.sum(dil['nliters'][ind])/weig[j]:.3e}, "
+            + f"{np.sum(dil['nress'][ind])/weig[j]:.3e}, "
+            + f"{np.sum(dil['liniters'][ind])/weig[j]:.3e}, "
+            + f"{np.sum(tcpu[itd])/weig[j]:.3e}, "
+            + f"{np.sum(dil['tlinsols'][ind])/weig[j]:.3e}"
         )
     with open(
         f"{dig['where']}/{dig['case']}_performance_time_series.csv",
@@ -386,7 +464,17 @@ def write_performance(dig, dil, interp_fgip, tcpu, infotimes):
 
 
 def create_from_summary(dig, dil):
-    """Use the summary arrays for the sparse data interpolation"""
+    """
+    Use the summary arrays for the sparse data interpolation
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary
+
+    Returns:
+        dil (dict): Modified local dictionary
+
+    """
     ind, names, i_jk = 0, [], []
     for key in dig["smspec"].keys():
         if key[0 : len(dig["bpr"])] == dig["bpr"] and "," in key[len(dig["bpr"]) + 1 :]:
@@ -408,22 +496,26 @@ def create_from_summary(dig, dil):
             pop2 -= dig["unrst"]["PCGW", 0][dil["fipnum"].index(9)]
         dil["pop1"] = [pop1 * 1.0e5] + list(dig["smspec"][names[sort[0]]] * 1.0e5)  # Pa
         dil["pop2"] = [pop2 * 1.0e5] + list(dig["smspec"][names[sort[1]]] * 1.0e5)  # Pa
-        for i in [2, 4, 5, 8]:
+        for i in dil["fip_diss_a"]:
             dil["moba"] += dig["smspec"][f"RGKDM:{i}"] * KMOL_TO_KG
             dil["imma"] += dig["smspec"][f"RGKDI:{i}"] * KMOL_TO_KG
             dil["dissa"] += dig["smspec"][f"RWCD:{i}"] * KMOL_TO_KG
-        for i in [5, 8]:
+        for i in dil["fip_seal_a"]:
             dil["seala"] += (
                 dig["smspec"][f"RWCD:{i}"]
                 + dig["smspec"][f"RGKDM:{i}"]
                 + dig["smspec"][f"RGKDI:{i}"]
             ) * KMOL_TO_KG
-        for i in [3, 6]:
+        for i in dil["fip_diss_b"]:
             dil["mobb"] += dig["smspec"][f"RGKDM:{i}"] * KMOL_TO_KG
             dil["immb"] += dig["smspec"][f"RGKDI:{i}"] * KMOL_TO_KG
             dil["dissb"] += dig["smspec"][f"RWCD:{i}"] * KMOL_TO_KG
-        for key in ["RWCD:6", "RGKDM:6", "RGKDI:6"]:
-            dil["sealb"] += dig["smspec"][key] * KMOL_TO_KG
+        for i in dil["fip_seal_b"]:
+            dil["sealb"] += (
+                dig["smspec"][f"RWCD:{i}"]
+                + dig["smspec"][f"RGKDM:{i}"]
+                + dig["smspec"][f"RGKDI:{i}"]
+            ) * KMOL_TO_KG
         dil["sealt"] = dil["seala"] + dil["sealb"]
         for name in ["RWCD", "RGKDM", "RGKDI"]:
             dil["sealt"] += (
@@ -436,22 +528,31 @@ def create_from_summary(dig, dil):
                 + dig["smspec"]["RGKDI:10"]
             ) * KMOL_TO_KG
             dil["sealt"] += sealbound
-            dil["boundtot"] = (
-                sealbound
-                + (
-                    dig["smspec"]["RWCD:11"]
-                    + dig["smspec"]["RGKDM:11"]
-                    + dig["smspec"]["RGKDI:11"]
-                )
-                * KMOL_TO_KG
-            )
+            dil["boundtot"] = sealbound
+            for i in dil["fip_bound_t"]:
+                dil["boundtot"] += (
+                    dig["smspec"][f"RWCD:{i}"]
+                    + dig["smspec"][f"RGKDM:{i}"]
+                    + dig["smspec"][f"RGKDI:{i}"]
+                ) * KMOL_TO_KG
     else:
-        dil = resdata_summary(dig, dil, names, sort)
-    return dil
+        resdata_summary(dig, dil, names, sort)
 
 
 def resdata_summary(dig, dil, names, sort):
-    """Using resdata"""
+    """
+    Read the summary arrays using resdata
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary\n
+        names (list): Strings with the sensors ijk locations\n
+        sort (list): Integers with the right order for the sensors
+
+    Returns:
+        dil (dict): Modified local dictionary
+
+    """
     pop1 = dig["unrst"]["PRESSURE"][0][dil["fipnum"].index(8)]
     pop2 = dig["unrst"]["PRESSURE"][0][dil["fipnum"].index(9)]
     if dig["unrst"].has_kw("PCGW"):
@@ -463,22 +564,26 @@ def resdata_summary(dig, dil, names, sort):
     dil["pop2"] = [pop2 * 1.0e5] + list(
         dig["smspec"][names[sort[1]]].values * 1.0e5
     )  # Pa
-    for i in [2, 4, 5, 8]:
+    for i in dil["fip_diss_a"]:
         dil["moba"] += dig["smspec"][f"RGKDM:{i}"].values * KMOL_TO_KG
         dil["imma"] += dig["smspec"][f"RGKDI:{i}"].values * KMOL_TO_KG
         dil["dissa"] += dig["smspec"][f"RWCD:{i}"].values * KMOL_TO_KG
-    for i in [5, 8]:
+    for i in dil["fip_seal_a"]:
         dil["seala"] += (
             dig["smspec"][f"RWCD:{i}"].values
             + dig["smspec"][f"RGKDM:{i}"].values
             + dig["smspec"][f"RGKDI:{i}"].values
         ) * KMOL_TO_KG
-    for i in [3, 6]:
+    for i in dil["fip_diss_b"]:
         dil["mobb"] += dig["smspec"][f"RGKDM:{i}"].values * KMOL_TO_KG
         dil["immb"] += dig["smspec"][f"RGKDI:{i}"].values * KMOL_TO_KG
         dil["dissb"] += dig["smspec"][f"RWCD:{i}"].values * KMOL_TO_KG
-    for key in ["RWCD:6", "RGKDM:6", "RGKDI:6"]:
-        dil["sealb"] += dig["smspec"][key].values * KMOL_TO_KG
+    for i in dil["fip_seal_b"]:
+        dil["sealb"] += (
+            dig["smspec"][f"RWCD:{i}"].values
+            + dig["smspec"][f"RGKDM:{i}"].values
+            + dig["smspec"][f"RGKDI:{i}"].values
+        ) * KMOL_TO_KG
     dil["sealt"] = dil["seala"] + dil["sealb"]
     for name in ["RWCD", "RGKDM", "RGKDI"]:
         dil["sealt"] += (
@@ -491,53 +596,26 @@ def resdata_summary(dig, dil, names, sort):
             + dig["smspec"]["RGKDI:10"].values
         ) * KMOL_TO_KG
         dil["sealt"] += sealbound
-        dil["boundtot"] = (
-            sealbound
-            + (
-                dig["smspec"]["RWCD:11"].values
-                + dig["smspec"]["RGKDM:11"].values
-                + dig["smspec"]["RGKDI:11"].values
-            )
-            * KMOL_TO_KG
-        )
-    return dil
-
-
-def overlapping_c_and_facie1_contribution(dig, dil):
-    """Add the corresponding fipnum 12 contribution"""
-    if dig["use"] == "opm":
-        dil["moba"] += dig["smspec"]["RGKDM:12"] * KMOL_TO_KG
-        dil["imma"] += dig["smspec"]["RGKDI:12"] * KMOL_TO_KG
-        dil["dissa"] += dig["smspec"]["RWCD:12"] * KMOL_TO_KG
-        dil["seala"] += (
-            dig["smspec"]["RWCD:12"]
-            + dig["smspec"]["RGKDM:12"]
-            + dig["smspec"]["RGKDI:12"]
-        ) * KMOL_TO_KG
-        dil["sealt"] += (
-            dig["smspec"]["RWCD:12"]
-            + dig["smspec"]["RGKDM:12"]
-            + dig["smspec"]["RGKDI:12"]
-        ) * KMOL_TO_KG
-    else:
-        dil["moba"] += dig["smspec"]["RGKDM:12"].values * KMOL_TO_KG
-        dil["imma"] += dig["smspec"]["RGKDI:12"].values * KMOL_TO_KG
-        dil["dissa"] += dig["smspec"]["RWCD:12"].values * KMOL_TO_KG
-        dil["seala"] += (
-            dig["smspec"]["RWCD:12"].values
-            + dig["smspec"]["RGKDM:12"].values
-            + dig["smspec"]["RGKDI:12"].values
-        ) * KMOL_TO_KG
-        dil["sealt"] += (
-            dig["smspec"]["RWCD:12"].values
-            + dig["smspec"]["RGKDM:12"].values
-            + dig["smspec"]["RGKDI:12"].values
-        ) * KMOL_TO_KG
-    return dil
+        dil["boundtot"] = sealbound
+        for i in dil["fip_bound_t"]:
+            dil["boundtot"] += (
+                dig["smspec"][f"RWCD:{i}"].values
+                + dig["smspec"][f"RGKDM:{i}"].values
+                + dig["smspec"][f"RGKDI:{i}"].values
+            ) * KMOL_TO_KG
 
 
 def sparse_data(dig):
-    """Compute the quantities in boxes A, B, and C"""
+    """
+    Generate the sparse data within the benchmark format
+
+    Args:
+        dig (dict): Global dictionary
+
+    Returns:
+        None
+
+    """
     dil = {
         "times_data": np.linspace(
             0, dig["times"][-1], round(dig["times"][-1] / dig["sparse_t"]) + 1
@@ -569,39 +647,75 @@ def sparse_data(dig):
     for ent in dil["names"]:
         dil[ent] = 0.0
     dil["m_c"] = []
-    dil = create_from_summary(dig, dil)
-    if dig["case"] == "spe11c" and max(dil["fipnum"]) == 12:
-        dil = overlapping_c_and_facie1_contribution(dig, dil)
-    # Using the restart data until implemented in OPM Flow summary
-    dil = compute_m_c(dig, dil)
+    handle_fipnums(dig, dil)
+    create_from_summary(dig, dil)
+    # Using the restart data
+    compute_m_c(dig, dil)
     write_sparse_data(dig, dil)
 
 
+def handle_fipnums(dig, dil):
+    """
+    Set the fipnum groups to compute the sparse data
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary
+
+    Returns:
+        dil (dict): Modified local dictionary
+
+    """
+    dil["fip_diss_a"] = [2, 4, 5, 8]
+    dil["fip_seal_a"] = [5, 8]
+    dil["fip_diss_b"] = [3, 6]
+    dil["fip_seal_b"] = [6]
+    if dig["case"] != "spe11a":
+        dil["fip_bound_t"] = [11]
+    if dig["case"] == "spe11c":
+        dil["fip_diss_a"] += [13, 14, 17]
+        dil["fip_seal_a"] += [14]
+        dil["fip_diss_b"] += [15, 16]
+        dil["fip_seal_b"] += [16]
+        dil["fip_bound_t"] += [13, 14, 15, 16, 17]
+        if max(dil["fipnum"]) == 18:
+            dil["fip_diss_a"] += [12, 18]
+            dil["fip_seal_a"] += [12, 18]
+            dil["fip_bound_t"] += [18]
+
+
 def compute_m_c(dig, dil):
-    """Normalized total variation of the concentration field within Box C"""
-    dil["boxc"] = np.array([fip in (4, 12) for fip in dil["fipnum"]])
+    """
+    Normalized total variation of the concentration field within Box C
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary
+
+    Returns:
+        dil (dict): Modified local dictionary
+
+    """
+    dil["boxc"] = np.array([fip in (4, 12, 17, 18) for fip in dil["fipnum"]])
     dil["boxc_x"] = np.roll(dil["boxc"], 1)
     dil["boxc_y"] = np.roll(dil["boxc"], -dig["gxyz"][0])
     dil["boxc_z"] = np.roll(dil["boxc"], -dig["gxyz"][0] * dig["gxyz"][1])
-    dil = max_xcw(dig, dil)
+    max_xcw(dig, dil)
     for t_n in range(dig["no_skip_rst"] + 1, dig["norst"]):
         if dig["use"] == "opm":
-            sgas = abs(np.array(dig["unrst"]["SGAS", t_n]))
-            rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}", t_n])
             rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}", t_n])
         else:
-            sgas = abs(np.array(dig["unrst"]["SGAS"][t_n]))
-            rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}"][t_n])
             rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}"][t_n])
-        co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
-        h2o_l = (1 - sgas) * rhow * dig["porva"]
-        mliq = co2_d + h2o_l
-        xco2 = 0.0 * co2_d
-        inds = mliq > 0.0
-        xco2[inds] = np.divide(co2_d[inds], mliq[inds])
-        dil["xcw"] = xco2
-        if dil["xcw_max"] != 0:
+        dil["xcw"] = np.divide(rss, rss + WAT_DEN_REF / GAS_DEN_REF)
+        if dil["xcw_max"] > 0:
             dil["xcw"] /= dil["xcw_max"]
+        if dil["xcw_max"] == -1:
+            if dig["use"] == "opm":
+                rssat = np.array(dig["unrst"][f"{dig['r_s'].upper()}SAT", t_n])
+            else:
+                rssat = np.array(dig["unrst"][f"{dig['r_s'].upper()}SAT"][t_n])
+            x_l_co2_max = np.divide(rssat, rssat + WAT_DEN_REF / GAS_DEN_REF)
+            dil["xcw"] = np.divide(dil["xcw"], x_l_co2_max)
         if dig["case"] != "spe11c":
             dil["m_c"].append(
                 np.sum(
@@ -635,11 +749,20 @@ def compute_m_c(dig, dil):
                     )
                 )
             )
-    return dil
 
 
 def write_sparse_data(dig, dil):
-    """Routine to write the sparse data"""
+    """
+    Write the sparse data
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary
+
+    Returns:
+        None
+
+    """
     for name in dil["names"] + ["m_c"]:
         if name == "m_c":
             interp = interp1d(
@@ -690,30 +813,48 @@ def write_sparse_data(dig, dil):
 
 
 def max_xcw(dig, dil):
-    """Get the maximum CO2 mass fraction in the liquid phase"""
+    """
+    Get the maximum CO2 mass fraction in the liquid phase
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary
+
+    Returns:
+        dil (dict): Modified local dictionary
+
+    """
     dil["xcw_max"] = 0
+    if dig["use"] == "opm":
+        if dig["unrst"].count(f"{dig['r_s'].upper()}SAT", 0):
+            dil["xcw_max"] = -1
+            return
+    else:
+        if dig["unrst"].has_kw(f"{dig['r_s'].upper()}SAT"):
+            dil["xcw_max"] = -1
+            return
     for t_n in range(dig["no_skip_rst"], dig["norst"]):
         if dig["use"] == "opm":
-            sgas = abs(np.array(dig["unrst"]["SGAS", t_n]))
-            rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}", t_n])
             rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}", t_n])
         else:
-            sgas = abs(np.array(dig["unrst"]["SGAS"][t_n]))
-            rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}"][t_n])
             rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}"][t_n])
-        co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
-        h2o_l = (1 - sgas) * rhow * dig["porva"]
-        mliq = co2_d + h2o_l
-        xcw = 0.0 * co2_d
-        inds = mliq > 0.0
-        xcw[inds] = np.divide(co2_d[inds], mliq[inds])
+        xcw = np.divide(rss, rss + WAT_DEN_REF / GAS_DEN_REF)
         xcw_max = np.max(xcw[dil["boxc"]])
         dil["xcw_max"] = max(xcw_max, dil["xcw_max"])
-    return dil
 
 
 def get_corners(dig, dil):
-    """Corners from the simulation grid"""
+    """
+    Get the cell corners from the simulation grid
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary
+
+    Returns:
+        dil (dict): Modified local dictionary
+
+    """
     for i in ["x", "z"]:
         dil[f"sim{i}cent"] = [0.0] * dig["noxz"]
     with open(f"{dig['path']}/deck/centers.txt", "r", encoding="utf8") as file:
@@ -740,18 +881,23 @@ def get_corners(dig, dil):
         dil["satnum"] = list(dig["init"]["SATNUM"])
     else:
         dil["satnum"] = list(dig["init"].iget_kw("SATNUM")[0])
-    return dil
 
 
 def dense_data(dig):
     """
-    Write the quantities with the benchmark format for the dense data.
-    Still plenty of room to improve here the performance and memory usage.
+    Generate the dense data within the benchmark format
+
+    Args:
+        dig (dict): Global dictionary
+
+    Returns:
+        None
+
     """
     dil = {"rstno": []}
     for time in dig["dense_t"]:
         dil["rstno"].append(dig["times"].index(time))
-    dil = get_corners(dig, dil)
+    get_corners(dig, dil)
     dil["nrstno"] = len(dil["rstno"])
     for i, j, k in zip(["x", "y", "z"], dig["dims"], dig["nxyz"]):
         dil[f"ref{i}vert"] = np.linspace(0, j, k + 1)
@@ -795,10 +941,10 @@ def dense_data(dig):
         ).argmin()
     dig["actindr"] = []
     if max(dil["satnum"]) < 7 and dig["case"] == "spe11a":
-        dil = handle_inactive_mapping(dig, dil)
+        handle_inactive_mapping(dig, dil)
     if dig["case"] == "spe11c":
-        dil = handle_yaxis_mapping_intensive(dig, dil)
-        dil = handle_yaxis_mapping_extensive(dig, dil)
+        handle_yaxis_mapping_intensive(dig, dil)
+        handle_yaxis_mapping_extensive(dig, dil)
     if dig["mode"] == "all" or dig["mode"][:5] == "dense":
         names = ["pressure", "sgas", "xco2", "xh20", "gden", "wden", "tco2"]
         if dig["case"] != "spe11a":
@@ -806,23 +952,45 @@ def dense_data(dig):
         for i, rst in enumerate(dil["rstno"]):
             print(f"Processing dense data {i+1} out of {dil['nrstno']}")
             t_n = rst + dig["no_skip_rst"]
-            dil = generate_arrays(dig, dil, names, t_n)
-            dil = map_to_report_grid(dig, dil, names)
+            generate_arrays(dig, dil, names, t_n)
+            map_to_report_grid(dig, dil, names)
             write_dense_data(dig, dil, i)
     if dig["mode"] in ["all", "performance-spatial", "dense_performance-spatial"]:
         handle_performance_spatial(dig, dil)
 
 
 def handle_yaxis_mapping_extensive(dig, dil):
-    """Extend the indices accounting for the y direction (extensive quantities)"""
+    """
+    Extend the indices accounting for the y direction (extensive quantities)
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary
+
+    Returns:
+        dil (dict): Modified local dictionary
+
+    """
     simycent = [0.0] * dig["gxyz"][1]
     with open(f"{dig['path']}/deck/ycenters.txt", "r", encoding="utf8") as file:
         for j, row in enumerate(csv.reader(file)):
-            simycent[j] = float(row[0])
-    indy = np.array(
-        [pd.Series(np.abs(dil["refycent"] - y_c)).argmin() for y_c in simycent]
-    )
-    weights = [1.0 / (np.sum(indy == val)) for val in indy]
+            simycent[j] = float(f"{float(row[0]):.1f}")
+    simyvert = [0]
+    for ycent in simycent:
+        simyvert.append(simyvert[-1] + 2 * (ycent - simyvert[-1]))
+    weights, indy, ind = [], [], 0
+    for i, (y_i, y_f) in enumerate(zip(simyvert[:-1], simyvert[1:])):
+        if dil["refyvert"][ind + 1] <= y_i:
+            ind += 1
+        if dil["refyvert"][ind] <= y_i and y_f <= dil["refyvert"][ind + 1]:
+            indy.append(ind)
+            weights.append([1.0])
+        else:
+            indy.append(ind)
+            weights.append([])
+            weights[-1].append((dil["refyvert"][ind + 1] - y_i) / (y_f - y_i))
+            weights[-1].append((y_f - dil["refyvert"][ind + 1]) / (y_f - y_i))
+            ind += 1
     wei_inds = [[] for _ in range(dig["nocellst"])]
     for indz in range(dig["gxyz"][2]):
         i_i = dig["gxyz"][0] * (dig["gxyz"][2] - indz - 1)
@@ -834,7 +1002,7 @@ def handle_yaxis_mapping_extensive(dig, dil):
                     + int(np.floor(col[0] / dig["nxyz"][0]))
                     * dig["nxyz"][0]
                     * (dig["nxyz"][1] - 1),
-                    col[1] * weights[0],
+                    col[1] * weights[0][0],
                 ]
                 for col in row
             ]
@@ -846,17 +1014,49 @@ def handle_yaxis_mapping_extensive(dig, dil):
                 iii + dig["gxyz"][0] * (j + 1) : iii + dig["gxyz"][0] * (j + 2)
             ] = [
                 [
-                    [col[0] + (iy * dig["nxyz"][0]), col[1] * weights[j + 1]]
+                    [col[0] + (iy * dig["nxyz"][0]), col[1] * weights[j + 1][0]]
                     for col in row
                 ]
                 for row in maps
             ]
+            for weight in weights[j + 1][1:]:
+                for i, val in enumerate(
+                    wei_inds[
+                        iii + dig["gxyz"][0] * (j + 1) : iii + dig["gxyz"][0] * (j + 2)
+                    ]
+                ):
+                    if wei_inds[
+                        iii + dig["gxyz"][0] * (j + 1) : iii + dig["gxyz"][0] * (j + 2)
+                    ][i]:
+                        wei_inds[
+                            iii
+                            + dig["gxyz"][0] * (j + 1) : iii
+                            + dig["gxyz"][0] * (j + 2)
+                        ][i].append(
+                            [
+                                (
+                                    val[0][0] + dig["nxyz"][0]
+                                    if val[0][0] + dig["nxyz"][0] < dig["nocellsr"]
+                                    else val[0][0]
+                                ),
+                                weight,
+                            ]
+                        )
     dil["cell_ind"] = wei_inds
-    return dil
 
 
 def handle_yaxis_mapping_intensive(dig, dil):
-    """Extend the indices accounting for the y direction"""
+    """
+    Extend the indices accounting for the y direction
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary
+
+    Returns:
+        dil (dict): Modified local dictionary
+
+    """
     simycent = [0.0] * dig["gxyz"][1]
     with open(f"{dig['path']}/deck/ycenters.txt", "r", encoding="utf8") as file:
         for j, row in enumerate(csv.reader(file)):
@@ -883,26 +1083,44 @@ def handle_yaxis_mapping_intensive(dig, dil):
                 iii + dig["nxyz"][0] * (j + 1) : iii + dig["nxyz"][0] * (j + 2)
             ] = (iy * dig["gxyz"][0]) + values
     dil["cell_cent"] = tmp_inds
-    return dil
 
 
 def handle_inactive_mapping(dig, dil):
-    """Set to inf the inactive grid centers in the reporting grid"""
+    """
+    Set to inf the inactive grid centers in the reporting grid
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary
+
+    Returns:
+        dil (dict): Modified local dictionary
+
+    """
     for i in dig["actind"]:
         for mask in dil["cell_ind"][i]:
             dig["actindr"].append(mask[0])
     dig["actindr"] = list(dict.fromkeys(dig["actindr"]))
     allc = np.linspace(0, dig["nocellsr"] - 1, dig["nocellsr"], dtype=int)
     dig["actindr"] = np.delete(allc, dig["actindr"])
-    return dil
 
 
 def handle_performance_spatial(dig, dil):
-    """Create the performance spatial maps"""
+    """
+    Create the performance spatial maps
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary
+
+    Returns:
+        None
+
+    """
     dil["counter"] = 0.0 * np.ones(dig["nocellsr"])
     dil["pv"] = 0.0 * np.ones(dig["nocellsr"])
     dil["pv"][dig["actindr"]] = 1.0
-    dil = static_map_to_report_grid_performance_spatial(dig, dil)
+    static_map_to_report_grid_performance_spatial(dig, dil)
     names = ["co2mn", "h2omn", "co2mb", "h2omb"]
     for i, rst in enumerate(dil["rstno"]):
         print(f"Processing performance spatial {i+1} out of {dil['nrstno']}")
@@ -911,18 +1129,28 @@ def handle_performance_spatial(dig, dil):
         t_n = rst + dig["no_skip_rst"]
         if t_n > 0:
             # RESIDUAL not included in the SOLUTION deck section (substract 1)
-            dil = generate_arrays_performance_spatial(dig, dil, t_n - 1)
-        dil = map_to_report_grid_performance_spatial(
-            dig, dil, names, dil["latest_dts"][i]
-        )
+            generate_arrays_performance_spatial(dig, dil, t_n - 1)
+        map_to_report_grid_performance_spatial(dig, dil, names, dil["latest_dts"][i])
         write_dense_data_performance_spatial(dig, dil, i)
 
 
 def static_map_to_report_grid_performance_spatial(dig, dil):
-    """Map the no dynamic quantities to the reporting grid"""
+    """
+    Map the no dynamic quantities to the reporting grid
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary
+
+    Returns:
+        dil (dict): Modified local dictionary
+
+    """
     dil["latest_dts"], infotimes, tsteps = [], [], []
     with open(
-        f"{dig['path']}/flow/{dig['path'].upper()}.INFOSTEP", "r", encoding="utf8"
+        f"{dig['path']}/flow/{dig['path'].split('/')[-1].upper()}.INFOSTEP",
+        "r",
+        encoding="utf8",
     ) as file:
         for j, row in enumerate(csv.reader(file)):
             if j > 0:
@@ -983,11 +1211,21 @@ def static_map_to_report_grid_performance_spatial(dig, dil):
     for name in ["cvol", "arat"]:
         dil[f"{name}_refg"][dil[f"{name}_refg"] < 1e-12] = np.nan
     dil["ei"] = dil["pv"] > 0.0
-    return dil
 
 
 def generate_arrays_performance_spatial(dig, dil, t_n):
-    """Numpy arrays for the performance spatial data"""
+    """
+    Arrays for the performance spatial data
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary\n
+        t_n (int): Index for the number of restart file
+
+    Returns:
+        dil (dict): Modified local dictionary
+
+    """
     if dig["use"] == "opm":
         dil["co2mb_array"][dig["actind"]] = np.array(dig["unrst"]["RES_GAS", t_n + 1])
         if dig["unrst"].count("RES_WAT", t_n + 1):
@@ -1010,11 +1248,22 @@ def generate_arrays_performance_spatial(dig, dil, t_n):
     dil["h2omn_array"][dig["actind"]] = np.divide(
         np.abs(dil["h2omb_array"][dig["actind"]]), dig["porva"]
     )
-    return dil
 
 
 def map_to_report_grid_performance_spatial(dig, dil, names, d_t):
-    """Map the simulation grid to the reporting grid"""
+    """
+    Map the simulation grid to the reporting grid
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary\n
+        names (list): Strings with the quantities for the spatial maps\n
+        d_t (float): Time step size
+
+    Returns:
+        dil (dict): Modified local dictionary
+
+    """
     for name in names:
         dil[f"{name}_refg"] = np.zeros(dig["nocellsr"])
         dil[f"{name}_refg"][dig["actindr"]] = np.nan
@@ -1036,11 +1285,21 @@ def map_to_report_grid_performance_spatial(dig, dil, names, d_t):
     dil["h2omb_refg"][dil["ei"]] = d_t * np.divide(
         dil["h2omb_refg"][dil["ei"]], dil["pv"][dil["ei"]]
     )
-    return dil
 
 
 def write_dense_data_performance_spatial(dig, dil, i):
-    """Generate the cvs"""
+    """
+    Write the dense performance data
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary\n
+        i (int): Number of csv file
+
+    Returns:
+        None
+
+    """
     if dig["case"] == "spe11a":
         name_t = f"{round(dig['dense_t'][i]/3600)}h"
     else:
@@ -1108,7 +1367,19 @@ def write_dense_data_performance_spatial(dig, dil, i):
 
 
 def generate_arrays(dig, dil, names, t_n):
-    """Numpy arrays for the dense data"""
+    """
+    Arrays for the dense data
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary\n
+        names (list): Strings with the quantities for the spatial maps\n
+        t_n (int): Index for the number of restart file
+
+    Returns:
+        dil (dict): Modified local dictionary
+
+    """
     for name in names[:-1]:
         dil[f"{name}_array"] = np.zeros(dig["nocellst"])
         dil[f"{name}_refg"] = np.zeros(dig["nocellsr"])
@@ -1145,53 +1416,53 @@ def generate_arrays(dig, dil, names, t_n):
             rvv = 0.0 * rss
         if dig["case"] != "spe11a":
             dil["temp_array"][dig["actind"]] = np.array(dig["unrst"]["TEMP"][t_n])
-    co2_g = sgas * rhog * dig["porva"]
-    co2_d = rss * rhow * (1.0 - sgas) * dig["porva"] * GAS_DEN_REF / WAT_DEN_REF
-    h2o_l = (1 - sgas) * rhow * dig["porva"]
+    x_l_co2 = np.divide(rss, rss + WAT_DEN_REF / GAS_DEN_REF)
+    x_g_h2o = np.divide(rvv, rvv + GAS_DEN_REF / WAT_DEN_REF)
+    co2_g = (1 - x_g_h2o) * sgas * rhog * dig["porva"]
+    co2_d = x_l_co2 * (1 - sgas) * rhow * dig["porva"]
     dil["pressure_array"][dig["actind"]] = 1e5 * pres
-    dil["sgas_array"][dig["actind"]] = sgas
-    dil["gden_array"][dig["actind"]] = rhog * (sgas > 0.0)
+    dil["sgas_array"][dig["actind"]] = sgas * (sgas > SGAS_THR)
+    dil["gden_array"][dig["actind"]] = rhog * (sgas > SGAS_THR)
     dil["wden_array"][dig["actind"]] = rhow
+    dil["xco2_array"][dig["actind"]] = x_l_co2
+    dil["xh20_array"][dig["actind"]] = x_g_h2o * (sgas > SGAS_THR)
     dil["tco2_array"][dig["actind"]] = co2_d + co2_g
-    dil = compute_xco2(dig, dil, co2_d, h2o_l)
-    h2o_v = rvv * rhog * sgas * dig["porva"] * WAT_DEN_REF / GAS_DEN_REF
-    dil = compute_xh20(dig, dil, h2o_v, co2_g)
-    return dil
-
-
-def compute_xco2(dig, dil, co2_d, h2o_l):
-    """Compute the mass fraction of CO2 in liquid"""
-    mliq = co2_d + h2o_l
-    xco2 = 0.0 * co2_d
-    inds = mliq > 0.0
-    xco2[inds] = np.divide(co2_d[inds], mliq[inds])
-    dil["xco2_array"][dig["actind"]] = xco2
-    return dil
-
-
-def compute_xh20(dig, dil, h2o_v, co2_g):
-    """Compute the mass fraction of water in vapour"""
-    mgas = h2o_v + co2_g
-    xh20 = 0.0 * h2o_v
-    inds = mgas > 0.0
-    xh20[inds] = np.divide(h2o_v[inds], mgas[inds])
-    dil["xh20_array"][dig["actind"]] = xh20
-    return dil
 
 
 def map_to_report_grid(dig, dil, names):
-    """Map the simulation grid to the reporting grid"""
+    """
+    Map the simulation grid to the reporting grid
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary\n
+        names (list): Strings with the quantities for the spatial maps
+
+    Returns:
+        dil (dict): Modified local dictionary
+
+    """
     for i in dig["actind"]:
         for mask in dil["cell_ind"][i]:
             dil["tco2_refg"][mask[0]] += dil["tco2_array"][i] * mask[1]
     for i, ind in enumerate(dil["cell_cent"]):
         for name in names[:-1]:
             dil[f"{name}_refg"][i] = dil[f"{name}_array"][int(ind)]
-    return dil
 
 
 def write_dense_data(dig, dil, i):
-    """Map the quantities to the cells"""
+    """
+    Map the quantities to the cells
+
+    Args:
+        dig (dict): Global dictionary\n
+        dil (dict): Local dictionary\n
+        i (int): Number of csv file
+
+    Returns:
+        None
+
+    """
     name_t, text = get_header(dig, i)
     idz = 0
     for zcord in dil["refzcent"]:
@@ -1265,7 +1536,18 @@ def write_dense_data(dig, dil, i):
 
 
 def get_header(dig, i):
-    """Get the right file header"""
+    """
+    Get the right csv file header
+
+    Args:
+        dig (dict): Global dictionary\n
+        i (int): Number of csv file
+
+    Returns:
+        name_t (str): Name of the csv file\n
+        text (str): Header for the csv file
+
+    """
     if dig["case"] == "spe11a":
         name_t = f"{round(dig['dense_t'][i]/3600)}h"
         text = [

@@ -1,0 +1,38 @@
+cff-version: "1.2.0"
+authors:
+- family-names: Landa-Marbán
+  given-names: David
+  orcid: "https://orcid.org/0000-0002-3343-1005"
+- family-names: Sandve
+  given-names: Tor H.
+  orcid: "https://orcid.org/0000-0002-3267-8276"
+contact:
+- family-names: Landa-Marbán
+  given-names: David
+  orcid: "https://orcid.org/0000-0002-3343-1005"
+doi: 10.6084/m9.figshare.28284845.v1
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Landa-Marbán
+    given-names: David
+    orcid: "https://orcid.org/0000-0002-3343-1005"
+  - family-names: Sandve
+    given-names: Tor H.
+    orcid: "https://orcid.org/0000-0002-3267-8276"
+  date-published: 2025-01-30
+  doi: 10.21105/joss.07357
+  issn: 2475-9066
+  issue: 105
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 7357
+  title: "pyopmspe11: A Python framework using OPM Flow for the SPE11
+    benchmark project"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.07357"
+  volume: 10
+title: "pyopmspe11: A Python framework using OPM Flow for the SPE11
+  benchmark project"

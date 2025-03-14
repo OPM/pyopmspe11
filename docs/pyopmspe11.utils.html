@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
@@ -5,19 +7,15 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>pyopmspe11.utils package &mdash; pyopmspe11  documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -48,10 +46,13 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="related.html">Related</a></li>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a></li>
 </ul>
@@ -90,12 +91,16 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="pyopmspe11.utils.inputvalues.html">pyopmspe11.utils.inputvalues module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.inputvalues.html#pyopmspe11.utils.inputvalues.check_deck"><code class="docutils literal notranslate"><span class="pre">check_deck()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.inputvalues.html#pyopmspe11.utils.inputvalues.handle_tuning"><code class="docutils literal notranslate"><span class="pre">handle_tuning()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.inputvalues.html#pyopmspe11.utils.inputvalues.postprocesstoml"><code class="docutils literal notranslate"><span class="pre">postprocesstoml()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.inputvalues.html#pyopmspe11.utils.inputvalues.process_input"><code class="docutils literal notranslate"><span class="pre">process_input()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.inputvalues.html#pyopmspe11.utils.inputvalues.readthefirstpart"><code class="docutils literal notranslate"><span class="pre">readthefirstpart()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.inputvalues.html#pyopmspe11.utils.inputvalues.readthesecondpart"><code class="docutils literal notranslate"><span class="pre">readthesecondpart()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.inputvalues.html#pyopmspe11.utils.inputvalues.setcaseproperties"><code class="docutils literal notranslate"><span class="pre">setcaseproperties()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="pyopmspe11.utils.mapproperties.html">pyopmspe11.utils.mapproperties module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.mapproperties.html#pyopmspe11.utils.mapproperties.add_pv_fipnum_front_back"><code class="docutils literal notranslate"><span class="pre">add_pv_fipnum_front_back()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.mapproperties.html#pyopmspe11.utils.mapproperties.boxes"><code class="docutils literal notranslate"><span class="pre">boxes()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.mapproperties.html#pyopmspe11.utils.mapproperties.check_facie1"><code class="docutils literal notranslate"><span class="pre">check_facie1()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.mapproperties.html#pyopmspe11.utils.mapproperties.corner"><code class="docutils literal notranslate"><span class="pre">corner()</span></code></a></li>
@@ -110,6 +115,7 @@
 <li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.mapproperties.html#pyopmspe11.utils.mapproperties.positions"><code class="docutils literal notranslate"><span class="pre">positions()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.mapproperties.html#pyopmspe11.utils.mapproperties.refinement_z"><code class="docutils literal notranslate"><span class="pre">refinement_z()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.mapproperties.html#pyopmspe11.utils.mapproperties.sensors"><code class="docutils literal notranslate"><span class="pre">sensors()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.mapproperties.html#pyopmspe11.utils.mapproperties.set_back_front_fipnums"><code class="docutils literal notranslate"><span class="pre">set_back_front_fipnums()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.mapproperties.html#pyopmspe11.utils.mapproperties.structured_handling_spe11a"><code class="docutils literal notranslate"><span class="pre">structured_handling_spe11a()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.mapproperties.html#pyopmspe11.utils.mapproperties.structured_handling_spe11bc"><code class="docutils literal notranslate"><span class="pre">structured_handling_spe11bc()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyopmspe11.utils.mapproperties.html#pyopmspe11.utils.mapproperties.wells"><code class="docutils literal notranslate"><span class="pre">wells()</span></code></a></li>
@@ -147,7 +153,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, NORCE Norwegian Research Centre AS.</p>
+    <p>&#169; Copyright 2023-2025, NORCE Norwegian Research Centre AS.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

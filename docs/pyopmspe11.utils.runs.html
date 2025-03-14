@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
@@ -5,19 +7,15 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>pyopmspe11.utils.runs module &mdash; pyopmspe11  documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -48,10 +46,13 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="related.html">Related</a></li>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a></li>
 </ul>
@@ -85,13 +86,15 @@
              
   <section id="module-pyopmspe11.utils.runs">
 <span id="pyopmspe11-utils-runs-module"></span><h1>pyopmspe11.utils.runs module<a class="headerlink" href="#module-pyopmspe11.utils.runs" title="Link to this heading"></a></h1>
-<p>Utiliy functions to run the studies.</p>
+<p>Utiliy functions for the simulations, data processing, and plotting.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.runs.data">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.runs.</span></span><span class="sig-name descname"><span class="pre">data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.runs.data" title="Link to this definition"></a></dt>
-<dd><p>Function to write the sparse and dense benchmark data</p>
+<dd><p>Write the benchmark data</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters</p>
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -99,21 +102,26 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.runs.plotting">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.runs.</span></span><span class="sig-name descname"><span class="pre">plotting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.runs.plotting" title="Link to this definition"></a></dt>
-<dd><p>Function to generate and run the plotting.py file</p>
+<dd><p>Generate the figures</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters</p>
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.runs.simulations">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.runs.</span></span><span class="sig-name descname"><span class="pre">simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deck</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.runs.simulations" title="Link to this definition"></a></dt>
-<dd><p>Function to run OPM Flow</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters
-deck: Name of the input deck
-folder: destination of the output files</p>
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.runs.</span></span><span class="sig-name descname"><span class="pre">simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deck</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dryrun</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.runs.simulations" title="Link to this definition"></a></dt>
+<dd><p>Run OPM Flow</p>
+<dl>
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
+<p>deck (str): Name of the input deck</p>
+<p>folder (str): Name of destination of the output files</p>
+<p>dryrun (bool): Run a dry simulation for the initial files.</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -131,7 +139,7 @@ folder: destination of the output files</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, NORCE Norwegian Research Centre AS.</p>
+    <p>&#169; Copyright 2023-2025, NORCE Norwegian Research Centre AS.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

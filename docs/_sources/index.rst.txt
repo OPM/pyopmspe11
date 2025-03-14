@@ -7,10 +7,13 @@ Welcome to pyopmspe11's documentation!
    :maxdepth: 4
 
    introduction
+   installation
    configuration_file
    examples
+   benchmark
    api
    output_folder
+   contributing
    related
    about
 

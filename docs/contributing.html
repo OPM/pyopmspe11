@@ -1,0 +1,179 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contributing &mdash; pyopmspe11  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Related" href="related.html" />
+    <link rel="prev" title="Output folder" href="output_folder.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #aaaaaa" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ground-rules">Ground Rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contribute-to-the-software">Contribute to the software</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reporting-issues-or-problems">Reporting issues or problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#seek-support">Seek support</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="related.html">Related</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #aaaaaa" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyopmspe11</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Contributing</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/contributing.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="contributing">
+<h1>Contributing<a class="headerlink" href="#contributing" title="Link to this heading"></a></h1>
+<p>Contributions are more than welcome using the fork and pull request approach 🙂 (if you are not familiar with this approach,
+please visit <a class="reference external" href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests">GitHub Docs PRs</a> for an extended
+documentation about collaborating with pull request; also, looking at previous merged pull requests helps to get familiar with this).</p>
+<section id="ground-rules">
+<h2>Ground Rules<a class="headerlink" href="#ground-rules" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>We use Black code formatting</p></li>
+<li><p>We use Pylint</p></li>
+<li><p>We document our code</p></li>
+</ul>
+</section>
+<section id="contribute-to-the-software">
+<h2>Contribute to the software<a class="headerlink" href="#contribute-to-the-software" title="Link to this heading"></a></h2>
+<p>This requires a Python version of at least 3.11 (due to <a class="reference external" href="https://toml.io/en/">tomllib</a>).</p>
+<ol class="arabic">
+<li><p>Work on your own fork of the main repo</p></li>
+<li><p>In the main repo execute:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><strong>pip install -r dev-requirements.txt</strong> (this installs the <a class="reference external" href="https://github.com/cssr-tools/pyopmspe11/blob/main/dev-requirements.txt">dev-requirements.txt</a>; in addition, both opm Python and LaTeX are required, then for not macOs users run <strong>pip install opm</strong> and <strong>sudo apt-get install texlive-fonts-recommended texlive-fonts-extra dvipng cm-super</strong>, or else follow the instructions in <a class="reference external" href="https://cssr-tools.github.io/pyopmspe11/installation.html#source-build-in-macos">macOS installation</a>)</p></li>
+<li><p><strong>black src/ tests/</strong> (this formats the code)</p></li>
+<li><p><strong>pylint src/ tests/</strong> (this analyses the code, and might rise issues that need to be fixed before the pull request)</p></li>
+<li><p><strong>mypy –ignore-missing-imports src/ tests/</strong> (this is a static checker, and might rise issues that need to be fixed before the pull request)</p></li>
+<li><p><strong>pytest –cov=pyopmspe11 –cov-report term-missing tests/</strong> (this runs locally the tests in ca. 30 minutes, and might rise issues that need to be fixed before the pull request)</p></li>
+<li><p><strong>pushd docs &amp; make html</strong> (this generates the documentation, and might rise issues that need to be fixed before the pull request; if the build succeeds and if the contribution changes the documentation, then delete all content from the <a class="reference external" href="https://github.com/cssr-tools/pyopmspe11/tree/main/docs">docs</a> folder except <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/docs/Makefile">Makefile</a>, <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/docs/text">text</a>, and <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/docs/.nojekyll">.nojekyll</a>, after copy all contents from the docs/_build/html/ folder, and finally paste them in the <a class="reference external" href="https://github.com/cssr-tools/pyopmspe11/tree/main/docs">docs</a> folder)</p></li>
+</ol>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>See the <a class="reference external" href="https://github.com/cssr-tools/pyopmspe11/blob/main/.github/workflows/CI.yml">CI.yml</a> script and the <a class="reference external" href="https://github.com/cssr-tools/pyopmspe11/actions">Actions</a> for installation of pyopmspe11, OPM Flow (binary packages), and dependencies, as well as the execution of the six previous steps in Ubuntu 24.10 using Python3.11.</p>
+</div>
+</div></blockquote>
+</li>
+<li><p>Squash your commits into a single commit (see this <a class="reference external" href="https://gist.github.com/lpranam/4ae996b0a4bc37448dc80356efbca7fa">nice tutorial</a> if you are not familiar with this)</p></li>
+<li><p>Push your commit and make a pull request</p></li>
+<li><p>The maintainers will review the pull request, and if the contribution is accepted, then it will be merge to the main repo</p></li>
+</ol>
+</section>
+<section id="reporting-issues-or-problems">
+<h2>Reporting issues or problems<a class="headerlink" href="#reporting-issues-or-problems" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Issues or problems can be raised by creating a <a class="reference external" href="https://github.com/cssr-tools/pyopmspe11/issues">new issue</a> in the repository GitHub page (if you are not familiar with this approach, please visit <a class="reference external" href="https://docs.github.com/en/issues/tracking-your-work-with-issues">GitHub Docs Issues</a>).</p></li>
+<li><p>We will try to answer as soon as possible, but also any user is more than welcome to answer.</p></li>
+</ol>
+</section>
+<section id="seek-support">
+<h2>Seek support<a class="headerlink" href="#seek-support" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>The preferred approach to seek support is to raise an Issue as described in the previous lines.</p></li>
+<li><p>We will try to answer as soon as possible, but also any user is more than welcome to answer.</p></li>
+</ol>
+<ul class="simple">
+<li><p>An alternative approach is to send an email to any of the <a class="reference external" href="https://github.com/cssr-tools/pyopmspe11/blob/main/pyproject.toml">mantainers</a>.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="output_folder.html" class="btn btn-neutral float-left" title="Output folder" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="related.html" class="btn btn-neutral float-right" title="Related" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, NORCE Norwegian Research Centre AS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

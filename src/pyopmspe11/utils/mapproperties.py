@@ -1,42 +1,40 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
-# pylint: disable=C0302, R0914
+# pylint: disable=C0302, R0914, R0915
 
 """
-Utiliy function for the grid and finding the wells i,j, and k ids.
+Utiliy function for the grid and locations in the geological models.
 """
 
 import csv
 import numpy as np
 import pandas as pd
 from shapely.geometry import Polygon
+from resdata.resfile import ResdataFile
+from resdata.grid import Grid
 
 try:
     from opm.io.ecl import EGrid as OpmGrid
     from opm.io.ecl import EclFile as OpmFile
 except ImportError:
-    print("The opm Python package was not found, using resdata")
-try:
-    from resdata.resfile import ResdataFile
-    from resdata.grid import Grid
-except ImportError:
-    print("The resdata Python package was not found, using opm")
+    pass
 
 
 def grid(dic):
     """
-    Function to handle grid types
+    Handle the different grid types (Cartesian, tensor, and corner-point grids)
 
     Args:
-        dic (dict): Global dictionary with required parameters
+        dic (dict): Global dictionary
 
     Returns:
-        dic (dict): Global dictionary with new added parameters
+        dic (dict): Modified global dictionary
 
     """
     if dic["grid"] == "corner-point":
-        dic = corner(dic)
+        corner(dic)
     elif dic["grid"] == "cartesian":
+        dic["dsize"] = [1.0 * dic["dims"][i] / dic["noCells"][i] for i in range(3)]
         for i, name in enumerate(["xmx", "ymy", "zmz"]):
             dic[f"{name}"] = np.linspace(0, dic["dims"][i], dic["noCells"][i] + 1)
     else:
@@ -61,22 +59,26 @@ def grid(dic):
                 dic["xmx"], len(dic["xmx"]) - 1, dic["xmx"][-1] - dic["widthBuffer"]
             )
             dic["noCells"][0] += 2
+        if dic["spe11"] == "spe11c" and 1.1 * dic["widthBuffer"] < dic["ymy"][1]:
+            dic["ymy"] = np.insert(dic["ymy"], 1, dic["widthBuffer"])
+            dic["ymy"] = np.insert(
+                dic["ymy"], len(dic["ymy"]) - 1, dic["ymy"][-1] - dic["widthBuffer"]
+            )
+            dic["noCells"][1] += 2
         for name, size in zip(["xmx", "ymy", "zmz"], ["dx", "dy", "dz"]):
             dic[f"{name}_center"] = (dic[f"{name}"][1:] + dic[f"{name}"][:-1]) / 2.0
             dic[f"{size}"] = dic[f"{name}"][1:] - dic[f"{name}"][:-1]
 
-    return dic
-
 
 def structured_handling_spe11a(dic):
     """
-    Function to locate sand and well positions in the tensor/cartesian grid
+    Locate the geological positions in the tensor/cartesian grid for spe11a
 
     Args:
-        dic (dict): Global dictionary with required parameters
+        dic (dict): Global dictionary
 
     Returns:
-        dic (dict): Global dictionary with new added parameters
+        dic (dict): Modified global dictionary
 
     """
     sensor1, sensor2, centers, corners = [], [], [], []
@@ -97,18 +99,14 @@ def structured_handling_spe11a(dic):
                 + (dic["zmz_center"][k] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
             )
             dic["satnum"].append(dic["ids_gmsh"][fgl][0])
-            dic = boxes(
-                dic, dic["xmx_center"][i], dic["zmz_center"][k], i, dic["satnum"][-1]
-            )
-            dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
-            dic["poro"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1])
+            boxes(dic, dic["xmx_center"][i], dic["zmz_center"][k], i, dic["satnum"][-1])
+            dic["permx"].append(f"{dic['rock'][int(dic['ids_gmsh'][fgl][0]) - 1][0]}")
+            dic["poro"].append(f"{dic['rock'][int(dic['ids_gmsh'][fgl][0]) - 1][1]}")
             dic["disperc"].append(
                 f"{dic['dispersion'][int(dic['ids_gmsh'][fgl][0])-1]}"
             )
             centers.append(
-                str([dic["xmx_center"][i], dic["ymy_center"][0], dic["zmz_center"][k]])[
-                    1:-1
-                ]
+                f"{dic['xmx_center'][i]}, {dic['ymy_center'][0]}, {dic['zmz_center'][k]}"
             )
             corners.append(
                 f"{dic['xmx'][i]}, {dic['dims'][2] -dic['zmz'][k]}, {dic['xmx'][i+1]}, "
@@ -120,35 +118,34 @@ def structured_handling_spe11a(dic):
     dic["pop2"] = pd.Series(sensor2).argmin()
     dic["fipnum"][dic["pop1"]] = "8"
     dic["fipnum"][dic["pop2"]] = "9"
-    dic = sensors(dic)
-    dic = wells(dic)
+    sensors(dic)
+    wells(dic)
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/centers.txt",
+        f"{dic['fol']}/deck/centers.txt",
         "w",
         encoding="utf8",
     ) as file:
         file.write("\n".join(centers))
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/corners.txt",
+        f"{dic['fol']}/deck/corners.txt",
         "w",
         encoding="utf8",
     ) as file:
         file.write("\n".join(corners))
-    return dic
 
 
 def structured_handling_spe11bc(dic):
     """
-    Function to locate sand and well positions in the tensor/cartesian grid
+    Locate the geological positions in the tensor/cartesian grid for the spe11b/c
 
     Args:
-        dic (dict): Global dictionary with required parameters
+        dic (dict): Global dictionary
 
     Returns:
-        dic (dict): Global dictionary with new added parameters
+        dic (dict): Modified global dictionary
 
     """
-    sensor1, sensor2, centers, corners = [], [], [], []
+    sensor1, sensor2, centers, corners, pv_l = [], [], [], [], 0
     for k in range(dic["noCells"][2]):
         for i in range(dic["noCells"][0]):
             fgl = pd.Series(
@@ -171,14 +168,12 @@ def structured_handling_spe11bc(dic):
             if dic["spe11"] == "spe11c":
                 z_c -= map_z(dic, 0)
             dic["satnum"].append(dic["ids_gmsh"][fgl][0])
-            dic = boxes(dic, dic["xmx_center"][i], z_c, i, dic["satnum"][-1])
-            dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
-            poro = dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1]
+            boxes(dic, dic["xmx_center"][i], z_c, i, dic["satnum"][-1])
+            dic["permx"].append(f"{dic['rock'][int(dic['ids_gmsh'][fgl][0]) - 1][0]}")
+            poro = f"{dic['rock'][int(dic['ids_gmsh'][fgl][0]) - 1][1]}"
             dic["poro"].append(poro)
             pv = float(poro) * (dic["pvAdded"] + dic["widthBuffer"])
-            dic["thconr"].append(
-                f"{dic['rockCond'][int(dic['ids_gmsh'][fgl][0])-1][0]}"
-            )
+            dic["thconr"].append(f"{dic['rockCond'][int(dic['ids_gmsh'][fgl][0])-1]}")
             dic["disperc"].append(
                 f"{dic['dispersion'][int(dic['ids_gmsh'][fgl][0])-1]}"
             )
@@ -188,6 +183,7 @@ def structured_handling_spe11bc(dic):
                 dic["porv"].append(
                     f"PORV {pv*dic['dy'][0]*dic['dz'][k]} 1 1 1 1 {k+1} {k+1} /"
                 )
+                pv_l = pv
             elif i == dic["noCells"][0] - 1 and (
                 int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
             ):
@@ -196,9 +192,7 @@ def structured_handling_spe11bc(dic):
                     + f"{dic['noCells'][0]} 1 1 {k+1} {k+1} /"
                 )
             centers.append(
-                str([dic["xmx_center"][i], dic["ymy_center"][0], dic["zmz_center"][k]])[
-                    1:-1
-                ]
+                f"{dic['xmx_center'][i]}, {dic['ymy_center'][0]}, {dic['zmz_center'][k]}"
             )
             corners.append(
                 f"{dic['xmx'][i]}, {dic['dims'][2] -dic['zmz'][k]}, {dic['xmx'][i+1]}, "
@@ -225,7 +219,7 @@ def structured_handling_spe11bc(dic):
                 z_c = dic["zmz_center"][k]
                 if dic["spe11"] == "spe11c":
                     z_c -= map_z(dic, j + 1)
-                dic = boxes(
+                boxes(
                     dic,
                     dic["xmx_center"][i_i],
                     z_c,
@@ -237,7 +231,7 @@ def structured_handling_spe11bc(dic):
                     and int(dic["satnum"][-dic["noCells"][0] + i_i]) != 7
                 ):
                     dic["porv"].append(
-                        f"PORV {pv*dic['dy'][j+1]*dic['dz'][k]} 1 1 "
+                        f"PORV {pv_l*dic['dy'][j+1]*dic['dz'][k]} 1 1 "
                         + f"{j+2} {j+2} {k+1} {k+1} /"
                     )
                 elif i_i == dic["noCells"][0] - 1 and (
@@ -248,42 +242,125 @@ def structured_handling_spe11bc(dic):
                         f"PORV {pv*dic['dy'][j+1]*dic['dz'][k]} {dic['noCells'][0]} "
                         + f"{dic['noCells'][0]} {j+2} {j+2} {k+1} {k+1} /"
                     )
+    if dic["spe11"] == "spe11c":
+        add_pv_fipnum_front_back(dic)
     dic["pop1"] = pd.Series(sensor1).argmin()
     dic["pop2"] = pd.Series(sensor2).argmin()
     dic["fipnum"][dic["pop1"]] = "8"
     dic["fipnum"][dic["pop2"]] = "9"
-    dic = sensors(dic)
-    dic = wells(dic)
+    sensors(dic)
+    wells(dic)
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/centers.txt",
+        f"{dic['fol']}/deck/centers.txt",
         "w",
         encoding="utf8",
     ) as file:
         file.write("\n".join(centers))
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/corners.txt",
+        f"{dic['fol']}/deck/corners.txt",
         "w",
         encoding="utf8",
     ) as file:
         file.write("\n".join(corners))
-    return dic
+
+
+def add_pv_fipnum_front_back(dic):
+    """
+    Add the buffer pore volume and bc labels also on the front and back boundaries.
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
+    for k in range(dic["noCells"][2]):
+        for i in range(dic["noCells"][0] - 2):
+            ind = i + 1 + k * dic["noCells"][0] * dic["noCells"][1]
+            if int(dic["satnum"][ind]) != 1 and int(dic["satnum"][ind]) != 7:
+                pv = float(dic["poro"][ind]) * (dic["pvAdded"] + dic["widthBuffer"])
+                if dic["grid"] == "corner-point":
+                    ind_xz = i + 1 + k * dic["noCells"][0]
+                    dic["porv"].append(
+                        f"PORV {pv*dic['d_x'][i+1]*dic['d_z'][ind_xz]} {i+2} {i+2} "
+                        + f"1 1 {k+1} {k+1} /"
+                    )
+                    dic["porv"].append(
+                        f"PORV {pv*dic['d_x'][i+1]*dic['d_z'][ind_xz]} {i+2} {i+2} "
+                        + f"{dic['noCells'][1]} {dic['noCells'][1]} {k+1} {k+1} /"
+                    )
+                else:
+                    dic["porv"].append(
+                        f"PORV {pv*dic['dx'][i+1]*dic['dz'][k]} {i+2} {i+2} "
+                        + f"1 1 {k+1} {k+1} /"
+                    )
+                    dic["porv"].append(
+                        f"PORV {pv*dic['dx'][i+1]*dic['dz'][k]} {i+2} {i+2} "
+                        + f"{dic['noCells'][1]} {dic['noCells'][1]} {k+1} {k+1} /"
+                    )
+            set_back_front_fipnums(dic, ind)
+
+
+def set_back_front_fipnums(dic, ind):
+    """
+    For the front and back boundaries in spe11c:\n
+    Box A: Fipnum 13\n
+    Satnum 1 and Box A: Fipnum 14\n
+    Box B: Fipnum 15\n
+    Satnum 1 and Box B: Fipnum 16\n
+    Box C: Fipnum 17\n
+    Satnum 1 and Box C: Fipnum 18\n
+
+    Args:
+        dic (dict): Global dictionary
+        ind (int): ID index for the property
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
+    if int(dic["fipnum"][ind]) == 2:
+        dic["fipnum"][ind] = "13"
+        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "13"
+    elif int(dic["fipnum"][ind]) == 5:
+        dic["fipnum"][ind] = "14"
+        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "14"
+    elif int(dic["fipnum"][ind]) == 3:
+        dic["fipnum"][ind] = "15"
+        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "15"
+    elif int(dic["fipnum"][ind]) == 6:
+        dic["fipnum"][ind] = "16"
+        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "16"
+    elif int(dic["fipnum"][ind]) == 4:
+        dic["fipnum"][ind] = "17"
+        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "17"
+    elif int(dic["fipnum"][ind]) == 12:
+        dic["fipnum"][ind] = "18"
+        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "18"
+    elif int(dic["satnum"][ind]) == 1:
+        dic["fipnum"][ind] = "10"
+        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "10"
+    else:
+        dic["fipnum"][ind] = "11"
+        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "11"
 
 
 def corner_point_handling_spe11a(dic):
     """
-    Function to locate sand and well positions in a corner-point grid
+    Locate the geological positions in the corner-point grid for the spe11a
 
     Args:
-        dic (dict): Global dictionary with required parameters
+        dic (dict): Global dictionary
 
     Returns:
-        dic (dict): Global dictionary with new added parameters
+        dic (dict): Modified global dictionary
 
     """
     well1, well2, sensor1, sensor2, centers, corners = [], [], [], [], [], []
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
     for i in range(dic["no_cells"]):
-        dic = get_cell_info(dic, i)
+        get_cell_info(dic, i)
         fgl = pd.Series(
             ((dic["cxc1"] - dic["xyz"][0]) ** 2 + (dic["czc1"] - dic["xyz"][2]) ** 2)
         ).argmin()
@@ -304,11 +381,11 @@ def corner_point_handling_spe11a(dic):
             + (dic["xyz"][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
         )
         dic["satnum"].append(dic["ids_gmsh"][fgl][0])
-        dic = boxes(dic, dic["xyz"][0], dic["xyz"][2], dic["ijk"][0], dic["satnum"][-1])
-        dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
-        dic["poro"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1])
+        boxes(dic, dic["xyz"][0], dic["xyz"][2], dic["ijk"][0], dic["satnum"][-1])
+        dic["permx"].append(f"{dic['rock'][int(dic['ids_gmsh'][fgl][0]) - 1][0]}")
+        dic["poro"].append(f"{dic['rock'][int(dic['ids_gmsh'][fgl][0]) - 1][1]}")
         dic["disperc"].append(f"{dic['dispersion'][int(dic['ids_gmsh'][fgl][0])-1]}")
-        centers.append(str([dic["xyz"][0], dic["ymy_center"][0], dic["xyz"][2]])[1:-1])
+        centers.append(f"{dic['xyz'][0]}, {dic['ymy_center'][0]}, {dic['xyz'][2]}")
         corners.append(dic["corns"])
     dic["pop1"] = pd.Series(sensor1).argmin()
     dic["pop2"] = pd.Series(sensor2).argmin()
@@ -329,30 +406,29 @@ def corner_point_handling_spe11a(dic):
     dic["wellijk"][0] = [well1ijk[0] + 1, 1, well1ijk[2] + 1]
     dic["wellijk"][1] = [well2ijk[0] + 1, 1, well2ijk[2] + 1]
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/centers.txt",
+        f"{dic['fol']}/deck/centers.txt",
         "w",
         encoding="utf8",
     ) as file:
         file.write("\n".join(centers))
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/corners.txt",
+        f"{dic['fol']}/deck/corners.txt",
         "w",
         encoding="utf8",
     ) as file:
         file.write("\n".join(corners))
-    return dic
 
 
 def get_cell_info(dic, i):
     """
-    Function to get the cell center and ijk
+    Get the cell center coordinate and ijk from the simulation cell
 
     Args:
-        dic (dict): Global dictionary with required parameters
-        i (int): Global index
+        dic (dict): Global dictionary\n
+        i (int): Global cell index
 
     Returns:
-        dic (dict): Global dictionary with new added parameters
+        dic (dict): Modified global dictionary
 
     """
     if dic["use"] == "opm":
@@ -377,27 +453,28 @@ def get_cell_info(dic, i):
     else:
         dic["xyz"] = dic["gridf"].get_xyz(global_index=i)
         dic["ijk"] = dic["gridf"].get_ijk(global_index=i)
-        vxyz = dic["gridf"].export_corners(dic["gridf"].export_index())[i]
+        if "vxyz" not in dic:
+            dic["vxyz"] = dic["gridf"].export_corners(dic["gridf"].export_index())
         dic["corns"] = (
-            f"{vxyz[0]}, {dic['dims'][2] -vxyz[2]}, {vxyz[3]}, "
-            + f"{dic['dims'][2] -vxyz[5]}, {vxyz[15]}, {dic['dims'][2] -vxyz[17]}, "
-            + f"{vxyz[12]}, {dic['dims'][2] - vxyz[14]}"
+            f"{dic['vxyz'][i][0]}, {dic['dims'][2] - dic['vxyz'][i][2]}, {dic['vxyz'][i][3]}, "
+            + f"{dic['dims'][2] - dic['vxyz'][i][5]}, {dic['vxyz'][i][15]}, "
+            + f"{dic['dims'][2] - dic['vxyz'][i][17]}, "
+            + f"{dic['vxyz'][i][12]}, {dic['dims'][2] - dic['vxyz'][i][14]}"
         )
-    return dic
 
 
 def corner_point_handling_spe11bc(dic):
     """
-    Function to locate sand and well positions in a corner-point grid
+    Locate the geological positions in the corner-point grid for the spe11b/c
 
     Args:
-        dic (dict): Global dictionary with required parameters
+        dic (dict): Global dictionary
 
     Returns:
-        dic (dict): Global dictionary with new added parameters
+        dic (dict): Modified global dictionary
 
     """
-    well1, well2, sensor1, sensor2, xtemp, ztemp, centers, corners = (
+    well1, well2, sensor1, sensor2, xtemp, ztemp, centers, corners, pv_l = (
         [],
         [],
         [],
@@ -406,10 +483,11 @@ def corner_point_handling_spe11bc(dic):
         [],
         [],
         [],
+        0,
     )
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
     for i in range(dic["no_cells"]):
-        dic = get_cell_info(dic, i)
+        get_cell_info(dic, i)
         xtemp.append(dic["xyz"][0])
         ztemp.append(dic["xyz"][2])
         fgl = pd.Series(
@@ -435,13 +513,13 @@ def corner_point_handling_spe11bc(dic):
         if dic["spe11"] == "spe11c":
             z_c -= map_z(dic, dic["ijk"][1])
         dic["satnum"].append(dic["ids_gmsh"][fgl][0])
-        dic = boxes(dic, dic["xyz"][0], z_c, dic["ijk"][0], dic["satnum"][-1])
-        dic["permx"].append(dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][0])
-        poro = dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1]
+        boxes(dic, dic["xyz"][0], z_c, dic["ijk"][0], dic["satnum"][-1])
+        dic["permx"].append(f"{dic['rock'][int(dic['ids_gmsh'][fgl][0]) - 1][0]}")
+        poro = f"{dic['rock'][int(dic['ids_gmsh'][fgl][0]) - 1][1]}"
         dic["poro"].append(poro)
         pv = float(poro) * (dic["pvAdded"] + dic["widthBuffer"])
         dic["disperc"].append(f"{dic['dispersion'][int(dic['ids_gmsh'][fgl][0])-1]}")
-        dic["thconr"].append(f"{dic['rockCond'][int(dic['ids_gmsh'][fgl][0])-1][0]}")
+        dic["thconr"].append(f"{dic['rockCond'][int(dic['ids_gmsh'][fgl][0])-1]}")
         if dic["ijk"][0] == 0 and (
             int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
         ):
@@ -449,6 +527,7 @@ def corner_point_handling_spe11bc(dic):
                 f"PORV { pv*dic['d_y'][0]*dic['d_z'][i]} 1 1 1 1 "
                 + f"{dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
             )
+            pv_l = pv
         elif dic["ijk"][0] == dic["noCells"][0] - 1 and (
             int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
         ):
@@ -456,7 +535,7 @@ def corner_point_handling_spe11bc(dic):
                 f"PORV {pv*dic['d_y'][0]*dic['d_z'][i]} {dic['noCells'][0]} "
                 + f"{dic['noCells'][0]} 1 1 {dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
             )
-        centers.append(str([dic["xyz"][0], dic["ymy_center"][0], dic["xyz"][2]])[1:-1])
+        centers.append(f"{dic['xyz'][0]}, {dic['ymy_center'][0]}, {dic['xyz'][2]}")
         corners.append(dic["corns"])
         if dic["ijk"][0] > 0 and dic["ijk"][0] == dic["noCells"][0] - 1:
             for j in range(dic["noCells"][1] - 1):
@@ -466,7 +545,7 @@ def corner_point_handling_spe11bc(dic):
                     z_c = ztemp[i_i]
                     if dic["spe11"] == "spe11c":
                         z_c -= map_z(dic, j + 1)
-                    dic = boxes(
+                    boxes(
                         dic,
                         xtemp[i_i],
                         z_c,
@@ -480,7 +559,7 @@ def corner_point_handling_spe11bc(dic):
                         dic["d_zl"] = dic["d_z"][-dic["noCells"][0] + 1 + i]
                         dic["porv"].append(
                             "PORV "
-                            + f"{pv*dic['d_y'][j+1]*dic['d_zl']} 1 1 "
+                            + f"{pv_l*dic['d_y'][j+1]*dic['d_zl']} 1 1 "
                             + f"{j+2} {j+2} {dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
                         )
                     elif i_i == dic["noCells"][0] - 1 and (
@@ -493,28 +572,38 @@ def corner_point_handling_spe11bc(dic):
                             + f"{dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
                         )
             xtemp, ztemp = [], []
+    if dic["spe11"] == "spe11c":
+        add_pv_fipnum_front_back(dic)
     dic["pop1"] = pd.Series(sensor1).argmin()
     dic["pop2"] = pd.Series(sensor2).argmin()
     dic["well1"] = pd.Series(well1).argmin()
     dic["well2"] = pd.Series(well2).argmin()
-    dic = locate_wells_sensors(dic)
+    locate_wells_sensors(dic)
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/centers.txt",
+        f"{dic['fol']}/deck/centers.txt",
         "w",
         encoding="utf8",
     ) as file:
         file.write("\n".join(centers))
     with open(
-        f"{dic['exe']}/{dic['fol']}/deck/corners.txt",
+        f"{dic['fol']}/deck/corners.txt",
         "w",
         encoding="utf8",
     ) as file:
         file.write("\n".join(corners))
-    return dic
 
 
 def locate_wells_sensors(dic):
-    """Find the wells and sensors positions"""
+    """
+    Find the wells/sources and sensors ijk positions
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
     if dic["use"] == "opm":
         well1ijk = dic["gridf"].ijk_from_global_index(dic["well1"])
         well2ijk = dic["gridf"].ijk_from_global_index(dic["well2"])
@@ -527,14 +616,13 @@ def locate_wells_sensors(dic):
         dic["sensorijk"][1] = list(dic["gridf"].get_ijk(global_index=dic["pop2"]))
     dic["wellijk"][0] = [well1ijk[0] + 1, 1, well1ijk[2] + 1]
     dic["wellijk"][1] = [well2ijk[0] + 1, 1, well2ijk[2] + 1]
-    # Work in process to implement properly this for the corner-point grid in spe11c
     if dic["spe11"] == "spe11c":
         dic["wellijkf"] = [[] for _ in range(len(dic["wellCoord"]))]
         dic["wellijkf"][0] = [dic["wellijk"][0][0], 1, dic["wellijk"][0][2]]
         dic["wellijkf"][1] = [dic["wellijk"][1][0], 1, dic["wellijk"][1][2]]
         dic["ymy_center"] = (np.array(dic["ymy"][1:]) + np.array(dic["ymy"][:-1])) / 2.0
         wji = pd.Series(abs(dic["wellCoord"][0][1] - dic["ymy_center"])).argmin() + 1
-        wjf = pd.Series(abs(dic["wellCoordf"][0][1] - dic["ymy_center"])).argmin() + 1
+        wjf = pd.Series(abs(dic["wellCoordF"][0][1] - dic["ymy_center"])).argmin() + 1
         sj1 = pd.Series(abs(dic["sensors"][0][1] - dic["ymy_center"])).argmin()
         sj2 = pd.Series(abs(dic["sensors"][1][1] - dic["ymy_center"])).argmin()
         dic["sensorijk"][0][1] = sj1
@@ -546,19 +634,12 @@ def locate_wells_sensors(dic):
         dic["wellkh"] = []
         z_centers = []
         for k in range(dic["noCells"][2]):
-            dic = get_cell_info(dic, well1ijk[0] + k * dic["noCells"][0])
+            get_cell_info(dic, well1ijk[0] + k * dic["noCells"][0])
             z_centers.append(dic["xyz"][2])
         for j in range(dic["wellijk"][0][1], dic["wellijkf"][0][1] + 1):
-            midpoints = z_centers - map_z(dic, j - 1)
+            midpoints = z_centers - map_z(dic, j - 1) - dic["maxelevation"]
             dic["wellkh"].append(
-                pd.Series(
-                    abs(
-                        dic["wellCoord"][0][2]
-                        - map_z(dic, dic["wellijk"][0][1] - 1)
-                        - midpoints
-                    )
-                ).argmin()
-                + 1
+                pd.Series(abs(dic["wellCoord"][0][2] - midpoints)).argmin() + 1
             )
     dic["fipnum"][
         dic["sensorijk"][0][0]
@@ -570,11 +651,23 @@ def locate_wells_sensors(dic):
         + dic["sensorijk"][1][1] * dic["noCells"][0]
         + dic["sensorijk"][1][2] * dic["noCells"][0] * dic["noCells"][1]
     ] = "9"
-    return dic
 
 
 def boxes(dic, x_c, z_c, idx, satnum):
-    """Find the box positions"""
+    """
+    Find the global indices for the different boxes for the report data
+
+    Args:
+        dic (dict): Global dictionary\n
+        x_c (float): x-position of the cell center\n
+        z_c (float): z-position of the cell center\n
+        idx (int): i index of the cell position\n
+        satnum (int): Number of the facie in the cell
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
     if (
         (dic["dims"][2] + dic["maxelevation"] - z_c >= dic["boxb"][0][2])
         & (dic["dims"][2] + dic["maxelevation"] - z_c <= dic["boxb"][1][2])
@@ -602,16 +695,26 @@ def boxes(dic, x_c, z_c, idx, satnum):
         dic["fipnum"].append("7")
     else:
         dic["fipnum"].append("1")
-    return dic
 
 
 def check_facie1(dic, satnum, numa, numb):
-    """Handle the overlaping with facie 1"""
+    """
+    Handle the overlaping with facie 1
+
+    Args:
+        dic (dict): Global dictionary\n
+        satnum (int): Number of the facie in the cell\n
+        numa (int): Fipnum to assign to the cell if it overlaps with Facie 1\n
+        numb (int): Fipnum to assign to the cell otherwise.
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
     if satnum == "1":
         dic["fipnum"].append(numa)
     else:
         dic["fipnum"].append(numb)
-    return dic
 
 
 def positions(dic):
@@ -619,20 +722,20 @@ def positions(dic):
     Function to locate sand and well positions
 
     Args:
-        dic (dict): Global dictionary with required parameters
+        dic (dict): Global dictionary
 
     Returns:
-        dic (dict): Global dictionary with new added parameters
+        dic (dict): Modified global dictionary
 
     """
     dic["sensorijk"] = [[] for _ in range(len(dic["sensors"]))]
-    dic = getfacies(dic)
+    getfacies(dic)
     for names in ["satnum", "poro", "permx", "thconr", "fipnum", "disperc", "porv"]:
         dic[f"{names}"] = []
     if dic["grid"] == "corner-point":
         if dic["use"] == "opm":
-            dic["gridf"] = OpmGrid(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.EGRID")
-            dic["initf"] = OpmFile(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.INIT")
+            dic["gridf"] = OpmGrid(f"{dic['fol']}/flow/INITIAL.EGRID")
+            dic["initf"] = OpmFile(f"{dic['fol']}/flow/INITIAL.INIT")
             dic["no_cells"] = (
                 dic["gridf"].dimension[0]
                 * dic["gridf"].dimension[1]
@@ -643,30 +746,36 @@ def positions(dic):
             dic["d_z"] = np.array([0.0] * dic["no_cells"])
             dic["d_z"][dic["actind"]] = list(dic["initf"]["DZ"])
         else:
-            dic["gridf"] = Grid(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.EGRID")
-            dic["initf"] = ResdataFile(f"{dic['exe']}/{dic['fol']}/flow/INITIAL.INIT")
+            dic["gridf"] = Grid(f"{dic['fol']}/flow/INITIAL.EGRID")
+            dic["initf"] = ResdataFile(f"{dic['fol']}/flow/INITIAL.INIT")
             dic["actnum"] = list(dic["gridf"].export_actnum())
             dic["no_cells"] = dic["gridf"].nx * dic["gridf"].ny * dic["gridf"].nz
             dic["actind"] = list(i for i, act in enumerate(dic["actnum"]) if act == 1)
             dic["d_z"] = np.array([0.0] * dic["no_cells"])
             dic["d_z"][dic["actind"]] = list(dic["initf"].iget_kw("DZ")[0])
         if dic["spe11"] == "spe11a":
-            dic = corner_point_handling_spe11a(dic)
+            corner_point_handling_spe11a(dic)
         else:
-            dic = corner_point_handling_spe11bc(dic)
+            corner_point_handling_spe11bc(dic)
     else:
         if dic["spe11"] == "spe11a":
-            dic = structured_handling_spe11a(dic)
+            structured_handling_spe11a(dic)
         else:
-            dic = structured_handling_spe11bc(dic)
-    np.savetxt(
-        f"{dic['exe']}/{dic['fol']}/deck/ycenters.txt", dic["ymy_center"], fmt="%.8E"
-    )
-    return dic
+            structured_handling_spe11bc(dic)
+    np.savetxt(f"{dic['fol']}/deck/ycenters.txt", dic["ymy_center"], fmt="%.8E")
 
 
 def sensors(dic):
-    """Find the i,j,k sensor indices"""
+    """
+    Find the i,j,k sensor indices
+
+    Args:
+        dic (dict): Global dictionary
+
+    Returns:
+        dic (dict): Modified global dictionary
+
+    """
     for j, _ in enumerate(dic["sensors"]):
         for sensor_coord, axis in zip(dic["sensors"][j], ["xmx", "ymy", "zmz"]):
             if axis == "zmz":
@@ -679,18 +788,17 @@ def sensors(dic):
                 dic["sensorijk"][j].append(
                     pd.Series(abs(sensor_coord - dic[f"{axis}_center"])).argmin()
                 )
-    return dic
 
 
 def wells(dic):
     """
-    Function to find the wells index
+    Function to find the wells/sources index
 
     Args:
-        dic (dict): Global dictionary with required parameters
+        dic (dict): Global dictionary
 
     Returns:
-        dic (dict): Global dictionary with new added parameters
+        dic (dict): Modified global dictionary
 
     """
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
@@ -711,7 +819,7 @@ def wells(dic):
                 )
                 dic["wellijkf"][j].append(
                     pd.Series(
-                        abs(dic["wellCoordf"][j][k] - dic[f"{axis}_center"])
+                        abs(dic["wellCoordF"][j][k] - dic[f"{axis}_center"])
                     ).argmin()
                     + 1
                 )
@@ -730,18 +838,10 @@ def wells(dic):
     if dic["spe11"] == "spe11c":
         dic["wellkh"] = []
         for j in range(dic["wellijk"][0][1], dic["wellijkf"][0][1] + 1):
-            midpoints = dic["zmz_center"] - map_z(dic, j - 1)
+            midpoints = dic["zmz_center"] - map_z(dic, j - 1) - dic["maxelevation"]
             dic["wellkh"].append(
-                pd.Series(
-                    abs(
-                        dic["wellCoord"][0][2]
-                        - map_z(dic, dic["wellijk"][0][1] - 1)
-                        - midpoints
-                    )
-                ).argmin()
-                + 1
+                pd.Series(abs(dic["wellCoord"][0][2] - midpoints)).argmin() + 1
             )
-    return dic
 
 
 def map_z(dic, j):
@@ -749,11 +849,12 @@ def map_z(dic, j):
     Function to return the z position of the parabola for the wells
 
     Args:
-        dic (dict): Global dictionary with required parameters
-        j : cell id along the y axis
+        dic (dict): Global dictionary\n
+        j : Cell id along the y axis
 
     Returns:
         z: Position
+        dic (dict): Global dictionary
 
     """
     z_pos = (
@@ -767,13 +868,13 @@ def map_z(dic, j):
 
 def getfacies(dic):
     """
-    Function to read the reference gmsh file
+    Function to read the reference Gmsh file
 
     Args:
-        dic (dict): Global dictionary with required parameters
+        dic (dict): Global dictionary
 
     Returns:
-        dic (dict): Global dictionary with new added parameters
+        dic (dict): Modified global dictionary
 
     """
     for ent in ["cxc1", "czc1", "ids_gmsh"]:
@@ -871,18 +972,17 @@ def getfacies(dic):
         dic["czc1"].append(centrxz[i][1])
     dic["cxc1"] = np.array(dic["cxc1"])
     dic["czc1"] = np.array(dic["czc1"])
-    return dic
 
 
 def get_lines(dic):
     """
-    Function to read the points in the z-surface lines
+    Read the points in the z-surface lines
 
-    Args:
-        dic (dict): Global dictionary with required parameters
+     Args:
+        dic (dict): Global dictionary
 
-    Returns:
-        lines: List with the coordinates of the lines
+     Returns:
+        lines (list): List with the coordinates of the geological lines
 
     """
     with open(
@@ -892,6 +992,7 @@ def get_lines(dic):
     ) as file:
         lol = file.readlines()
     lines = []
+    newline = False
     for row in lol:
         if row[0] == "P":
             if newline:
@@ -911,19 +1012,18 @@ def get_lines(dic):
                     break
         else:
             newline = True
-
     return lines
 
 
 def corner(dic):
     """
-    Function to create a spe11 corner-point grid
+    Create a SPE11 corner-point grid
 
     Args:
-        dic (dict): Global dictionary with required parameters
+        dic (dict): Global dictionary
 
     Returns:
-        dic (dict): Global dictionary with new added parameters
+        dic (dict): Modified global dictionary
 
     """
     # Read the points for the .geo gmsh file
@@ -937,7 +1037,6 @@ def corner(dic):
     for i, n_y in enumerate(dic["y_n"]):
         for j in range(n_y):
             dic["ymy"].append((i + (j + 1.0) / n_y) * dic["dims"][1] / len(dic["y_n"]))
-    dic["noCells"][1] = len(dic["ymy"]) - 1
     if (dic["spe11"] == "spe11b" or dic["spe11"] == "spe11c") and 1.1 * dic[
         "widthBuffer"
     ] < dic["xmx"][1]:
@@ -945,8 +1044,14 @@ def corner(dic):
         dic["xmx"] = np.insert(
             dic["xmx"], len(dic["xmx"]) - 1, dic["xmx"][-1] - dic["widthBuffer"]
         )
+    if dic["spe11"] == "spe11c" and 1.1 * dic["widthBuffer"] < dic["ymy"][1]:
+        dic["ymy"] = np.insert(dic["ymy"], 1, dic["widthBuffer"])
+        dic["ymy"] = np.insert(
+            dic["ymy"], len(dic["ymy"]) - 1, dic["ymy"][-1] - dic["widthBuffer"]
+        )
+    dic["noCells"][1] = len(dic["ymy"]) - 1
     for xcor in dic["xmx"]:
-        for i, lcor in enumerate(lines):
+        for _, lcor in enumerate(lines):
             dic["xcor"].append(xcor)
             idx = pd.Series([abs(ii[0] - xcor) for ii in lcor]).argmin()
             if lcor[idx][0] < xcor:
@@ -979,7 +1084,7 @@ def corner(dic):
     dic["xmx"] = np.array(dic["xmx"])
     dic["ymy_center"] = 0.5 * (np.array(dic["ymy"])[1:] + np.array(dic["ymy"])[:-1])
     dic["d_y"] = np.array(dic["ymy"])[1:] - np.array(dic["ymy"])[:-1]
-    return dic
+    dic["d_x"] = np.array(dic["xmx"])[1:] - np.array(dic["xmx"])[:-1]
 
 
 def refinement_z(xci, zci, ncx, ncz, znr):
@@ -987,17 +1092,18 @@ def refinement_z(xci, zci, ncx, ncz, znr):
     Refinment of the grid in the z-dir
 
     Args:
-        xci (list): List of floats with the x-coordinates of the cell corners
-        zci (list): List of floats with the z-coordinates of the cell corners
-        ncx (int): number of cells in the x-dir
-        ncz (int): number of cells in the z-dir
-        znr (list): List of integers with the number of z-refinments per cell
+        xci (list): Floats with the x-coordinates of the cell corners\n
+        zci (list): Floats with the z-coordinates of the cell corners\n
+        ncx (int): Number of cells in the x-dir\n
+        ncz (int): Number of cells in the z-dir\n
+        znr (list): Integers with the number of z-refinments per cell
 
     Returns:
-        xcr (list): List of floats with the new x-coordinates of the cell corners
-        zcr (list): List of floats with the new z-coordinates of the cell corners
-        ncx (int): new number of cells in the x-dir
-        ncz (int): new number of cells in the z-dir
+        xcr (list): Floats with the new x-coordinates of the cell corners\n
+        zcr (list): Floats with the new z-coordinates of the cell corners\n
+        ncx (int): New number of cells in the x-dir\n
+        ncz (int): New number of cells in the z-dir
+
     """
     xcr, zcr = [], []
     for j in range(ncx + 1):

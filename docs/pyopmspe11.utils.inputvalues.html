@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
@@ -5,19 +7,15 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>pyopmspe11.utils.inputvalues module &mdash; pyopmspe11  documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -48,10 +46,13 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="related.html">Related</a></li>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a></li>
 </ul>
@@ -89,18 +90,49 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.inputvalues.check_deck">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">check_deck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.check_deck" title="Link to this definition"></a></dt>
-<dd><p>Write unsupported features to the terminal if flow from release is used</p>
+<dd><p>Write unsupported features to the terminal if Flow from release is used</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.inputvalues.handle_tuning">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">handle_tuning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.handle_tuning" title="Link to this definition"></a></dt>
+<dd><p>If tuning is enable, then we write the entries corresponding to the maximum
+length of the next time step after event and the solver restart factor.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.inputvalues.postprocesstoml">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">postprocesstoml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.postprocesstoml" title="Link to this definition"></a></dt>
+<dd><p>Perform the unit convertions and generation of needed variables</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.inputvalues.process_input">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">process_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.process_input" title="Link to this definition"></a></dt>
-<dd><p>Function to process the input file</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary with required parameters
-in_file (str): Name of the input text file</p>
+<dd><p>Process the configuration file</p>
+<dl>
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
+<p>in_file (str): Name of the input text file</p>
 </dd>
-<dt>Returns:</dt><dd><p>dic (dict): Global dictionary with new added parameters</p>
+<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
 </dd>
 </dl>
 </dd></dl>
@@ -108,12 +140,12 @@ in_file (str): Name of the input text file</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.inputvalues.readthefirstpart">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">readthefirstpart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.readthefirstpart" title="Link to this definition"></a></dt>
-<dd><p>Function to process the lines from the flow executable and model parameters</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>lol (list): List of lines read from the input file
-dic (dict): Global dictionary with required parameters</p>
+<dd><p>Process the lines from the flow executable and model parameters</p>
+<dl>
+<dt>Args:</dt><dd><p>lol (list): List of lines read from the input file</p>
+<p>dic (dict): Global dictionary</p>
 </dd>
-<dt>Returns:</dt><dd><p>dic (dict): Global dictionary with new added parameters</p>
+<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
 </dd>
 </dl>
 </dd></dl>
@@ -121,12 +153,24 @@ dic (dict): Global dictionary with required parameters</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.inputvalues.readthesecondpart">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">readthesecondpart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.readthesecondpart" title="Link to this definition"></a></dt>
-<dd><p>Function to process the lines from the saturation functions until the end</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>lol (list): List of lines read from the input file
-dic (dict): Global dictionary with required parameters</p>
+<dd><p>Process the lines from the saturation functions until the end</p>
+<dl>
+<dt>Args:</dt><dd><p>lol (list): List of lines read from the input file</p>
+<p>dic (dict): Global dictionary</p>
 </dd>
-<dt>Returns:</dt><dd><p>dic (dict): Global dictionary with new added parameters</p>
+<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.inputvalues.setcaseproperties">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">setcaseproperties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.setcaseproperties" title="Link to this definition"></a></dt>
+<dd><p>Set the time scale, box, and sensor locations</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
 </dd>
 </dl>
 </dd></dl>
@@ -144,7 +188,7 @@ dic (dict): Global dictionary with required parameters</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, NORCE Norwegian Research Centre AS.</p>
+    <p>&#169; Copyright 2023-2025, NORCE Norwegian Research Centre AS.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

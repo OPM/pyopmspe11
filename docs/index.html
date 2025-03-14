@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
@@ -5,19 +7,15 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Welcome to pyopmspe11’s documentation! &mdash; pyopmspe11  documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -47,10 +45,13 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="related.html">Related</a></li>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a></li>
 </ul>
@@ -86,20 +87,62 @@
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#concept">Concept</a></li>
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="introduction.html#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#python-package">Python package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#opm-flow">OPM Flow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#source-build-in-linux-windows">Source build in Linux/Windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#source-build-in-macos">Source build in macOS</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="configuration_file.html#reservoir-related-parameters">Reservoir-related parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_file.html#soil-related-parameters">Soil-related parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_file.html#well-related-parameters">Well-related parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_file.html#txt">txt</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="configuration_file.html#reservoir-related-parameters">Reservoir-related parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration_file.html#soil-related-parameters">Soil-related parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuration_file.html#well-related-parameters">Well-related parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_file.html#toml">toml</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="examples.html#hello-world">Hello world</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#spe11a">SPE11A</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#spe11b">SPE11B</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#spe11c">SPE11C</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#before-the-13-06-2024-workshop">Before the 13.06.2024 workshop</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples.html#spe11a">SPE11A</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples.html#spe11b">SPE11B</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples.html#spe11c">SPE11C</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#after-the-13-06-2024-workshop">After the 13.06.2024 workshop</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples.html#id1">SPE11A</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples.html#id2">SPE11B</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples.html#id3">SPE11C</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="benchmark.html#spe11a">SPE11A</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="benchmark.html#performance-data">Performance data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benchmark.html#sparse-data">Sparse data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benchmark.html#spatial-maps">Spatial maps</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="benchmark.html#spe11b">SPE11B</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="benchmark.html#id2">Performance data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benchmark.html#id3">Sparse data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benchmark.html#id4">Spatial maps</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="benchmark.html#spe11c">SPE11C</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="benchmark.html#id5">Performance data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benchmark.html#id6">Sparse data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="benchmark.html#id7">Spatial maps</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a><ul>
@@ -114,14 +157,26 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#ground-rules">Ground Rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#contribute-to-the-software">Contribute to the software</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#reporting-issues-or-problems">Reporting issues or problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#seek-support">Seek support</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="related.html">Related</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="related.html#pycopm">pycopm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="related.html#plopm">plopm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="related.html#pyopmnearwell">pyopmnearwell</a></li>
 <li class="toctree-l2"><a class="reference internal" href="related.html#expreccs">expreccs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="related.html#ad-micp">ad-micp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="related.html#pymm">pymm</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="about.html#citing">Citing</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
@@ -144,7 +199,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, NORCE Norwegian Research Centre AS.</p>
+    <p>&#169; Copyright 2023-2025, NORCE Norwegian Research Centre AS.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
