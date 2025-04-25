@@ -296,7 +296,9 @@ def performance(dig):
         encoding="utf8",
     ) as file:
         for j, row in enumerate(csv.reader(file)):
-            if j > 0:
+            if j == 0:
+                tag = (row[0].strip()).split()
+            else:
                 if float((row[0].strip()).split()[0]) >= (
                     (dig["time_initial"] - dig["sparse_t"]) / 86400.0
                 ):
@@ -304,7 +306,8 @@ def performance(dig):
                         [float(column) for column in (row[0].strip()).split()]
                     )
     infotimes = [
-        infostep[0] * 86400 - dig["time_initial"] for infostep in dil["infosteps"]
+        infostep[tag.index("Time(day)")] * 86400 - dig["time_initial"]
+        for infostep in dil["infosteps"]
     ]
     time0 = max(0, dig["no_skip_rst"] - 1)
     dil["map_info"] = np.array(
@@ -325,16 +328,29 @@ def performance(dig):
         dil["times_det"].append(max(infotimes[ind]))
     dil["times_det"] = np.array(dil["times_det"])
     dil["fsteps"] = np.array(
-        [1.0 * (infostep[11] == 0) for infostep in dil["infosteps"]]
+        [1.0 * (infostep[tag.index("Conv")] == 0) for infostep in dil["infosteps"]]
     )
-    dil["nress"] = np.array([infostep[8] for infostep in dil["infosteps"]])
-    dil["tlinsols"] = np.array([infostep[4] for infostep in dil["infosteps"]])
-    dil["liniters"] = np.array([infostep[10] for infostep in dil["infosteps"]])
-    dil["nliters"] = np.array([infostep[9] for infostep in dil["infosteps"]])
+    dil["nress"] = np.array(
+        [infostep[tag.index("Lins")] for infostep in dil["infosteps"]]
+    )
+    dil["tlinsols"] = np.array(
+        [infostep[tag.index("LSolve")] for infostep in dil["infosteps"]]
+    )
+    dil["liniters"] = np.array(
+        [infostep[tag.index("LinIt")] for infostep in dil["infosteps"]]
+    )
+    dil["nliters"] = np.array(
+        [infostep[tag.index("NewtIt")] for infostep in dil["infosteps"]]
+    )
     dil["tsteps"] = np.array(
-        [86400 * infostep[1] * infostep[11] for infostep in dil["infosteps"]]
+        [
+            86400 * infostep[tag.index("TStep(day)")] * infostep[tag.index("Conv")]
+            for infostep in dil["infosteps"]
+        ]
     )
-    dil["alltsteps"] = np.array([86400 * infostep[1] for infostep in dil["infosteps"]])
+    dil["alltsteps"] = np.array(
+        [86400 * infostep[tag.index("TStep(day)")] for infostep in dil["infosteps"]]
+    )
     if dig["use"] == "opm":
         tcpu = dig["smspec"]["TCPU"]
         fgip = GAS_DEN_REF * dig["smspec"]["FGIP"]
