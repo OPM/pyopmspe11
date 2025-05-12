@@ -3,7 +3,7 @@ mpirun -np 70 flow --relaxed-max-pv-fraction=0 --imbalance-tol=1.05 --enable-tun
 
 """Set the model parameters"""
 spe11c master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
-convective gaswater #Name of the co2 model (immiscible, convective, or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
+convective        #Name of the co2 model (immiscible, convective, or complete)
 corner-point      #Type of grid (cartesian, tensor, or corner-point)
 8400 5000 1200    #Length, width, and depth [m]
 168               #If cartesian, number of x cells [-]; otherwise, variable array of x-refinement

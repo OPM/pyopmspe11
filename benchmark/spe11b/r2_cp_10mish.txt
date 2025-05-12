@@ -3,7 +3,7 @@ mpirun -np 32 flow --solver-max-time-step-in-days=3650 --relaxed-max-pv-fraction
 
 """Set the model parameters"""
 spe11b master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
-complete gaswater #Name of the co2 model (immiscible, convective, or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
+complete          #Name of the co2 model (immiscible, convective, or complete)
 corner-point      #Type of grid (cartesian, tensor, or corner-point)
 8400 1 1200       #Length, width, and depth [m]
 840               #If cartesian, number of x cells [-]; otherwise, variable array of x-refinement

@@ -8,14 +8,13 @@ import os
 import subprocess
 
 
-def simulations(dic, deck, folder, dryrun):
+def simulations(dic, deck, dryrun):
     """
     Run OPM Flow
 
     Args:
         dic (dict): Global dictionary\n
         deck (str): Name of the input deck\n
-        folder (str): Name of destination of the output files\n
         dryrun (bool): Run a dry simulation for the initial files.
 
     Returns:
@@ -28,8 +27,8 @@ def simulations(dic, deck, folder, dryrun):
         flow = dic["only_flow"]
         flag = "--enable-dry-run=1"
     os.system(
-        f"{flow} --output-dir={dic['fol']}/{folder} "
-        f"{dic['fol']}/deck/{deck}.DATA {flag} & wait\n"
+        f"{flow} --output-dir={dic['flowf']} "
+        f"{dic['deckf']}/{deck}.DATA {flag} & wait\n"
     )
 
 
@@ -53,6 +52,7 @@ def plotting(dic):
         "-r " + f"{dic['resolution']}",
         "-s " + f"{dic['showpywarn']}",
         "-l " + f"{dic['latex']}",
+        "-f " + f"{dic['subfolders']}",
     ]
     print(" ".join(plot_exe))
     prosc = subprocess.run(plot_exe, check=True)
@@ -81,6 +81,7 @@ def data(dic):
         "-t " + f"{dic['time_data']}",
         "-w " + f"{dic['dt_data']}",
         "-u " + f"{dic['use']}",
+        "-f " + f"{dic['subfolders']}",
         "-s " + f"{dic['showpywarn']}",
     ]
     print(" ".join(data_exe))

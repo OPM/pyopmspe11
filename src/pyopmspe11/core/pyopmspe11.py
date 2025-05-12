@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
+# pylint: disable=R0912, R0915
 
 """Main script for pyopmspe11"""
 import os
@@ -31,6 +32,7 @@ def pyopmspe11():
     )  # Temporal resolution to write the sparse and performance data
     dic["showpywarn"] = int(cmdargs["showpywarn"])  # Show or hidde python warnings
     dic["latex"] = int(cmdargs["latex"])  # LaTeX formatting
+    dic["subfolders"] = int(cmdargs["subfolders"])  # Create subfolders
     if dic["showpywarn"] != 1:
         warnings.warn = lambda *args, **kwargs: None
     # If the compare plots are generated, then we exit right afterwards
@@ -44,21 +46,31 @@ def pyopmspe11():
     # Make the output folders
     if not os.path.exists(f"{dic['fol']}"):
         os.system(f"mkdir {dic['fol']}")
-    for fil in ["deck", "flow" if dic["mode"] != "deck" else ""]:
-        if not os.path.exists(f"{dic['fol']}/{fil}"):
-            os.system(f"mkdir {dic['fol']}/{fil}")
+    if dic["subfolders"] == 1:
+        dic["deckf"] = f"{dic['fol']}/deck"
+        dic["flowf"] = f"{dic['fol']}/flow"
+        dic["dataf"] = f"{dic['fol']}/data"
+        dic["figsf"] = f"{dic['fol']}/figures"
+        for fil in ["deck", "flow" if dic["mode"] != "deck" else ""]:
+            if not os.path.exists(f"{dic['fol']}/{fil}"):
+                os.system(f"mkdir {dic['fol']}/{fil}")
+    else:
+        dic["deckf"] = f"{dic['fol']}"
+        dic["flowf"] = f"{dic['fol']}"
+        dic["dataf"] = f"{dic['fol']}"
+        dic["figsf"] = f"{dic['fol']}"
     os.chdir(f"{dic['fol']}")
 
     if dic["mode"] == "all" or "deck" in dic["mode"]:
-        # Check the generated deck, flow version, and chosen co2store implementation
+        # Check the generated deck and flow version
         check_deck(dic)
         # Initialize the grid
         grid(dic)
         # For corner-point grids, get the cell centers by executing flow
         if dic["grid"] == "corner-point":
             initial(dic)
-            os.chdir(f"{dic['fol']}/deck")
-            simulations(dic, "INITIAL", "flow", True)
+            os.chdir(dic["deckf"])
+            simulations(dic, "INITIAL", True)
             print(
                 "Files used to generate the corner-point grid (INITIAL.* files).\n"
                 + "Please wait while pyopmspe11 is processing the deck files."
@@ -69,21 +81,21 @@ def pyopmspe11():
         positions(dic)
         # Write used opm related files
         opm_files(dic)
-        print(f"The deck files have been written to {dic['fol']}/deck.")
+        print(f"The deck files have been written to {dic['deckf']}.")
     if dic["mode"] == "all" or "flow" in dic["mode"]:
         # Run the simulations
-        simulations(dic, dic["fol"].split("/")[-1].upper(), "flow", False)
+        simulations(dic, dic["fol"].split("/")[-1].upper(), False)
 
     if dic["mode"] == "all" or "data" in dic["mode"]:
         # Write the data
-        if not os.path.exists(f"{dic['fol']}/data"):
-            os.system(f"mkdir {dic['fol']}/data")
+        if not os.path.exists(dic["dataf"]):
+            os.system(f"mkdir {dic['dataf']}")
         data(dic)
 
     if dic["mode"] == "all" or "plot" in dic["mode"]:
         # Make some useful plots after the studies
-        if not os.path.exists(f"{dic['fol']}/figures"):
-            os.system(f"mkdir {dic['fol']}/figures")
+        if not os.path.exists(dic["figsf"]):
+            os.system(f"mkdir {dic['figsf']}")
         plotting(dic)
 
 
@@ -169,6 +181,13 @@ def load_parser():
         "--latex",
         default=1,
         help="Set to 0 to not use LaTeX formatting ('1' by default).",
+    )
+    parser.add_argument(
+        "-f",
+        "--subfolders",
+        default=1,
+        help="Set to 0 to not create the subfolders deck, flow, data, and figures, i.e., to "
+        "write all generated files in the output directory ('1' by default).",
     )
     return vars(parser.parse_known_args()[0])
 

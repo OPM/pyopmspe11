@@ -57,6 +57,13 @@ def main():
         help="Set to 1 to show Python warnings ('0' by default).",
     )
     parser.add_argument(
+        "-f",
+        "--subfolders",
+        default=1,
+        help="Set to 0 to not create the subfolders deck, flow, data, and figures, i.e., to "
+        "write all generated files in the output directory ('1' by default).",
+    )
+    parser.add_argument(
         "-l",
         "--latex",
         default=1,
@@ -70,6 +77,7 @@ def main():
     dic["generate"] = cmdargs["generate"].strip()
     dic["compare"] = cmdargs["compare"]  # No empty, then the create compare folder
     dic["latex"] = int(cmdargs["latex"])  # LaTeX formatting
+    dic["subfolders"] = int(cmdargs["subfolders"]) == 1  # Create subfolders
     plot_results(dic)
 
 
@@ -142,7 +150,12 @@ def plot_results(dic):
         else:
             dic["folders"].remove("compare")
     else:
-        dic["where"] = f"{dic['folders'][0]}/figures"
+        if dic["subfolders"]:
+            dic["dataf"] = "/data"
+            dic["where"] = f"{dic['folders'][0]}/figures"
+        else:
+            dic["dataf"] = ""
+            dic["where"] = dic["folders"][0]
     if dic["case"] == "spe11a":
         dic["tlabel"] = "h"
         dic["dims"] = 2
@@ -212,11 +225,20 @@ def performance(dic):
         for k, (plot, ylabel) in enumerate(zip(plots, ylabels)):
             axis = dic["fig"].add_subplot(9, 5, k + 1)
             for nfol, fol in enumerate(dic["folders"]):
-                csv = np.genfromtxt(
-                    f"{fol}/data/{dic['case']}_performance_time_series{kind}.csv",
-                    delimiter=",",
-                    skip_header=1,
-                )
+                if os.path.isfile(
+                    f"{fol}/data/{dic['case']}_performance_time_series{kind}.csv"
+                ):
+                    csv = np.genfromtxt(
+                        f"{fol}/data/{dic['case']}_performance_time_series{kind}.csv",
+                        delimiter=",",
+                        skip_header=1,
+                    )
+                else:
+                    csv = np.genfromtxt(
+                        f"{fol}/{dic['case']}_performance_time_series{kind}.csv",
+                        delimiter=",",
+                        skip_header=1,
+                    )
                 labels = [
                     f"sum={sum((csv[i][1] for i in range(csv.shape[0]))):.3e}",
                     f"sum={sum((csv[i][2] for i in range(csv.shape[0]))):.3e}",
@@ -286,11 +308,18 @@ def sparse_data(dic):
                 bbox=dic["props"],
                 color=dic["colors"][len(dic["folders"]) - nfol - 1],
             )
-            csv = np.genfromtxt(
-                f"{fol}/data/{dic['case']}_time_series.csv",
-                delimiter=",",
-                skip_header=1,
-            )
+            if os.path.isfile(f"{fol}/data/{dic['case']}_time_series.csv"):
+                csv = np.genfromtxt(
+                    f"{fol}/data/{dic['case']}_time_series.csv",
+                    delimiter=",",
+                    skip_header=1,
+                )
+            else:
+                csv = np.genfromtxt(
+                    f"{fol}/{dic['case']}_time_series.csv",
+                    delimiter=",",
+                    skip_header=1,
+                )
             times = [csv[i][0] / dic["tscale"] for i in range(csv.shape[0])]
             for j, label in enumerate(labels[k]):
                 if nfol == 0:
@@ -338,7 +367,7 @@ def generate_grid(dic):
     """
     dic["files"] = [
         f
-        for f in os.listdir(f"{dic['folders'][0]}/data")
+        for f in os.listdir(f"{dic['folders'][0]}{dic['dataf']}")
         if f.endswith(f"{dic['tlabel']}.csv")
     ]
     dic["times"] = np.array(
@@ -349,7 +378,7 @@ def generate_grid(dic):
     dic["sort_ind"] = np.argsort(dic["times"])
     dic["times"] = [dic["times"][i] for i in dic["sort_ind"]]
     csv = np.genfromtxt(
-        f"{dic['folders'][0]}/data/{dic['files'][0]}",
+        f"{dic['folders'][0]}{dic['dataf']}/{dic['files'][0]}",
         delimiter=",",
         skip_header=1,
     )
@@ -470,7 +499,7 @@ def dense_data(dic):
             dic["ptimes"] = dic["times"][: dic["allplots"][k]] + [dic["times"][-1]]
             ini_quantity_plot(dic)
             csv = np.genfromtxt(
-                f"{dic['folders'][0]}/data/{dic['case']}{kind}_spatial_map_"
+                f"{dic['folders'][0]}{dic['dataf']}/{dic['case']}{kind}_spatial_map_"
                 + f"0{dic['tlabel']}.csv",
                 delimiter=",",
                 skip_header=1,
@@ -482,7 +511,7 @@ def dense_data(dic):
             )
             for tmap in dic["ptimes"]:
                 csv = np.genfromtxt(
-                    f"{dic['folders'][0]}/data/{dic['case']}{kind}_spatial_map_"
+                    f"{dic['folders'][0]}{dic['dataf']}/{dic['case']}{kind}_spatial_map_"
                     + f"{tmap}{dic['tlabel']}.csv",
                     delimiter=",",
                     skip_header=1,

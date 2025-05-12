@@ -3,7 +3,7 @@ mpirun -np 64 flow --relaxed-max-pv-fraction=0 --partition-method=2 --edge-weigh
 
 """Set the model parameters"""
 spe11b master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
-complete gaswater #Name of the co2 model (immiscible, convective, or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
+complete          #Name of the co2 model (immiscible, convective, or complete)
 cartesian         #Type of grid (cartesian, tensor, or corner-point)
 8400 1 1200       #Length, width, and depth [m]
 8400              #If cartesian, number of x cells [-]; otherwise, variable array of x-refinement

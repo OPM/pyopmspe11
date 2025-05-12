@@ -3,7 +3,7 @@ mpirun -np 12 flow --nonlinear-solver=nldd --matrix-add-well-contributions=1 --t
 
 """Set the model parameters"""
 spe11a master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
-complete gaswater #Name of the co2 model (immiscible, convective, or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
+complete          #Name of the co2 model (immiscible, convective, or complete)
 cartesian         #Type of grid (cartesian, tensor, or corner-point)
 2.8 0.01 1.2      #Length, width, and depth [m]
 2800              #If cartesian, number of x cells [-]; otherwise, variable array of x-refinement

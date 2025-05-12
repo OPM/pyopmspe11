@@ -47,7 +47,7 @@ The following input lines in the configuration file are:
 
     """Set the model parameters"""
     spe11c master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
-    complete gaswater #Name of the co2 model (immiscible, convective, or complete) and co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
+    complete          #Name of the co2 model (immiscible, convective, or complete)
     corner-point      #Type of grid (cartesian, tensor, or corner-point)
     8400 5000 1200    #Length, width, and depth [m]
     420               #If cartesian, number of x cells [-]; otherwise, variable array of x-refinement
@@ -165,7 +165,6 @@ The previous configuration file can be written using the widely in-use `toml for
     spe11 = "spe11c" # Name of the spe case (spe11a, spe11b, or spe11c)
     version = "release" # OPM Flow version (release or master)
     model = "complete" # Name of the co2 model (immiscible, convective, or complete)
-    co2store = "gaswater" # co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
     grid = "corner-point" # Type of grid (cartesian, tensor, or corner-point)
     dims = [8400.0, 5000.0, 1200.0] # Length, width, and depth [m]
     x_n = [420] # If cartesian, number of x cells [-]; otherwise, variable array of x-refinement
@@ -226,3 +225,43 @@ For additional examples of configuration files using toml, see the
 
 .. note::
     A Python version of at least 3.11 is requiered to use the toml format. For older Python versions, then use the :ref:`txt` configuration files.
+
+----------------------
+Additional definitions  
+----------------------
+
+New features are being added using the toml format, while trying to keep the back compatibility to the :ref:`txt` configuration files. 
+
+For the convective model, if this is set via a txt file, the following default values are added to the deck in the SCHEDULE section:
+
+.. code-block:: python
+    :linenos:
+
+    DRSDTCON
+    -1.0 /
+    0.04 0.34 3.0e-09 ALL /
+    -1.0 /
+    -1.0 /
+    0.04 0.34 3.0e-09 ALL /
+    -1.0 /
+    -1.0 /
+    /
+
+These values can be set via the toml configuration file, by adding the following variable (see `spe11b_convective.toml <https://github.com/OPM/pyopmspe11/tree/main/examples/hello_world/spe11b_convective.toml>`_):
+
+.. code-block:: python
+    :linenos:
+
+    # Properties CO2 convective dissolution: 1) CHI [-], 2) PSI [-], 3) OMEGA [1/s], and 4) OPTION
+    drsdtcon = [[-1.0],
+               [0.04, 0.34, 3.0e-09, "ALL"],
+               [-1.0],
+               [-1.0],
+               [0.04, 0.34, 3.0e-09, "ALL"],
+               [-1.0],
+               [-1.0]]
+
+.. tip::
+    By generating only the decks by setting the **pyopmspe11** flag '-m deck', then one can add/remove/modify the values and keywords in the 
+    generated deck before running the simulation (i.e., after modification one can rerun **pyopmspe11** with the '-m flow' flag to run the simulations).
+    See the `OPM Flow manual <https://opm-project.org/?page_id=955>`_ for details on the keyword definitions.

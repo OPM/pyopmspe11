@@ -17,6 +17,7 @@ def test_plot():
     message = "Please run first test_3_data"
     assert os.path.exists(f"{dirname}/configs/output/data"), message
     os.chdir(f"{dirname}/configs")
-    os.mkdir(f"{dirname}/configs/output/figures")
+    if not os.path.exists(f"{dirname}/configs/output/figures"):
+        os.mkdir(f"{dirname}/configs/output/figures")
     main()
     assert os.path.exists(f"{dirname}/configs/output/figures/spe11b_sparse_data.png")

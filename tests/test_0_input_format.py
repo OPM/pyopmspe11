@@ -43,9 +43,9 @@ def test_txt_toml():
                 f"{spe}_{ext}/deck/{spe.upper()}.DATA",
             )
             folder.append(f"{dirname}/configs/{spe}_{ext}/deck")
-        files = [f"{spe.upper()}.DATA", "TABLES.INC", "PERMX.INC"]
+        files = [f"{spe.upper()}.DATA", "TABLES.INC", "FIPNUM.INC"]
         if spe != "spe11a":
-            files += ["PVBOUNDARIES.INC", "THCONR.INC"]
+            files += ["PVBOUNDARIES.INC"]
         if spe == "spe11c":
             files += ["GRID.INC"]
         match, mismatch, error = filecmp.cmpfiles(
