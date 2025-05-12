@@ -5,7 +5,6 @@ flow = "flow --newton-min-iterations=1 --enable-tuning=true --enable-opm-rst-fil
 spe11 = "spe11c" # Name of the spe case (spe11a, spe11b, or spe11c)
 version = "release" # OPM Flow version (release or master)
 model = "complete" # Name of the co2 model (immiscible, convective, or complete)
-co2store = "gaswater" # co2store implementation (gaswater or gasoil [oil properties are set to water internally in OPM flow])
 grid = "corner-point" # Type of grid (cartesian, tensor, or corner-point)
 dims = [8400.0, 5000.0, 1200.0] # Length, width, and depth [m]
 x_n = [42] # If cartesian, number of x cells [-]; otherwise, variable array of x-refinement

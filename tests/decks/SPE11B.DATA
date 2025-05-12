@@ -10,7 +10,7 @@ EQLDIMS
 /
 
 TABDIMS
-7 1* 1000 /
+7 /
 
 WATER
 GAS
@@ -18,7 +18,6 @@ CO2STORE
 DISGASW
 VAPWAT
 DIFFUSE
-
 THERMAL
 
 METRIC
@@ -26,46 +25,79 @@ METRIC
 START
 1 'JAN' 2025 /
 
-
 UNIFOUT
 ----------------------------------------------------------------------------
 GRID
 ----------------------------------------------------------------------------
 INIT
+
 INCLUDE
 'DX.INC' /
+
 DY 
 101040*1.0 /
+
 DZ 
 101040*10.0 /
+
 TOPS
 842*0.0 /
 
 INCLUDE
-'PERMX.INC' /
+'FLUXNUM.INC' /
 
-COPY 
-PERMX PERMY /
-PERMX PERMZ /
+DISPERC
+101040*0 /
+
+EQUALREG
+PORO    1.000000E-01 1 F /
+PORO    2.000000E-01 2 F /
+PORO    2.000000E-01 3 F /
+PORO    2.000000E-01 4 F /
+PORO    2.500000E-01 5 F /
+PORO    3.500000E-01 6 F /
+PORO    1.000000E-06 7 F /
+PERMX   1.013200E-01 1 F /
+PERMX   1.013240E+02 2 F /
+PERMX   2.026500E+02 3 F /
+PERMX   5.066250E+02 4 F /
+PERMX   1.013250E+03 5 F /
+PERMX   2.026500E+03 6 F /
+PERMX   1.000000E-05 7 F /
+PERMY   1.013200E-01 1 F /
+PERMY   1.013240E+02 2 F /
+PERMY   2.026500E+02 3 F /
+PERMY   5.066250E+02 4 F /
+PERMY   1.013250E+03 5 F /
+PERMY   2.026500E+03 6 F /
+PERMY   1.000000E-05 7 F /
+PERMZ   1.013200E-02 1 F /
+PERMZ   1.013240E+01 2 F /
+PERMZ   2.026500E+01 3 F /
+PERMZ   5.066250E+01 4 F /
+PERMZ   1.013250E+02 5 F /
+PERMZ   2.026500E+02 6 F /
+PERMZ   1.000000E-06 7 F /
+THCONR  1.641600E+02 1 F /
+THCONR  1.080000E+02 2 F /
+THCONR  1.080000E+02 3 F /
+THCONR  1.080000E+02 4 F /
+THCONR  7.948800E+01 5 F /
+THCONR  2.246400E+01 6 F /
+THCONR  1.728000E+02 7 F /
+DISPERC 1.000000E+01 1 F /
+DISPERC 1.000000E+01 2 F /
+DISPERC 1.000000E+01 3 F /
+DISPERC 1.000000E+01 4 F /
+DISPERC 1.000000E+01 5 F /
+DISPERC 1.000000E+01 6 F /
+DISPERC 0.000000E+00 7 F /
 /
-
-MULTIPLY
-PERMZ 0.1 /
-/
-
-INCLUDE
-'PORO.INC' /
-
-INCLUDE
-'THCONR.INC' /
 
 BCCON 
-1 1 842 1 1 1 1 Z-/
-2 1 842 1 1 120 120 Z/
+1 1 842 1 1 1 1 Z- /
+2 1 842 1 1 120 120 Z /
 /
-
-INCLUDE
-'DISPERC.INC' /
 ----------------------------------------------------------------------------
 EDIT
 ----------------------------------------------------------------------------
@@ -79,36 +111,31 @@ INCLUDE
 
 DIFFAWAT
 8.64e-05 8.64e-05 /
+
 DIFFAGAS
 0.001728 0.001728 /
 
 SPECROCK
 40.0 2125.0
-70.0 2125.0 /
-40.0 2125.0
-70.0 2125.0 /
-40.0 2125.0
-70.0 2125.0 /
-40.0 2125.0
-70.0 2125.0 /
-40.0 2125.0
-70.0 2125.0 /
-40.0 2125.0
-70.0 2125.0 /
-40.0 2125.0
-70.0 2125.0 /
-
+70.0 2125.0 / --Table 1
+/ --Defaulted to table 1
+/ --Defaulted to table 1
+/ --Defaulted to table 1
+/ --Defaulted to table 1
+/ --Defaulted to table 1
+/ --Defaulted to table 1
 
 THCO2MIX
 NONE NONE NONE /
 ----------------------------------------------------------------------------
 REGIONS
 ----------------------------------------------------------------------------
-INCLUDE
-'SATNUM.INC' /
+COPY
+FLUXNUM SATNUM /
+/
+
 INCLUDE
 'FIPNUM.INC' /
-
 ----------------------------------------------------------------------------
 SOLUTION
 ---------------------------------------------------------------------------
@@ -116,13 +143,11 @@ EQUIL
 900.0 300.0 0 0 0 0 1 1 0 /
 
 RPTRST
-'BASIC=2' DEN PCGW  RSWSAT /
-
+'BASIC=2' DEN PCGW RSWSAT /
 
 RTEMPVD
 0   40.0
 1200.0 70.0 /
-
 ----------------------------------------------------------------------------
 SUMMARY
 ----------------------------------------------------------------------------
@@ -130,10 +155,6 @@ PERFORMA
 FGIP
 FGIR
 FGIT
-
-FGIPL
-FGIPG
-
 RGKDI
 /
 RGKDM
@@ -156,17 +177,15 @@ BWPR
 SCHEDULE
 ----------------------------------------------------------------------------
 RPTRST
-'BASIC=2' DEN RESIDUAL PCGW  RSWSAT /
-
+'BASIC=2' DEN PCGW RSWSAT RESIDUAL /
 
 BCPROP
 1 THERMAL /
 2 THERMAL /
 /
 
-
 TUNING
-0.01 3650.0 1e-10 2* 1e-12 0.2/
+0.01 3650.0 1e-10 2* 1e-12 0.2 /
 /
 /
 SOURCE
@@ -176,8 +195,9 @@ SOURCE
 TSTEP
 1*364963.5
 /
+
 TUNING
-0.01 36.5 1e-10 2* 1e-12 0.2/
+0.01 36.5 1e-10 2* 1e-12 0.2 /
 /
 /
 SOURCE
@@ -187,8 +207,9 @@ SOURCE
 TSTEP
 1*36.5
 /
+
 TUNING
-0.01 1825.0 1e-10 2* 1e-12 0.2/
+0.01 1825.0 1e-10 2* 1e-12 0.2 /
 /
 /
 SOURCE
@@ -198,8 +219,9 @@ SOURCE
 TSTEP
 5*1825.0
 /
+
 TUNING
-0.01 1825.0 1e-10 2* 1e-12 0.2/
+0.01 1825.0 1e-10 2* 1e-12 0.2 /
 /
 /
 SOURCE
@@ -209,8 +231,9 @@ SOURCE
 TSTEP
 5*1825.0
 /
+
 TUNING
-0.01 1825.0 1e-10 2* 1e-12 0.2/
+0.01 1825.0 1e-10 2* 1e-12 0.2 /
 /
 /
 SOURCE

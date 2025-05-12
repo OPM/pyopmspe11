@@ -67,9 +67,6 @@ def postprocesstoml(dic):
     dic["noCells"] = [sum(dic["x_n"]), sum(dic["y_n"]), sum(dic["z_n"])]
     dic["diffusion"] = np.array(dic["diffusion"]) * 86400  # To [m^2/day]
     dic["noSands"] = len(dic["safu"])
-    dic["tabdims"] = 1
-    for row in dic["safu"]:
-        dic["tabdims"] = max(dic["tabdims"], row[4])
     for i in range(len(dic["inj"])):  # To [s]
         dic["inj"][i][0] *= dic["time"]
         dic["inj"][i][1] *= dic["time"]
@@ -81,6 +78,15 @@ def postprocesstoml(dic):
         dic["wellCoordF"][1][-1] = dic["dims"][2] - dic["wellCoordF"][1][-1]
     if dic["spe11"] in ["spe11b", "spe11c"]:
         dic["rockCond"] = np.array(dic["rockCond"]) * 86400.0 / 1e3  # To [kJ/(m day K)]
+    if "co2store" in dic:
+        if dic["co2store"] == "gasoil":
+            print(
+                "\nAfter the pyopmspe11 2025.04 release, the CO2STORE functionality only "
+                + "uses the gaswater implementation, not the gasoil implementation.\nThen "
+                + "either remove the gasoil text in your configuration file, or use an "
+                + "older release of pyopmspe11.\nThe execution of pyopmspe11 will continue "
+                + "setting the deck with the gaswater implementation."
+            )
 
 
 def setcaseproperties(dic):
@@ -138,7 +144,15 @@ def readthefirstpart(lol, dic):
     dic["version"] = row[1]  # OPM Flow version (release or master)
     row = (lol[5][0].strip()).split()
     dic["model"] = row[0]  # Model to run (immiscible, convective, or complete)
-    dic["co2store"] = row[1]  # co2store implementation (gaswater or gasoil)
+    if len(row) > 1:
+        if row[1] == "gasoil":
+            print(
+                "\nAfter the pyopmspe11 2025.04 release, the CO2STORE functionality only "
+                + "uses the gaswater implementation, not the gasoil implementation.\nThen "
+                + "either remove the gasoil text in your configuration file, or use an "
+                + "older release of pyopmspe11.\nThe execution of pyopmspe11 will continue "
+                + "setting the deck with the gaswater implementation."
+            )
     dic["grid"] = str(lol[6][0]).strip()  # Grid (Cartesian, tensor, or corner-point)
     dic["dims"] = [float((lol[7][0].strip()).split()[j]) for j in range(3)]
     if dic["grid"] == "cartesian":
@@ -211,7 +225,6 @@ def readthesecondpart(lol, dic):
     dic["index"] += 7
     for name in ["rock", "safu", "dispersion", "rockCond"]:
         dic[name] = []
-    dic["tabdims"] = 1
     for i in range(dic["noSands"]):  # Saturation function values
         row = list((lol[dic["index"] + i][0].strip()).split())
         dic["safu"].append(
@@ -223,14 +236,13 @@ def readthesecondpart(lol, dic):
                 int(row[9]),
             ]
         )
-        dic["tabdims"] = max(dic["tabdims"], int(row[9]))
     dic["index"] += 3 + dic["noSands"]
     for i in range(dic["noSands"]):  # Rock values
         row = list((lol[dic["index"] + i][0].strip()).split())
         dic["rock"].append(
             [
-                str(float(row[1])),
-                str(float(row[3])),
+                float(row[1]),
+                float(row[3]),
             ]
         )
         dic["dispersion"].append(float(row[5]))

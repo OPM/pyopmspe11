@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
-# pylint: disable=C0302, R0912, R0914, R0801
+# pylint: disable=C0302, R0912, R0914, R0801, R0915
 
 """ "
 Script to write the benchmark data
@@ -84,6 +84,13 @@ def main():
         help="Using the 'resdata' or python package (resdata by default).",
     )
     parser.add_argument(
+        "-f",
+        "--subfolders",
+        default=1,
+        help="Set to 0 to not create the subfolders deck, flow, data, and figures, i.e., to "
+        "write all generated files in the output directory ('1' by default).",
+    )
+    parser.add_argument(
         "-s",
         "--showpywarn",
         default=0,
@@ -95,12 +102,19 @@ def main():
     dig = {"path": cmdargs["path"].strip()}
     dig["case"] = cmdargs["deck"].strip()
     dig["mode"] = cmdargs["generate"].strip()
-    dig["where"] = f"{dig['path']}/data"
+    if int(cmdargs["subfolders"]) == 1:
+        dig["deckf"] = f"{dig['path']}/deck"
+        dig["flowf"] = f"{dig['path']}/flow"
+        dig["where"] = f"{dig['path']}/data"
+    else:
+        dig["deckf"] = dig["path"]
+        dig["flowf"] = dig["path"]
+        dig["where"] = dig["path"]
     dig["use"] = cmdargs["use"].strip()
     dig["nxyz"] = np.genfromtxt(
         StringIO(cmdargs["resolution"]), delimiter=",", dtype=int
     )
-    dig["sim"] = dig["path"] + "/flow/" + f"{dig['path'].split('/')[-1].upper()}"
+    dig["sim"] = dig["flowf"] + f"/{dig['path'].split('/')[-1].upper()}"
     if dig["case"] == "spe11a":
         dig["dense_t"] = (
             np.genfromtxt(StringIO(cmdargs["time"]), delimiter=",", dtype=float) * 3600
@@ -169,7 +183,7 @@ def read_times(dig):
         dig (dict): Modified global dictionary
 
     """
-    with open(f"{dig['path']}/deck/dt.txt", "r", encoding="utf8") as file:
+    with open(f"{dig['deckf']}/dt.txt", "r", encoding="utf8") as file:
         for i, value in enumerate(csv.reader(file)):
             if i == 0:
                 dig["time_initial"] = float(value[0])
@@ -291,7 +305,7 @@ def performance(dig):
         0, dig["times"][-1], round(dig["times"][-1] / dig["sparse_t"]) + 1
     )
     with open(
-        f"{dig['path']}/flow/{dig['path'].split('/')[-1].upper()}.INFOSTEP",
+        f"{dig['flowf']}/{dig['path'].split('/')[-1].upper()}.INFOSTEP",
         "r",
         encoding="utf8",
     ) as file:
@@ -716,22 +730,18 @@ def compute_m_c(dig, dil):
     dil["boxc_x"] = np.roll(dil["boxc"], 1)
     dil["boxc_y"] = np.roll(dil["boxc"], -dig["gxyz"][0])
     dil["boxc_z"] = np.roll(dil["boxc"], -dig["gxyz"][0] * dig["gxyz"][1])
-    max_xcw(dig, dil)
     for t_n in range(dig["no_skip_rst"] + 1, dig["norst"]):
         if dig["use"] == "opm":
             rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}", t_n])
         else:
             rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}"][t_n])
         dil["xcw"] = np.divide(rss, rss + WAT_DEN_REF / GAS_DEN_REF)
-        if dil["xcw_max"] > 0:
-            dil["xcw"] /= dil["xcw_max"]
-        if dil["xcw_max"] == -1:
-            if dig["use"] == "opm":
-                rssat = np.array(dig["unrst"][f"{dig['r_s'].upper()}SAT", t_n])
-            else:
-                rssat = np.array(dig["unrst"][f"{dig['r_s'].upper()}SAT"][t_n])
-            x_l_co2_max = np.divide(rssat, rssat + WAT_DEN_REF / GAS_DEN_REF)
-            dil["xcw"] = np.divide(dil["xcw"], x_l_co2_max)
+        if dig["use"] == "opm":
+            rssat = np.array(dig["unrst"][f"{dig['r_s'].upper()}SAT", t_n])
+        else:
+            rssat = np.array(dig["unrst"][f"{dig['r_s'].upper()}SAT"][t_n])
+        x_l_co2_max = np.divide(rssat, rssat + WAT_DEN_REF / GAS_DEN_REF)
+        dil["xcw"] = np.divide(dil["xcw"], x_l_co2_max)
         if dig["case"] != "spe11c":
             dil["m_c"].append(
                 np.sum(
@@ -828,37 +838,6 @@ def write_sparse_data(dig, dil):
         file.write("\n".join(text))
 
 
-def max_xcw(dig, dil):
-    """
-    Get the maximum CO2 mass fraction in the liquid phase
-
-    Args:
-        dig (dict): Global dictionary\n
-        dil (dict): Local dictionary
-
-    Returns:
-        dil (dict): Modified local dictionary
-
-    """
-    dil["xcw_max"] = 0
-    if dig["use"] == "opm":
-        if dig["unrst"].count(f"{dig['r_s'].upper()}SAT", 0):
-            dil["xcw_max"] = -1
-            return
-    else:
-        if dig["unrst"].has_kw(f"{dig['r_s'].upper()}SAT"):
-            dil["xcw_max"] = -1
-            return
-    for t_n in range(dig["no_skip_rst"], dig["norst"]):
-        if dig["use"] == "opm":
-            rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}", t_n])
-        else:
-            rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}"][t_n])
-        xcw = np.divide(rss, rss + WAT_DEN_REF / GAS_DEN_REF)
-        xcw_max = np.max(xcw[dil["boxc"]])
-        dil["xcw_max"] = max(xcw_max, dil["xcw_max"])
-
-
 def get_corners(dig, dil):
     """
     Get the cell corners from the simulation grid
@@ -873,7 +852,7 @@ def get_corners(dig, dil):
     """
     for i in ["x", "z"]:
         dil[f"sim{i}cent"] = [0.0] * dig["noxz"]
-    with open(f"{dig['path']}/deck/centers.txt", "r", encoding="utf8") as file:
+    with open(f"{dig['deckf']}/centers.txt", "r", encoding="utf8") as file:
         for j, row in enumerate(csv.reader(file)):
             dil["simxcent"][j] = float(row[0])
             dil["simzcent"][j] = dig["dims"][2] - float(row[2])
@@ -881,7 +860,7 @@ def get_corners(dig, dil):
                 dil["simxcent"][j] = -1e10
                 dil["simzcent"][j] = -1e10
     dil["simpoly"] = []
-    with open(f"{dig['path']}/deck/corners.txt", "r", encoding="utf8") as file:
+    with open(f"{dig['deckf']}/corners.txt", "r", encoding="utf8") as file:
         for row in csv.reader(file):
             dil["simpoly"].append(
                 Polygon(
@@ -988,7 +967,7 @@ def handle_yaxis_mapping_extensive(dig, dil):
 
     """
     simycent = [0.0] * dig["gxyz"][1]
-    with open(f"{dig['path']}/deck/ycenters.txt", "r", encoding="utf8") as file:
+    with open(f"{dig['deckf']}/ycenters.txt", "r", encoding="utf8") as file:
         for j, row in enumerate(csv.reader(file)):
             simycent[j] = float(f"{float(row[0]):.1f}")
     simyvert = [0]
@@ -1074,7 +1053,7 @@ def handle_yaxis_mapping_intensive(dig, dil):
 
     """
     simycent = [0.0] * dig["gxyz"][1]
-    with open(f"{dig['path']}/deck/ycenters.txt", "r", encoding="utf8") as file:
+    with open(f"{dig['deckf']}/ycenters.txt", "r", encoding="utf8") as file:
         for j, row in enumerate(csv.reader(file)):
             simycent[j] = float(row[0])
     indy = np.array(
@@ -1164,7 +1143,7 @@ def static_map_to_report_grid_performance_spatial(dig, dil):
     """
     dil["latest_dts"], infotimes, tsteps = [], [], []
     with open(
-        f"{dig['path']}/flow/{dig['path'].split('/')[-1].upper()}.INFOSTEP",
+        f"{dig['flowf']}/{dig['path'].split('/')[-1].upper()}.INFOSTEP",
         "r",
         encoding="utf8",
     ) as file:

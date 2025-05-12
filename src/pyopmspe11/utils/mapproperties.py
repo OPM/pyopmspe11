@@ -98,12 +98,9 @@ def structured_handling_spe11a(dic):
                 (dic["xmx_center"][i] - dic["sensors"][1][0]) ** 2
                 + (dic["zmz_center"][k] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
             )
-            dic["satnum"].append(dic["ids_gmsh"][fgl][0])
-            boxes(dic, dic["xmx_center"][i], dic["zmz_center"][k], i, dic["satnum"][-1])
-            dic["permx"].append(f"{dic['rock'][int(dic['ids_gmsh'][fgl][0]) - 1][0]}")
-            dic["poro"].append(f"{dic['rock'][int(dic['ids_gmsh'][fgl][0]) - 1][1]}")
-            dic["disperc"].append(
-                f"{dic['dispersion'][int(dic['ids_gmsh'][fgl][0])-1]}"
+            dic["fluxnum"].append(dic["ids_gmsh"][fgl][0])
+            boxes(
+                dic, dic["xmx_center"][i], dic["zmz_center"][k], i, dic["fluxnum"][-1]
             )
             centers.append(
                 f"{dic['xmx_center'][i]}, {dic['ymy_center'][0]}, {dic['zmz_center'][k]}"
@@ -121,13 +118,13 @@ def structured_handling_spe11a(dic):
     sensors(dic)
     wells(dic)
     with open(
-        f"{dic['fol']}/deck/centers.txt",
+        f"{dic['deckf']}/centers.txt",
         "w",
         encoding="utf8",
     ) as file:
         file.write("\n".join(centers))
     with open(
-        f"{dic['fol']}/deck/corners.txt",
+        f"{dic['deckf']}/corners.txt",
         "w",
         encoding="utf8",
     ) as file:
@@ -167,15 +164,10 @@ def structured_handling_spe11bc(dic):
             z_c = dic["zmz_center"][k]
             if dic["spe11"] == "spe11c":
                 z_c -= map_z(dic, 0)
-            dic["satnum"].append(dic["ids_gmsh"][fgl][0])
-            boxes(dic, dic["xmx_center"][i], z_c, i, dic["satnum"][-1])
-            dic["permx"].append(f"{dic['rock'][int(dic['ids_gmsh'][fgl][0]) - 1][0]}")
-            poro = f"{dic['rock'][int(dic['ids_gmsh'][fgl][0]) - 1][1]}"
-            dic["poro"].append(poro)
-            pv = float(poro) * (dic["pvAdded"] + dic["widthBuffer"])
-            dic["thconr"].append(f"{dic['rockCond'][int(dic['ids_gmsh'][fgl][0])-1]}")
-            dic["disperc"].append(
-                f"{dic['dispersion'][int(dic['ids_gmsh'][fgl][0])-1]}"
+            dic["fluxnum"].append(dic["ids_gmsh"][fgl][0])
+            boxes(dic, dic["xmx_center"][i], z_c, i, dic["fluxnum"][-1])
+            pv = dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1] * (
+                dic["pvAdded"] + dic["widthBuffer"]
             )
             if i == 0 and (
                 int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
@@ -201,8 +193,7 @@ def structured_handling_spe11bc(dic):
                 + f"{dic['dims'][2] -dic['zmz'][k+1]}"
             )
         for j in range(dic["noCells"][1] - 1):
-            for names in ["satnum", "poro", "permx", "disperc", "thconr"]:
-                dic[f"{names}"].extend(dic[f"{names}"][-dic["noCells"][0] :])
+            dic["fluxnum"].extend(dic["fluxnum"][-dic["noCells"][0] :])
             for i_i in range(dic["noCells"][0]):
                 sensor1.append(
                     (dic["xmx_center"][i_i] - dic["sensors"][0][0]) ** 2
@@ -224,19 +215,19 @@ def structured_handling_spe11bc(dic):
                     dic["xmx_center"][i_i],
                     z_c,
                     i_i,
-                    dic["satnum"][-dic["noCells"][0] + i_i],
+                    dic["fluxnum"][-dic["noCells"][0] + i_i],
                 )
                 if i_i == 0 and (
-                    int(dic["satnum"][-dic["noCells"][0] + i_i]) != 1
-                    and int(dic["satnum"][-dic["noCells"][0] + i_i]) != 7
+                    int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
+                    and int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 7
                 ):
                     dic["porv"].append(
                         f"PORV {pv_l*dic['dy'][j+1]*dic['dz'][k]} 1 1 "
                         + f"{j+2} {j+2} {k+1} {k+1} /"
                     )
                 elif i_i == dic["noCells"][0] - 1 and (
-                    int(dic["satnum"][-dic["noCells"][0] + i_i]) != 1
-                    and int(dic["satnum"][-dic["noCells"][0] + i_i]) != 7
+                    int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
+                    and int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 7
                 ):
                     dic["porv"].append(
                         f"PORV {pv*dic['dy'][j+1]*dic['dz'][k]} {dic['noCells'][0]} "
@@ -251,13 +242,13 @@ def structured_handling_spe11bc(dic):
     sensors(dic)
     wells(dic)
     with open(
-        f"{dic['fol']}/deck/centers.txt",
+        f"{dic['deckf']}/centers.txt",
         "w",
         encoding="utf8",
     ) as file:
         file.write("\n".join(centers))
     with open(
-        f"{dic['fol']}/deck/corners.txt",
+        f"{dic['deckf']}/corners.txt",
         "w",
         encoding="utf8",
     ) as file:
@@ -278,8 +269,10 @@ def add_pv_fipnum_front_back(dic):
     for k in range(dic["noCells"][2]):
         for i in range(dic["noCells"][0] - 2):
             ind = i + 1 + k * dic["noCells"][0] * dic["noCells"][1]
-            if int(dic["satnum"][ind]) != 1 and int(dic["satnum"][ind]) != 7:
-                pv = float(dic["poro"][ind]) * (dic["pvAdded"] + dic["widthBuffer"])
+            if int(dic["fluxnum"][ind]) != 1 and int(dic["fluxnum"][ind]) != 7:
+                pv = dic["rock"][int(dic["fluxnum"][ind]) - 1][1] * (
+                    dic["pvAdded"] + dic["widthBuffer"]
+                )
                 if dic["grid"] == "corner-point":
                     ind_xz = i + 1 + k * dic["noCells"][0]
                     dic["porv"].append(
@@ -306,11 +299,11 @@ def set_back_front_fipnums(dic, ind):
     """
     For the front and back boundaries in spe11c:\n
     Box A: Fipnum 13\n
-    Satnum 1 and Box A: Fipnum 14\n
+    Facie 1 and Box A: Fipnum 14\n
     Box B: Fipnum 15\n
-    Satnum 1 and Box B: Fipnum 16\n
+    Facie 1 and Box B: Fipnum 16\n
     Box C: Fipnum 17\n
-    Satnum 1 and Box C: Fipnum 18\n
+    Facie 1 and Box C: Fipnum 18\n
 
     Args:
         dic (dict): Global dictionary
@@ -338,7 +331,7 @@ def set_back_front_fipnums(dic, ind):
     elif int(dic["fipnum"][ind]) == 12:
         dic["fipnum"][ind] = "18"
         dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "18"
-    elif int(dic["satnum"][ind]) == 1:
+    elif int(dic["fluxnum"][ind]) == 1:
         dic["fipnum"][ind] = "10"
         dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "10"
     else:
@@ -380,11 +373,8 @@ def corner_point_handling_spe11a(dic):
             (dic["xyz"][0] - dic["sensors"][1][0]) ** 2
             + (dic["xyz"][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
         )
-        dic["satnum"].append(dic["ids_gmsh"][fgl][0])
-        boxes(dic, dic["xyz"][0], dic["xyz"][2], dic["ijk"][0], dic["satnum"][-1])
-        dic["permx"].append(f"{dic['rock'][int(dic['ids_gmsh'][fgl][0]) - 1][0]}")
-        dic["poro"].append(f"{dic['rock'][int(dic['ids_gmsh'][fgl][0]) - 1][1]}")
-        dic["disperc"].append(f"{dic['dispersion'][int(dic['ids_gmsh'][fgl][0])-1]}")
+        dic["fluxnum"].append(dic["ids_gmsh"][fgl][0])
+        boxes(dic, dic["xyz"][0], dic["xyz"][2], dic["ijk"][0], dic["fluxnum"][-1])
         centers.append(f"{dic['xyz'][0]}, {dic['ymy_center'][0]}, {dic['xyz'][2]}")
         corners.append(dic["corns"])
     dic["pop1"] = pd.Series(sensor1).argmin()
@@ -406,13 +396,13 @@ def corner_point_handling_spe11a(dic):
     dic["wellijk"][0] = [well1ijk[0] + 1, 1, well1ijk[2] + 1]
     dic["wellijk"][1] = [well2ijk[0] + 1, 1, well2ijk[2] + 1]
     with open(
-        f"{dic['fol']}/deck/centers.txt",
+        f"{dic['deckf']}/centers.txt",
         "w",
         encoding="utf8",
     ) as file:
         file.write("\n".join(centers))
     with open(
-        f"{dic['fol']}/deck/corners.txt",
+        f"{dic['deckf']}/corners.txt",
         "w",
         encoding="utf8",
     ) as file:
@@ -512,14 +502,11 @@ def corner_point_handling_spe11bc(dic):
         z_c = dic["xyz"][2]
         if dic["spe11"] == "spe11c":
             z_c -= map_z(dic, dic["ijk"][1])
-        dic["satnum"].append(dic["ids_gmsh"][fgl][0])
-        boxes(dic, dic["xyz"][0], z_c, dic["ijk"][0], dic["satnum"][-1])
-        dic["permx"].append(f"{dic['rock'][int(dic['ids_gmsh'][fgl][0]) - 1][0]}")
-        poro = f"{dic['rock'][int(dic['ids_gmsh'][fgl][0]) - 1][1]}"
-        dic["poro"].append(poro)
-        pv = float(poro) * (dic["pvAdded"] + dic["widthBuffer"])
-        dic["disperc"].append(f"{dic['dispersion'][int(dic['ids_gmsh'][fgl][0])-1]}")
-        dic["thconr"].append(f"{dic['rockCond'][int(dic['ids_gmsh'][fgl][0])-1]}")
+        dic["fluxnum"].append(dic["ids_gmsh"][fgl][0])
+        boxes(dic, dic["xyz"][0], z_c, dic["ijk"][0], dic["fluxnum"][-1])
+        pv = dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1] * (
+            dic["pvAdded"] + dic["widthBuffer"]
+        )
         if dic["ijk"][0] == 0 and (
             int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
         ):
@@ -539,8 +526,7 @@ def corner_point_handling_spe11bc(dic):
         corners.append(dic["corns"])
         if dic["ijk"][0] > 0 and dic["ijk"][0] == dic["noCells"][0] - 1:
             for j in range(dic["noCells"][1] - 1):
-                for names in ["satnum", "poro", "permx", "disperc", "thconr"]:
-                    dic[f"{names}"].extend(dic[f"{names}"][-dic["noCells"][0] :])
+                dic["fluxnum"].extend(dic["fluxnum"][-dic["noCells"][0] :])
                 for i_i in range(dic["noCells"][0]):
                     z_c = ztemp[i_i]
                     if dic["spe11"] == "spe11c":
@@ -550,11 +536,11 @@ def corner_point_handling_spe11bc(dic):
                         xtemp[i_i],
                         z_c,
                         i_i,
-                        dic["satnum"][-dic["noCells"][0] + i_i],
+                        dic["fluxnum"][-dic["noCells"][0] + i_i],
                     )
                     if i_i == 0 and (
-                        int(dic["satnum"][-dic["noCells"][0] + i_i]) != 1
-                        and int(dic["satnum"][-dic["noCells"][0] + i_i]) != 7
+                        int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
+                        and int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 7
                     ):
                         dic["d_zl"] = dic["d_z"][-dic["noCells"][0] + 1 + i]
                         dic["porv"].append(
@@ -563,8 +549,8 @@ def corner_point_handling_spe11bc(dic):
                             + f"{j+2} {j+2} {dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
                         )
                     elif i_i == dic["noCells"][0] - 1 and (
-                        int(dic["satnum"][-dic["noCells"][0] + i_i]) != 1
-                        and int(dic["satnum"][-dic["noCells"][0] + i_i]) != 7
+                        int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
+                        and int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 7
                     ):
                         dic["porv"].append(
                             f"PORV {pv*dic['d_y'][j+1]*dic['d_z'][i]} "
@@ -580,13 +566,13 @@ def corner_point_handling_spe11bc(dic):
     dic["well2"] = pd.Series(well2).argmin()
     locate_wells_sensors(dic)
     with open(
-        f"{dic['fol']}/deck/centers.txt",
+        f"{dic['deckf']}/centers.txt",
         "w",
         encoding="utf8",
     ) as file:
         file.write("\n".join(centers))
     with open(
-        f"{dic['fol']}/deck/corners.txt",
+        f"{dic['deckf']}/corners.txt",
         "w",
         encoding="utf8",
     ) as file:
@@ -653,7 +639,7 @@ def locate_wells_sensors(dic):
     ] = "9"
 
 
-def boxes(dic, x_c, z_c, idx, satnum):
+def boxes(dic, x_c, z_c, idx, fluxnum):
     """
     Find the global indices for the different boxes for the report data
 
@@ -662,7 +648,7 @@ def boxes(dic, x_c, z_c, idx, satnum):
         x_c (float): x-position of the cell center\n
         z_c (float): z-position of the cell center\n
         idx (int): i index of the cell position\n
-        satnum (int): Number of the facie in the cell
+        fluxnum (int): Number of the facie in the cell
 
     Returns:
         dic (dict): Modified global dictionary
@@ -674,36 +660,36 @@ def boxes(dic, x_c, z_c, idx, satnum):
         & (x_c >= dic["boxb"][0][0])
         & (x_c <= dic["boxb"][1][0])
     ):
-        check_facie1(dic, satnum, "6", "3")
+        check_facie1(dic, fluxnum, "6", "3")
     elif (
         (dic["dims"][2] + dic["maxelevation"] - z_c >= dic["boxc"][0][2])
         & (dic["dims"][2] + dic["maxelevation"] - z_c <= dic["boxc"][1][2])
         & (x_c >= dic["boxc"][0][0])
         & (x_c <= dic["boxc"][1][0])
     ):
-        check_facie1(dic, satnum, "12", "4")
+        check_facie1(dic, fluxnum, "12", "4")
     elif (
         (dic["dims"][2] + dic["maxelevation"] - z_c >= dic["boxa"][0][2])
         & (dic["dims"][2] + dic["maxelevation"] - z_c <= dic["boxa"][1][2])
         & (x_c >= dic["boxa"][0][0])
         & (x_c <= dic["boxa"][1][0])
     ):
-        check_facie1(dic, satnum, "5", "2")
+        check_facie1(dic, fluxnum, "5", "2")
     elif dic["spe11"] != "spe11a" and idx in (0, dic["noCells"][0] - 1):
-        check_facie1(dic, satnum, "10", "11")
-    elif satnum == "1":
+        check_facie1(dic, fluxnum, "10", "11")
+    elif fluxnum == "1":
         dic["fipnum"].append("7")
     else:
         dic["fipnum"].append("1")
 
 
-def check_facie1(dic, satnum, numa, numb):
+def check_facie1(dic, fluxnum, numa, numb):
     """
     Handle the overlaping with facie 1
 
     Args:
         dic (dict): Global dictionary\n
-        satnum (int): Number of the facie in the cell\n
+        fluxnum (int): Number of the facie in the cell\n
         numa (int): Fipnum to assign to the cell if it overlaps with Facie 1\n
         numb (int): Fipnum to assign to the cell otherwise.
 
@@ -711,7 +697,7 @@ def check_facie1(dic, satnum, numa, numb):
         dic (dict): Modified global dictionary
 
     """
-    if satnum == "1":
+    if fluxnum == "1":
         dic["fipnum"].append(numa)
     else:
         dic["fipnum"].append(numb)
@@ -730,12 +716,12 @@ def positions(dic):
     """
     dic["sensorijk"] = [[] for _ in range(len(dic["sensors"]))]
     getfacies(dic)
-    for names in ["satnum", "poro", "permx", "thconr", "fipnum", "disperc", "porv"]:
+    for names in ["fluxnum", "fipnum", "porv"]:
         dic[f"{names}"] = []
     if dic["grid"] == "corner-point":
         if dic["use"] == "opm":
-            dic["gridf"] = OpmGrid(f"{dic['fol']}/flow/INITIAL.EGRID")
-            dic["initf"] = OpmFile(f"{dic['fol']}/flow/INITIAL.INIT")
+            dic["gridf"] = OpmGrid(f"{dic['flowf']}/INITIAL.EGRID")
+            dic["initf"] = OpmFile(f"{dic['flowf']}/INITIAL.INIT")
             dic["no_cells"] = (
                 dic["gridf"].dimension[0]
                 * dic["gridf"].dimension[1]
@@ -746,8 +732,8 @@ def positions(dic):
             dic["d_z"] = np.array([0.0] * dic["no_cells"])
             dic["d_z"][dic["actind"]] = list(dic["initf"]["DZ"])
         else:
-            dic["gridf"] = Grid(f"{dic['fol']}/flow/INITIAL.EGRID")
-            dic["initf"] = ResdataFile(f"{dic['fol']}/flow/INITIAL.INIT")
+            dic["gridf"] = Grid(f"{dic['flowf']}/INITIAL.EGRID")
+            dic["initf"] = ResdataFile(f"{dic['flowf']}/INITIAL.INIT")
             dic["actnum"] = list(dic["gridf"].export_actnum())
             dic["no_cells"] = dic["gridf"].nx * dic["gridf"].ny * dic["gridf"].nz
             dic["actind"] = list(i for i, act in enumerate(dic["actnum"]) if act == 1)
@@ -762,7 +748,7 @@ def positions(dic):
             structured_handling_spe11a(dic)
         else:
             structured_handling_spe11bc(dic)
-    np.savetxt(f"{dic['fol']}/deck/ycenters.txt", dic["ymy_center"], fmt="%.8E")
+    np.savetxt(f"{dic['deckf']}/ycenters.txt", dic["ymy_center"], fmt="%.8E")
 
 
 def sensors(dic):
@@ -1089,14 +1075,14 @@ def corner(dic):
 
 def refinement_z(xci, zci, ncx, ncz, znr):
     """
-    Refinment of the grid in the z-dir
+    Refinement of the grid in the z-dir
 
     Args:
         xci (list): Floats with the x-coordinates of the cell corners\n
         zci (list): Floats with the z-coordinates of the cell corners\n
         ncx (int): Number of cells in the x-dir\n
         ncz (int): Number of cells in the z-dir\n
-        znr (list): Integers with the number of z-refinments per cell
+        znr (list): Integers with the number of z-refinements per cell
 
     Returns:
         xcr (list): Floats with the new x-coordinates of the cell corners\n
