@@ -298,16 +298,10 @@ def check_deck(dic):
         args=f"{dic['only_flow']} --version", stdout=PIPE, shell=True
     ) as process:
         dic["flow_version"] = str(process.communicate()[0])[7:-3]
-    if dic["flow_version"] == "2023.10":
+    if dic["flow_version"] == "2024.10":
         print(
-            "\nYou are using Flow 2023.10. Please update to Flow 2024.04, or "
+            "\nYou are using Flow 2024.10. Please update to Flow 2025.04, or "
             + "build Flow from the master GitHub branches.\n"
-        )
-        sys.exit()
-    if dic["flow_version"] == "2024.04" and dic["model"] == "convective":
-        print(
-            "\nThe convective option requires a Flow version newer than "
-            + "22-08-2024. Please build Flow from the master GitHub branches.\n"
         )
         sys.exit()
 

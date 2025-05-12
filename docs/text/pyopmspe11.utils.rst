@@ -17,6 +17,6 @@ Module contents
 
 .. automodule:: pyopmspe11.utils
    :members:
-   :undoc-members:
-   :show-inheritance:
    :private-members:
+   :show-inheritance:
+   :undoc-members:
