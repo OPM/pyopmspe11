@@ -191,7 +191,7 @@ RPTRST
 % if dic['model'] == 'immiscible': 
 'BASIC=2' FLOWS FLORES DEN/
 % else:
-'BASIC=2' DEN ${'PCGW' if dic["co2store"] == "gaswater" else ''}  ${'RSWSAT' if dic["version"] == "master" and dic["co2store"] == "gaswater" else ''} ${'RSSAT' if dic["version"] == "master" and dic["co2store"] == "gasoil" else ''}/
+'BASIC=2' DEN ${'PCGW' if dic["co2store"] == "gaswater" else ''}  ${'RSWSAT' if dic["co2store"] == "gaswater" else ''} ${'RSSAT' if dic["co2store"] == "gasoil" else ''}/
 % endif
 
 % if dic['model'] != 'immiscible':
@@ -247,7 +247,7 @@ RPTRST
 % if dic['model'] == 'immiscible': 
 'BASIC=2' FLOWS FLORES DEN/
 % else:
-'BASIC=2' DEN RESIDUAL ${'PCGW' if dic["co2store"] == "gaswater" else ''}  ${'RSWSAT' if dic["version"] == "master" and dic["co2store"] == "gaswater" else ''} ${'RSSAT' if dic["version"] == "master" and dic["co2store"] == "gasoil" else ''}/
+'BASIC=2' DEN RESIDUAL ${'PCGW' if dic["co2store"] == "gaswater" else ''}  ${'RSWSAT' if dic["co2store"] == "gaswater" else ''} ${'RSSAT' if dic["co2store"] == "gasoil" else ''}/
 % endif
 
 % if dic['model'] == 'convective':
