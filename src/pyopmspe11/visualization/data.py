@@ -185,8 +185,9 @@ def read_resdata(dig):
 
     """
     dig["unrst"] = ResdataFile(f"{dig['sim']}.UNRST")
+    time = []
     for i in range(dig["unrst"].num_report_steps()):
-        time = 86400 * dig["unrst"].iget_kw("DOUBHEAD")[i][0]
+        time.append(86400 * dig["unrst"].iget_kw("DOUBHEAD")[i][0])
         if len(dig["times"]) == 0:
             if dig["unrst"].has_kw("RSW"):
                 if max(dig["unrst"].iget_kw("RSW")[i]) > 0:
@@ -195,7 +196,7 @@ def read_resdata(dig):
                     )
                     dig["no_skip_rst"] = i - 1
                     dig["times"].append(0)
-                    dig["times"].append(time - dig["time_initial"])
+                    dig["times"].append(time[-1] - dig["time_initial"])
             else:
                 dig["immiscible"] = True
                 if max(dig["unrst"].iget_kw("SGAS")[i]) > 0:
@@ -204,9 +205,11 @@ def read_resdata(dig):
                     )
                     dig["no_skip_rst"] = i - 1
                     dig["times"].append(0)
-                    dig["times"].append(time - dig["time_initial"])
+                    dig["times"].append(time[-1] - dig["time_initial"])
         else:
-            dig["times"].append(time - dig["time_initial"])
+            dig["times"].append(time[-1] - dig["time_initial"])
+    if not dig["times"]:
+        dig["times"] = time
     dig["init"] = ResdataFile(f"{dig['sim']}.INIT")
     dig["egrid"] = Grid(f"{dig['sim']}.EGRID")
     dig["smspec"] = Summary(f"{dig['sim']}.SMSPEC")
@@ -242,24 +245,27 @@ def read_opm(dig):
 
     """
     dig["unrst"] = OpmRestart(f"{dig['sim']}.UNRST")
+    time = []
     for i in range(len(dig["unrst"].report_steps)):
-        time = 86400 * dig["unrst"]["DOUBHEAD", i][0]
+        time.append(86400 * dig["unrst"]["DOUBHEAD", i][0])
         if len(dig["times"]) == 0:
             if dig["unrst"].count("RSW", 0):
                 if max(dig["unrst"]["RSW", i]) > 0:
                     dig["time_initial"] = 86400 * dig["unrst"]["DOUBHEAD", i - 1][0]
                     dig["no_skip_rst"] = i - 1
                     dig["times"].append(0)
-                    dig["times"].append(time - dig["time_initial"])
+                    dig["times"].append(time[-1] - dig["time_initial"])
             else:
                 dig["immiscible"] = True
                 if max(dig["unrst"]["SGAS", i]) > 0:
                     dig["time_initial"] = 86400 * dig["unrst"]["DOUBHEAD", i - 1][0]
                     dig["no_skip_rst"] = i - 1
                     dig["times"].append(0)
-                    dig["times"].append(time - dig["time_initial"])
+                    dig["times"].append(time[-1] - dig["time_initial"])
         else:
-            dig["times"].append(time - dig["time_initial"])
+            dig["times"].append(time[-1] - dig["time_initial"])
+    if not dig["times"]:
+        dig["times"] = time
     dig["init"] = OpmFile(f"{dig['sim']}.INIT")
     dig["egrid"] = OpmGrid(f"{dig['sim']}.EGRID")
     dig["smspec"] = OpmSummary(f"{dig['sim']}.SMSPEC")
@@ -847,8 +853,8 @@ def get_corners(dig, dil):
     """
     for i in ["x", "z"]:
         dil[f"sim{i}cent"] = [0.0] * dig["noxz"]
-    dil["simycent"] = []
-    dil["simpoly"] = []
+    dil["simycent"] = [0.0] * dig["gxyz"][1]
+    dil["simpoly"] = [0.0] * dig["noxz"]
     if dig["use"] == "opm":
         z_0 = dig["egrid"].xyz_from_ijk(0, 0, 0)[2][0]
         dil["satnum"] = list(dig["init"]["SATNUM"])
@@ -857,34 +863,35 @@ def get_corners(dig, dil):
                 n = i + (dig["gxyz"][2] - j - 1) * dig["gxyz"][0]
                 m = i + (dig["gxyz"][2] - j - 1) * dig["gxyz"][1] * dig["gxyz"][0]
                 xyz = dig["egrid"].xyz_from_ijk(i, 0, dig["gxyz"][2] - j - 1)
-                dil["simpoly"].append(
-                    Polygon(
-                        [
-                            [xyz[0][0], xyz[2][0] - z_0],
-                            [xyz[0][1], xyz[2][1] - z_0],
-                            [xyz[0][5], xyz[2][5] - z_0],
-                            [xyz[0][4], xyz[2][4] - z_0],
-                        ]
-                    )
+                dil["simpoly"][n] = Polygon(
+                    [
+                        [xyz[0][0], dig["dims"][2] - (xyz[2][0] - z_0)],
+                        [xyz[0][1], dig["dims"][2] - (xyz[2][1] - z_0)],
+                        [xyz[0][5], dig["dims"][2] - (xyz[2][5] - z_0)],
+                        [xyz[0][4], dig["dims"][2] - (xyz[2][4] - z_0)],
+                    ]
                 )
-                pxz = dil["simpoly"][-1].centroid.wkt
+                pxz = dil["simpoly"][n].centroid.wkt
                 pxz = list(float(j) for j in pxz[7:-1].split(" "))
                 dil["simxcent"][n] = pxz[0]
-                dil["simzcent"][n] = dig["dims"][2] - pxz[1]
-                if dig["porv"][m] == 0:
+                dil["simzcent"][n] = pxz[1]
+                if (
+                    pxz[1] / 1.2 < 1e-4 / dig["dims"][2]
+                    and 2.72 / 2.8 < pxz[0] / dig["dims"][0]
+                ):
                     dil["simxcent"][n] = -1e10
                     dil["simzcent"][n] = -1e10
-                    dil["simpoly"][-1] = Polygon(
+                    dil["simpoly"][n] = Polygon(
                         [
-                            [xyz[0][0], xyz[2][0] - z_0],
-                            [xyz[0][1], xyz[2][1] - z_0],
-                            [xyz[0][1], xyz[2][1] - z_0],
-                            [xyz[0][0], xyz[2][0] - z_0],
+                            [xyz[0][0], dig["dims"][2] - (xyz[2][0] - z_0)],
+                            [xyz[0][1], dig["dims"][2] - (xyz[2][1] - z_0)],
+                            [xyz[0][1], dig["dims"][2] - (xyz[2][1] - z_0)],
+                            [xyz[0][0], dig["dims"][2] - (xyz[2][0] - z_0)],
                         ]
                     )
         for j in range(dig["gxyz"][1]):
             xyz = dig["egrid"].xyz_from_ijk(0, j, 0)
-            dil["simycent"].append(0.5 * (xyz[1][2] - xyz[1][1]) + xyz[1][1])
+            dil["simycent"][j] = 0.5 * (xyz[1][2] - xyz[1][1]) + xyz[1][1]
     else:
         dil["satnum"] = list(dig["init"].iget_kw("SATNUM")[0])
         xyz = dig["egrid"].export_corners(dig["egrid"].export_index())
@@ -893,34 +900,35 @@ def get_corners(dig, dil):
             for i in range(dig["gxyz"][0]):
                 n = i + (dig["gxyz"][2] - j - 1) * dig["gxyz"][0]
                 m = i + (dig["gxyz"][2] - j - 1) * dig["gxyz"][1] * dig["gxyz"][0]
-                dil["simpoly"].append(
-                    Polygon(
-                        [
-                            [xyz[m][0], xyz[m][2] - z_0],
-                            [xyz[m][3], xyz[m][5] - z_0],
-                            [xyz[m][15], xyz[m][17] - z_0],
-                            [xyz[m][12], xyz[m][14] - z_0],
-                        ]
-                    )
+                dil["simpoly"][n] = Polygon(
+                    [
+                        [xyz[m][0], dig["dims"][2] - (xyz[m][2] - z_0)],
+                        [xyz[m][3], dig["dims"][2] - (xyz[m][5] - z_0)],
+                        [xyz[m][15], dig["dims"][2] - (xyz[m][17] - z_0)],
+                        [xyz[m][12], dig["dims"][2] - (xyz[m][14] - z_0)],
+                    ]
                 )
-                pxz = dil["simpoly"][-1].centroid.wkt
+                pxz = dil["simpoly"][n].centroid.wkt
                 pxz = list(float(j) for j in pxz[7:-1].split(" "))
                 dil["simxcent"][n] = pxz[0]
-                dil["simzcent"][n] = dig["dims"][2] - pxz[1]
-                if dig["porv"][m] == 0:
+                dil["simzcent"][n] = pxz[1]
+                if (
+                    pxz[1] / 1.2 < 1e-4 / dig["dims"][2]
+                    and 2.72 / 2.8 < pxz[0] / dig["dims"][0]
+                ):
                     dil["simxcent"][n] = -1e10
                     dil["simzcent"][n] = -1e10
-                    dil["simpoly"][-1] = Polygon(
+                    dil["simpoly"][n] = Polygon(
                         [
-                            [xyz[m][0], xyz[m][2] - z_0],
-                            [xyz[m][3], xyz[m][5] - z_0],
-                            [xyz[m][3], xyz[m][5] - z_0],
-                            [xyz[m][0], xyz[m][2] - z_0],
+                            [xyz[m][0], dig["dims"][2] - (xyz[m][2] - z_0)],
+                            [xyz[m][3], dig["dims"][2] - (xyz[m][5] - z_0)],
+                            [xyz[m][3], dig["dims"][2] - (xyz[m][5] - z_0)],
+                            [xyz[m][0], dig["dims"][2] - (xyz[m][2] - z_0)],
                         ]
                     )
         for j in range(dig["gxyz"][1]):
             n = j * dig["gxyz"][0]
-            dil["simycent"].append(0.5 * (xyz[n][7] - xyz[n][1]) + xyz[n][1])
+            dil["simycent"][j] = 0.5 * (xyz[n][7] - xyz[n][1]) + xyz[n][1]
     dil["simycent"] = np.array(dil["simycent"])
 
 
