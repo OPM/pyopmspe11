@@ -109,12 +109,12 @@ DIFFAGAS
 SPECROCK
 36.12 2125.0
 70.0 2125.0 / --Table 1
-/ --Table 1
-/ --Table 1
-/ --Table 1
-/ --Table 1
-/ --Table 1
-/ --Table 1
+/ --Defaulted to table 1
+/ --Defaulted to table 1
+/ --Defaulted to table 1
+/ --Defaulted to table 1
+/ --Defaulted to table 1
+/ --Defaulted to table 1
 
 THCO2MIX
 NONE NONE NONE /
@@ -168,7 +168,7 @@ BWPR
 SCHEDULE
 ----------------------------------------------------------------------------
 RPTRST
-'BASIC=2' DEN PCGW RSWSAT RESIDUAL /
+'BASIC=2' DEN PCGW RESIDUAL RSWSAT /
 
 BCPROP
 1 THERMAL /

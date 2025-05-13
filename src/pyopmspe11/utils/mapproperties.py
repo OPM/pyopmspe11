@@ -10,14 +10,7 @@ import csv
 import numpy as np
 import pandas as pd
 from shapely.geometry import Polygon
-from resdata.resfile import ResdataFile
-from resdata.grid import Grid
-
-try:
-    from opm.io.ecl import EGrid as OpmGrid
-    from opm.io.ecl import EclFile as OpmFile
-except ImportError:
-    pass
+from pyopmspe11.utils.writefile import create_corner_point_grid
 
 
 def grid(dic):
@@ -38,7 +31,6 @@ def grid(dic):
         for i, name in enumerate(["xmx", "ymy", "zmz"]):
             dic[f"{name}"] = np.linspace(0, dic["dims"][i], dic["noCells"][i] + 1)
     else:
-        dic["xcor"], dic["zcor"] = [], []
         for i, (name, arr) in enumerate(
             zip(["xmx", "ymy", "zmz"], ["x_n", "y_n", "z_n"])
         ):
@@ -81,7 +73,7 @@ def structured_handling_spe11a(dic):
         dic (dict): Modified global dictionary
 
     """
-    sensor1, sensor2, centers, corners = [], [], [], []
+    sensor1, sensor2 = [], []
     for k in range(dic["noCells"][2]):
         for i in range(dic["noCells"][0]):
             fgl = pd.Series(
@@ -102,33 +94,12 @@ def structured_handling_spe11a(dic):
             boxes(
                 dic, dic["xmx_center"][i], dic["zmz_center"][k], i, dic["fluxnum"][-1]
             )
-            centers.append(
-                f"{dic['xmx_center'][i]}, {dic['ymy_center'][0]}, {dic['zmz_center'][k]}"
-            )
-            corners.append(
-                f"{dic['xmx'][i]}, {dic['dims'][2] -dic['zmz'][k]}, {dic['xmx'][i+1]}, "
-                + f"{dic['dims'][2] -dic['zmz'][k]}, {dic['xmx'][i+1]}, "
-                + f"{dic['dims'][2] -dic['zmz'][k+1]}, {dic['xmx'][i]}, "
-                + f"{dic['dims'][2] -dic['zmz'][k+1]}"
-            )
     dic["pop1"] = pd.Series(sensor1).argmin()
     dic["pop2"] = pd.Series(sensor2).argmin()
     dic["fipnum"][dic["pop1"]] = "8"
     dic["fipnum"][dic["pop2"]] = "9"
     sensors(dic)
     wells(dic)
-    with open(
-        f"{dic['deckf']}/centers.txt",
-        "w",
-        encoding="utf8",
-    ) as file:
-        file.write("\n".join(centers))
-    with open(
-        f"{dic['deckf']}/corners.txt",
-        "w",
-        encoding="utf8",
-    ) as file:
-        file.write("\n".join(corners))
 
 
 def structured_handling_spe11bc(dic):
@@ -142,7 +113,7 @@ def structured_handling_spe11bc(dic):
         dic (dict): Modified global dictionary
 
     """
-    sensor1, sensor2, centers, corners, pv_l = [], [], [], [], 0
+    sensor1, sensor2, pv_l = [], [], 0
     for k in range(dic["noCells"][2]):
         for i in range(dic["noCells"][0]):
             fgl = pd.Series(
@@ -183,15 +154,6 @@ def structured_handling_spe11bc(dic):
                     f"PORV {pv*dic['dy'][0]*dic['dz'][k]} {dic['noCells'][0]} "
                     + f"{dic['noCells'][0]} 1 1 {k+1} {k+1} /"
                 )
-            centers.append(
-                f"{dic['xmx_center'][i]}, {dic['ymy_center'][0]}, {dic['zmz_center'][k]}"
-            )
-            corners.append(
-                f"{dic['xmx'][i]}, {dic['dims'][2] -dic['zmz'][k]}, {dic['xmx'][i+1]}, "
-                + f"{dic['dims'][2] -dic['zmz'][k]}, {dic['xmx'][i+1]}, "
-                + f"{dic['dims'][2] -dic['zmz'][k+1]}, {dic['xmx'][i]}, "
-                + f"{dic['dims'][2] -dic['zmz'][k+1]}"
-            )
         for j in range(dic["noCells"][1] - 1):
             dic["fluxnum"].extend(dic["fluxnum"][-dic["noCells"][0] :])
             for i_i in range(dic["noCells"][0]):
@@ -241,18 +203,6 @@ def structured_handling_spe11bc(dic):
     dic["fipnum"][dic["pop2"]] = "9"
     sensors(dic)
     wells(dic)
-    with open(
-        f"{dic['deckf']}/centers.txt",
-        "w",
-        encoding="utf8",
-    ) as file:
-        file.write("\n".join(centers))
-    with open(
-        f"{dic['deckf']}/corners.txt",
-        "w",
-        encoding="utf8",
-    ) as file:
-        file.write("\n".join(corners))
 
 
 def add_pv_fipnum_front_back(dic):
@@ -350,107 +300,55 @@ def corner_point_handling_spe11a(dic):
         dic (dict): Modified global dictionary
 
     """
-    well1, well2, sensor1, sensor2, centers, corners = [], [], [], [], [], []
+    well1, well2, sensor1, sensor2 = [], [], [], []
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
     for i in range(dic["no_cells"]):
-        get_cell_info(dic, i)
+        i_x = int(i % dic["noCells"][0])
+        k_z = int(np.floor(i / dic["noCells"][0]))
         fgl = pd.Series(
-            ((dic["cxc1"] - dic["xyz"][0]) ** 2 + (dic["czc1"] - dic["xyz"][2]) ** 2)
+            (
+                (dic["cxc1"] - dic["xyz"][i][0]) ** 2
+                + (dic["czc1"] - dic["xyz"][i][2]) ** 2
+            )
         ).argmin()
         well1.append(
-            (dic["wellCoord"][0][0] - dic["xyz"][0]) ** 2
-            + (dic["wellCoord"][0][2] - dic["xyz"][2]) ** 2
+            (dic["wellCoord"][0][0] - dic["xyz"][i][0]) ** 2
+            + (dic["wellCoord"][0][2] - dic["xyz"][i][2]) ** 2
         )
         well2.append(
-            (dic["wellCoord"][1][0] - dic["xyz"][0]) ** 2
-            + (dic["wellCoord"][1][2] - dic["xyz"][2]) ** 2
+            (dic["wellCoord"][1][0] - dic["xyz"][i][0]) ** 2
+            + (dic["wellCoord"][1][2] - dic["xyz"][i][2]) ** 2
         )
         sensor1.append(
-            (dic["xyz"][0] - dic["sensors"][0][0]) ** 2
-            + (dic["xyz"][2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
+            (dic["xyz"][i][0] - dic["sensors"][0][0]) ** 2
+            + (dic["xyz"][i][2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
         )
         sensor2.append(
-            (dic["xyz"][0] - dic["sensors"][1][0]) ** 2
-            + (dic["xyz"][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
+            (dic["xyz"][i][0] - dic["sensors"][1][0]) ** 2
+            + (dic["xyz"][i][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
         )
         dic["fluxnum"].append(dic["ids_gmsh"][fgl][0])
-        boxes(dic, dic["xyz"][0], dic["xyz"][2], dic["ijk"][0], dic["fluxnum"][-1])
-        centers.append(f"{dic['xyz'][0]}, {dic['ymy_center'][0]}, {dic['xyz'][2]}")
-        corners.append(dic["corns"])
+        boxes(dic, dic["xyz"][i][0], dic["xyz"][i][2], i_x, dic["fluxnum"][-1])
     dic["pop1"] = pd.Series(sensor1).argmin()
     dic["pop2"] = pd.Series(sensor2).argmin()
     dic["fipnum"][dic["pop1"]] = "8"
     dic["fipnum"][dic["pop2"]] = "9"
     idwell1 = pd.Series(well1).argmin()
     idwell2 = pd.Series(well2).argmin()
-    if dic["use"] == "opm":
-        well1ijk = dic["gridf"].ijk_from_global_index(idwell1)
-        well2ijk = dic["gridf"].ijk_from_global_index(idwell2)
-        dic["sensorijk"][0] = dic["gridf"].ijk_from_global_index(dic["pop1"])
-        dic["sensorijk"][1] = dic["gridf"].ijk_from_global_index(dic["pop2"])
-    else:
-        well1ijk = dic["gridf"].get_ijk(global_index=idwell1)
-        well2ijk = dic["gridf"].get_ijk(global_index=idwell2)
-        dic["sensorijk"][0] = dic["gridf"].get_ijk(global_index=dic["pop1"])
-        dic["sensorijk"][1] = dic["gridf"].get_ijk(global_index=dic["pop2"])
+    i_x = int(idwell1 % dic["noCells"][0])
+    k_z = int(np.floor(idwell1 / dic["noCells"][0]))
+    well1ijk = [i_x, 0, k_z]
+    i_x = int(idwell2 % dic["noCells"][0])
+    k_z = int(np.floor(idwell2 / dic["noCells"][0]))
+    well2ijk = [i_x, 0, k_z]
+    i_x = int(dic["pop1"] % dic["noCells"][0])
+    k_z = int(np.floor(dic["pop1"] / dic["noCells"][0]))
+    dic["sensorijk"][0] = [i_x, 0, k_z]
+    i_x = int(dic["pop2"] % dic["noCells"][0])
+    k_z = int(np.floor(dic["pop2"] / dic["noCells"][0]))
+    dic["sensorijk"][1] = [i_x, 0, k_z]
     dic["wellijk"][0] = [well1ijk[0] + 1, 1, well1ijk[2] + 1]
     dic["wellijk"][1] = [well2ijk[0] + 1, 1, well2ijk[2] + 1]
-    with open(
-        f"{dic['deckf']}/centers.txt",
-        "w",
-        encoding="utf8",
-    ) as file:
-        file.write("\n".join(centers))
-    with open(
-        f"{dic['deckf']}/corners.txt",
-        "w",
-        encoding="utf8",
-    ) as file:
-        file.write("\n".join(corners))
-
-
-def get_cell_info(dic, i):
-    """
-    Get the cell center coordinate and ijk from the simulation cell
-
-    Args:
-        dic (dict): Global dictionary\n
-        i (int): Global cell index
-
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    if dic["use"] == "opm":
-        dic["ijk"] = dic["gridf"].ijk_from_global_index(i)
-        vxyz = dic["gridf"].xyz_from_ijk(dic["ijk"][0], dic["ijk"][1], dic["ijk"][2])
-        dic["corns"] = (
-            f"{vxyz[0][0]}, {dic['dims'][2] -vxyz[2][0]}, {vxyz[0][1]}, "
-            + f"{dic['dims'][2] -vxyz[2][1]}, {vxyz[0][5]}, {dic['dims'][2] -vxyz[2][5]},"
-            + f" {vxyz[0][4]}, {dic['dims'][2] - vxyz[2][4]}"
-        )
-        pxyz = Polygon(
-            [
-                [vxyz[0][0], vxyz[2][0]],
-                [vxyz[0][1], vxyz[2][1]],
-                [vxyz[0][5], vxyz[2][5]],
-                [vxyz[0][4], vxyz[2][4]],
-                [vxyz[0][0], vxyz[2][0]],
-            ]
-        ).centroid.wkt
-        dic["xyz"] = list(float(j) for j in pxyz[7:-1].split(" "))
-        dic["xyz"].insert(1, 0.0)
-    else:
-        dic["xyz"] = dic["gridf"].get_xyz(global_index=i)
-        dic["ijk"] = dic["gridf"].get_ijk(global_index=i)
-        if "vxyz" not in dic:
-            dic["vxyz"] = dic["gridf"].export_corners(dic["gridf"].export_index())
-        dic["corns"] = (
-            f"{dic['vxyz'][i][0]}, {dic['dims'][2] - dic['vxyz'][i][2]}, {dic['vxyz'][i][3]}, "
-            + f"{dic['dims'][2] - dic['vxyz'][i][5]}, {dic['vxyz'][i][15]}, "
-            + f"{dic['dims'][2] - dic['vxyz'][i][17]}, "
-            + f"{dic['vxyz'][i][12]}, {dic['dims'][2] - dic['vxyz'][i][14]}"
-        )
 
 
 def corner_point_handling_spe11bc(dic):
@@ -464,9 +362,7 @@ def corner_point_handling_spe11bc(dic):
         dic (dict): Modified global dictionary
 
     """
-    well1, well2, sensor1, sensor2, xtemp, ztemp, centers, corners, pv_l = (
-        [],
-        [],
+    well1, well2, sensor1, sensor2, xtemp, ztemp, pv_l = (
         [],
         [],
         [],
@@ -477,54 +373,56 @@ def corner_point_handling_spe11bc(dic):
     )
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
     for i in range(dic["no_cells"]):
-        get_cell_info(dic, i)
-        xtemp.append(dic["xyz"][0])
-        ztemp.append(dic["xyz"][2])
+        i_x = int(i % dic["noCells"][0])
+        k_z = int(np.floor(i / dic["noCells"][0]))
+        xtemp.append(dic["xyz"][i][0])
+        ztemp.append(dic["xyz"][i][2])
         fgl = pd.Series(
-            ((dic["cxc1"] - dic["xyz"][0]) ** 2 + (dic["czc1"] - dic["xyz"][2]) ** 2)
+            (
+                (dic["cxc1"] - dic["xyz"][i][0]) ** 2
+                + (dic["czc1"] - dic["xyz"][i][2]) ** 2
+            )
         ).argmin()
         well1.append(
-            (dic["wellCoord"][0][0] - dic["xyz"][0]) ** 2
-            + (dic["wellCoord"][0][2] - dic["xyz"][2]) ** 2
+            (dic["wellCoord"][0][0] - dic["xyz"][i][0]) ** 2
+            + (dic["wellCoord"][0][2] - dic["xyz"][i][2]) ** 2
         )
         well2.append(
-            (dic["wellCoord"][1][0] - dic["xyz"][0]) ** 2
-            + (dic["wellCoord"][1][2] - dic["xyz"][2]) ** 2
+            (dic["wellCoord"][1][0] - dic["xyz"][i][0]) ** 2
+            + (dic["wellCoord"][1][2] - dic["xyz"][i][2]) ** 2
         )
         sensor1.append(
-            (dic["xyz"][0] - dic["sensors"][0][0]) ** 2
-            + (dic["xyz"][2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
+            (dic["xyz"][i][0] - dic["sensors"][0][0]) ** 2
+            + (dic["xyz"][i][2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
         )
         sensor2.append(
-            (dic["xyz"][0] - dic["sensors"][1][0]) ** 2
-            + (dic["xyz"][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
+            (dic["xyz"][i][0] - dic["sensors"][1][0]) ** 2
+            + (dic["xyz"][i][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
         )
-        z_c = dic["xyz"][2]
+        z_c = dic["xyz"][i][2]
         if dic["spe11"] == "spe11c":
-            z_c -= map_z(dic, dic["ijk"][1])
+            z_c -= map_z(dic, 0)
         dic["fluxnum"].append(dic["ids_gmsh"][fgl][0])
-        boxes(dic, dic["xyz"][0], z_c, dic["ijk"][0], dic["fluxnum"][-1])
+        boxes(dic, dic["xyz"][i][0], z_c, i_x, dic["fluxnum"][-1])
         pv = dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1] * (
             dic["pvAdded"] + dic["widthBuffer"]
         )
-        if dic["ijk"][0] == 0 and (
+        if i_x == 0 and (
             int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
         ):
             dic["porv"].append(
                 f"PORV { pv*dic['d_y'][0]*dic['d_z'][i]} 1 1 1 1 "
-                + f"{dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
+                + f"{k_z+1} {k_z+1} /"
             )
             pv_l = pv
-        elif dic["ijk"][0] == dic["noCells"][0] - 1 and (
+        elif i_x == dic["noCells"][0] - 1 and (
             int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
         ):
             dic["porv"].append(
                 f"PORV {pv*dic['d_y'][0]*dic['d_z'][i]} {dic['noCells'][0]} "
-                + f"{dic['noCells'][0]} 1 1 {dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
+                + f"{dic['noCells'][0]} 1 1 {k_z+1} {k_z+1} /"
             )
-        centers.append(f"{dic['xyz'][0]}, {dic['ymy_center'][0]}, {dic['xyz'][2]}")
-        corners.append(dic["corns"])
-        if dic["ijk"][0] > 0 and dic["ijk"][0] == dic["noCells"][0] - 1:
+        if i_x > 0 and i_x == dic["noCells"][0] - 1:
             for j in range(dic["noCells"][1] - 1):
                 dic["fluxnum"].extend(dic["fluxnum"][-dic["noCells"][0] :])
                 for i_i in range(dic["noCells"][0]):
@@ -546,7 +444,7 @@ def corner_point_handling_spe11bc(dic):
                         dic["porv"].append(
                             "PORV "
                             + f"{pv_l*dic['d_y'][j+1]*dic['d_zl']} 1 1 "
-                            + f"{j+2} {j+2} {dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
+                            + f"{j+2} {j+2} {k_z+1} {k_z+1} /"
                         )
                     elif i_i == dic["noCells"][0] - 1 and (
                         int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
@@ -555,7 +453,7 @@ def corner_point_handling_spe11bc(dic):
                         dic["porv"].append(
                             f"PORV {pv*dic['d_y'][j+1]*dic['d_z'][i]} "
                             + f"{dic['noCells'][0]} {dic['noCells'][0]} {j+2} {j+2} "
-                            + f"{dic['ijk'][2]+1} {dic['ijk'][2]+1} /"
+                            + f"{k_z+1} {k_z+1} /"
                         )
             xtemp, ztemp = [], []
     if dic["spe11"] == "spe11c":
@@ -565,18 +463,6 @@ def corner_point_handling_spe11bc(dic):
     dic["well1"] = pd.Series(well1).argmin()
     dic["well2"] = pd.Series(well2).argmin()
     locate_wells_sensors(dic)
-    with open(
-        f"{dic['deckf']}/centers.txt",
-        "w",
-        encoding="utf8",
-    ) as file:
-        file.write("\n".join(centers))
-    with open(
-        f"{dic['deckf']}/corners.txt",
-        "w",
-        encoding="utf8",
-    ) as file:
-        file.write("\n".join(corners))
 
 
 def locate_wells_sensors(dic):
@@ -590,16 +476,18 @@ def locate_wells_sensors(dic):
         dic (dict): Modified global dictionary
 
     """
-    if dic["use"] == "opm":
-        well1ijk = dic["gridf"].ijk_from_global_index(dic["well1"])
-        well2ijk = dic["gridf"].ijk_from_global_index(dic["well2"])
-        dic["sensorijk"][0] = list(dic["gridf"].ijk_from_global_index(dic["pop1"]))
-        dic["sensorijk"][1] = list(dic["gridf"].ijk_from_global_index(dic["pop2"]))
-    else:
-        well1ijk = dic["gridf"].get_ijk(global_index=dic["well1"])
-        well2ijk = dic["gridf"].get_ijk(global_index=dic["well2"])
-        dic["sensorijk"][0] = list(dic["gridf"].get_ijk(global_index=dic["pop1"]))
-        dic["sensorijk"][1] = list(dic["gridf"].get_ijk(global_index=dic["pop2"]))
+    i_x = int(dic["well1"] % dic["noCells"][0])
+    k_z = int(np.floor(dic["well1"] / dic["noCells"][0]))
+    well1ijk = [i_x, 0, k_z]
+    i_x = int(dic["well2"] % dic["noCells"][0])
+    k_z = int(np.floor(dic["well2"] / dic["noCells"][0]))
+    well2ijk = [i_x, 0, k_z]
+    i_x = int(dic["pop1"] % dic["noCells"][0])
+    k_z = int(np.floor(dic["pop1"] / dic["noCells"][0]))
+    dic["sensorijk"][0] = [i_x, 0, k_z]
+    i_x = int(dic["pop2"] % dic["noCells"][0])
+    k_z = int(np.floor(dic["pop2"] / dic["noCells"][0]))
+    dic["sensorijk"][1] = [i_x, 0, k_z]
     dic["wellijk"][0] = [well1ijk[0] + 1, 1, well1ijk[2] + 1]
     dic["wellijk"][1] = [well2ijk[0] + 1, 1, well2ijk[2] + 1]
     if dic["spe11"] == "spe11c":
@@ -620,8 +508,7 @@ def locate_wells_sensors(dic):
         dic["wellkh"] = []
         z_centers = []
         for k in range(dic["noCells"][2]):
-            get_cell_info(dic, well1ijk[0] + k * dic["noCells"][0])
-            z_centers.append(dic["xyz"][2])
+            z_centers.append(dic["xyz"][well1ijk[0] + k * dic["noCells"][0]][2])
         for j in range(dic["wellijk"][0][1], dic["wellijkf"][0][1] + 1):
             midpoints = z_centers - map_z(dic, j - 1) - dic["maxelevation"]
             dic["wellkh"].append(
@@ -719,26 +606,6 @@ def positions(dic):
     for names in ["fluxnum", "fipnum", "porv"]:
         dic[f"{names}"] = []
     if dic["grid"] == "corner-point":
-        if dic["use"] == "opm":
-            dic["gridf"] = OpmGrid(f"{dic['flowf']}/INITIAL.EGRID")
-            dic["initf"] = OpmFile(f"{dic['flowf']}/INITIAL.INIT")
-            dic["no_cells"] = (
-                dic["gridf"].dimension[0]
-                * dic["gridf"].dimension[1]
-                * dic["gridf"].dimension[2]
-            )
-            dic["pv"] = dic["initf"]["PORV"]
-            dic["actind"] = list(i for i in range(dic["no_cells"]) if dic["pv"][i] > 0)
-            dic["d_z"] = np.array([0.0] * dic["no_cells"])
-            dic["d_z"][dic["actind"]] = list(dic["initf"]["DZ"])
-        else:
-            dic["gridf"] = Grid(f"{dic['flowf']}/INITIAL.EGRID")
-            dic["initf"] = ResdataFile(f"{dic['flowf']}/INITIAL.INIT")
-            dic["actnum"] = list(dic["gridf"].export_actnum())
-            dic["no_cells"] = dic["gridf"].nx * dic["gridf"].ny * dic["gridf"].nz
-            dic["actind"] = list(i for i, act in enumerate(dic["actnum"]) if act == 1)
-            dic["d_z"] = np.array([0.0] * dic["no_cells"])
-            dic["d_z"][dic["actind"]] = list(dic["initf"].iget_kw("DZ")[0])
         if dic["spe11"] == "spe11a":
             corner_point_handling_spe11a(dic)
         else:
@@ -748,7 +615,6 @@ def positions(dic):
             structured_handling_spe11a(dic)
         else:
             structured_handling_spe11bc(dic)
-    np.savetxt(f"{dic['deckf']}/ycenters.txt", dic["ymy_center"], fmt="%.8E")
 
 
 def sensors(dic):
@@ -1014,7 +880,7 @@ def corner(dic):
     """
     # Read the points for the .geo gmsh file
     lines = get_lines(dic)
-    dic["xcor"], dic["zcor"] = [], []
+    xcoord, zcoord = [], []
     dic["xmx"] = [0.0]
     for i, n_x in enumerate(dic["x_n"]):
         for j in range(n_x):
@@ -1038,10 +904,10 @@ def corner(dic):
     dic["noCells"][1] = len(dic["ymy"]) - 1
     for xcor in dic["xmx"]:
         for _, lcor in enumerate(lines):
-            dic["xcor"].append(xcor)
+            xcoord.append(xcor)
             idx = pd.Series([abs(ii[0] - xcor) for ii in lcor]).argmin()
             if lcor[idx][0] < xcor:
-                dic["zcor"].append(
+                zcoord.append(
                     lcor[idx][1]
                     + (
                         (lcor[idx + 1][1] - lcor[idx][1])
@@ -1050,7 +916,7 @@ def corner(dic):
                     * (xcor - lcor[idx][0])
                 )
             else:
-                dic["zcor"].append(
+                zcoord.append(
                     lcor[idx - 1][1]
                     + (
                         (lcor[idx][1] - lcor[idx - 1][1])
@@ -1058,19 +924,40 @@ def corner(dic):
                     )
                     * (xcor - lcor[idx - 1][0])
                 )
-    res = list(filter(lambda i: i == dic["zcor"][-1], dic["zcor"]))[0]
-    n_z = dic["zcor"].index(res)
-    res = list(filter(lambda i: i > 0, dic["xcor"]))[0]
-    n_x = round(len(dic["xcor"]) / dic["xcor"].index(res)) - 1
+    res = list(filter(lambda i: i == zcoord[-1], zcoord))[0]
+    n_z = zcoord.index(res)
+    res = list(filter(lambda i: i > 0, xcoord))[0]
+    n_x = round(len(xcoord) / xcoord.index(res)) - 1
     dic["noCells"][0], dic["noCells"][2] = n_x, n_z
     # Refine the grid
-    dic["xcor"], dic["zcor"], dic["noCells"][0], dic["noCells"][2] = refinement_z(
-        dic["xcor"], dic["zcor"], dic["noCells"][0], dic["noCells"][2], dic["z_n"]
+    xcoord, zcoord, dic["noCells"][0], dic["noCells"][2] = refinement_z(
+        xcoord, zcoord, dic["noCells"][0], dic["noCells"][2], dic["z_n"]
     )
     dic["xmx"] = np.array(dic["xmx"])
     dic["ymy_center"] = 0.5 * (np.array(dic["ymy"])[1:] + np.array(dic["ymy"])[:-1])
     dic["d_y"] = np.array(dic["ymy"])[1:] - np.array(dic["ymy"])[:-1]
     dic["d_x"] = np.array(dic["xmx"])[1:] - np.array(dic["xmx"])[:-1]
+    dic["no_cells"] = dic["noCells"][0] * dic["noCells"][2]
+    create_corner_point_grid(dic, xcoord, zcoord)
+    dic["xyz"] = []
+    dic["d_z"] = []
+    for k in range(dic["noCells"][2]):
+        for i in range(dic["noCells"][0]):
+            n = (i * (dic["noCells"][2] + 1)) + k
+            m = ((i + 1) * (dic["noCells"][2] + 1)) + k
+            poly = Polygon(
+                [
+                    [xcoord[n], zcoord[n]],
+                    [xcoord[m], zcoord[m]],
+                    [xcoord[m + 1], zcoord[m + 1]],
+                    [xcoord[n + 1], zcoord[n + 1]],
+                    [xcoord[n], zcoord[n]],
+                ]
+            )
+            pxz = poly.centroid.wkt
+            pxz = list(float(j) for j in pxz[7:-1].split(" "))
+            dic["xyz"].append([pxz[0], 0, pxz[1]])
+            dic["d_z"].append(poly.area / (xcoord[m] - xcoord[n]))
 
 
 def refinement_z(xci, zci, ncx, ncz, znr):

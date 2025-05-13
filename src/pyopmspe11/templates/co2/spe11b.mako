@@ -174,17 +174,11 @@ EQUIL
 ${dic['dims'][2]-dic['datum']} ${dic['pressure']/1.E5} 0 0 0 0 1 1 0 /
 
 RPTRST
-% if dic['model'] == 'immiscible': 
-'BASIC=2' FLOWS FLORES DEN /
-% else:
-'BASIC=2' DEN PCGW RSWSAT /
-% endif
-% if dic['model'] != 'immiscible':
+'BASIC=2' DEN PCGW ${f"RSWSAT /" if dic['model'] != 'immiscible' else "/"}
 
 RTEMPVD
 0   ${dic["temperature"][1]}
 ${dic['dims'][2]} ${dic["temperature"][0]} /
-% endif
 ----------------------------------------------------------------------------
 SUMMARY
 ----------------------------------------------------------------------------
@@ -215,11 +209,7 @@ ${sensor[0]+1} ${sensor[1]+1} ${sensor[2]+1} /
 SCHEDULE
 ----------------------------------------------------------------------------
 RPTRST
-% if dic['model'] == 'immiscible': 
-'BASIC=2' FLOWS FLORES DEN /
-% else:
-'BASIC=2' DEN PCGW RSWSAT RESIDUAL /
-% endif
+'BASIC=2' DEN PCGW RESIDUAL ${f"RSWSAT /" if dic['model'] != 'immiscible' else "/"}
 % if dic['model'] == 'convective':
 
 DRSDTCON
@@ -250,7 +240,7 @@ BCPROP
 WELSPECS
 % for i in range(len(dic['wellijk'])):
 % if dic['radius'][i] > 0:
-INJ${i} G1 ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]} 1* GAS ${dic['radius'][i]}/
+INJ${i} G1 ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]} 1* GAS ${dic['radius'][i]} /
 % endif
 % endfor
 /

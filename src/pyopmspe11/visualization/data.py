@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 # pylint: disable=C0302, R0912, R0914, R0801, R0915
 
-""" "
+"""
 Script to write the benchmark data
 """
 
@@ -134,7 +134,8 @@ def main():
         dig["dims"][1] = 5000.0
     dig["nocellsr"] = dig["nxyz"][0] * dig["nxyz"][1] * dig["nxyz"][2]
     dig["noxzr"] = dig["nxyz"][0] * dig["nxyz"][2]
-    read_times(dig)
+    dig["time_initial"], dig["no_skip_rst"], dig["times"] = 0, 0, []
+    dig["immiscible"] = False
     if dig["use"] == "opm":
         read_opm(dig)
     else:
@@ -172,29 +173,6 @@ def main():
         dense_data(dig)
 
 
-def read_times(dig):
-    """
-    Get the time for injection and restart number
-
-    Args:
-        dig (dict): Global dictionary
-
-    Returns:
-        dig (dict): Modified global dictionary
-
-    """
-    with open(f"{dig['deckf']}/dt.txt", "r", encoding="utf8") as file:
-        for i, value in enumerate(csv.reader(file)):
-            if i == 0:
-                dig["time_initial"] = float(value[0])
-            elif i == 1:
-                dig["no_skip_rst"] = int(value[0])
-            else:
-                dig["times"] = list(
-                    np.genfromtxt(StringIO(value[0]), delimiter=" ", dtype=float)
-                )
-
-
 def read_resdata(dig):
     """
     Read the simulation files using resdata
@@ -207,15 +185,31 @@ def read_resdata(dig):
 
     """
     dig["unrst"] = ResdataFile(f"{dig['sim']}.UNRST")
+    for i in range(dig["unrst"].num_report_steps()):
+        time = 86400 * dig["unrst"].iget_kw("DOUBHEAD")[i][0]
+        if len(dig["times"]) == 0:
+            if dig["unrst"].has_kw("RSW"):
+                if max(dig["unrst"].iget_kw("RSW")[i]) > 0:
+                    dig["time_initial"] = (
+                        86400 * dig["unrst"].iget_kw("DOUBHEAD")[i - 1][0]
+                    )
+                    dig["no_skip_rst"] = i - 1
+                    dig["times"].append(0)
+                    dig["times"].append(time - dig["time_initial"])
+            else:
+                dig["immiscible"] = True
+                if max(dig["unrst"].iget_kw("SGAS")[i]) > 0:
+                    dig["time_initial"] = (
+                        86400 * dig["unrst"].iget_kw("DOUBHEAD")[i - 1][0]
+                    )
+                    dig["no_skip_rst"] = i - 1
+                    dig["times"].append(0)
+                    dig["times"].append(time - dig["time_initial"])
+        else:
+            dig["times"].append(time - dig["time_initial"])
     dig["init"] = ResdataFile(f"{dig['sim']}.INIT")
     dig["egrid"] = Grid(f"{dig['sim']}.EGRID")
     dig["smspec"] = Summary(f"{dig['sim']}.SMSPEC")
-    if dig["unrst"].has_kw("WAT_DEN"):
-        dig["watDen"], dig["r_s"], dig["r_v"] = "wat_den", "rsw", "rvw"
-        dig["bpr"] = "BWPR"
-    else:
-        dig["watDen"], dig["r_s"], dig["r_v"] = "oil_den", "rs", "rv"
-        dig["bpr"] = "BPR"
     dig["porv"] = np.array(dig["init"].iget_kw("PORV")[0])
     dig["actnum"] = list(dig["egrid"].export_actnum())
     dig["actind"] = list(i for i, act in enumerate(dig["actnum"]) if act == 1)
@@ -248,10 +242,29 @@ def read_opm(dig):
 
     """
     dig["unrst"] = OpmRestart(f"{dig['sim']}.UNRST")
+    for i in range(len(dig["unrst"].report_steps)):
+        time = 86400 * dig["unrst"]["DOUBHEAD", i][0]
+        if len(dig["times"]) == 0:
+            if dig["unrst"].count("RSW", 0):
+                if max(dig["unrst"]["RSW", i]) > 0:
+                    dig["time_initial"] = 86400 * dig["unrst"]["DOUBHEAD", i - 1][0]
+                    dig["no_skip_rst"] = i - 1
+                    dig["times"].append(0)
+                    dig["times"].append(time - dig["time_initial"])
+            else:
+                dig["immiscible"] = True
+                if max(dig["unrst"]["SGAS", i]) > 0:
+                    dig["time_initial"] = 86400 * dig["unrst"]["DOUBHEAD", i - 1][0]
+                    dig["no_skip_rst"] = i - 1
+                    dig["times"].append(0)
+                    dig["times"].append(time - dig["time_initial"])
+        else:
+            dig["times"].append(time - dig["time_initial"])
     dig["init"] = OpmFile(f"{dig['sim']}.INIT")
     dig["egrid"] = OpmGrid(f"{dig['sim']}.EGRID")
     dig["smspec"] = OpmSummary(f"{dig['sim']}.SMSPEC")
-    opm_files(dig)
+    dig["norst"] = len(dig["unrst"].report_steps)
+    dig["porv"] = np.array(dig["init"]["PORV"])
     dig["actind"] = list(i for i, porv in enumerate(dig["porv"]) if porv > 0)
     dig["porva"] = np.array([porv for porv in dig["porv"] if porv > 0])
     dig["nocellst"], dig["nocellsa"] = (
@@ -266,27 +279,6 @@ def read_opm(dig):
         dig["egrid"].dimension[2],
     ]
     dig["noxz"] = dig["egrid"].dimension[0] * dig["egrid"].dimension[2]
-
-
-def opm_files(dig):
-    """
-    Read some of the data from the simulation output files
-
-    Args:
-        dig (dict): Global dictionary
-
-    Returns:
-        dig (dict): Modified global dictionary
-
-    """
-    dig["norst"] = len(dig["unrst"].report_steps)
-    if dig["unrst"].count("WAT_DEN", 0):
-        dig["watDen"], dig["r_s"], dig["r_v"] = "wat_den", "rsw", "rvw"
-        dig["bpr"] = "BWPR"
-    else:
-        dig["watDen"], dig["r_s"], dig["r_v"] = "oil_den", "rs", "rv"
-        dig["bpr"] = "BPR"
-    dig["porv"] = np.array(dig["init"]["PORV"])
 
 
 def performance(dig):
@@ -507,11 +499,11 @@ def create_from_summary(dig, dil):
     """
     ind, names, i_jk = 0, [], []
     for key in dig["smspec"].keys():
-        if key[0 : len(dig["bpr"])] == dig["bpr"] and "," in key[len(dig["bpr"]) + 1 :]:
+        if key[0 : len("BWPR")] == "BWPR" and "," in key[len("BWPR") + 1 :]:
             names.append(key)
             i_jk.append(
                 np.genfromtxt(
-                    StringIO(key[len(dig["bpr"]) + 1 :]), delimiter=",", dtype=int
+                    StringIO(key[len("BWPR") + 1 :]), delimiter=",", dtype=int
                 )[0]
             )
             ind += 1
@@ -680,7 +672,10 @@ def sparse_data(dig):
     handle_fipnums(dig, dil)
     create_from_summary(dig, dil)
     # Using the restart data
-    compute_m_c(dig, dil)
+    if not dig["immiscible"]:
+        compute_m_c(dig, dil)
+    else:
+        dil["m_c"] = [0.0] * (dig["norst"] - dig["no_skip_rst"] - 1)
     write_sparse_data(dig, dil)
 
 
@@ -732,14 +727,14 @@ def compute_m_c(dig, dil):
     dil["boxc_z"] = np.roll(dil["boxc"], -dig["gxyz"][0] * dig["gxyz"][1])
     for t_n in range(dig["no_skip_rst"] + 1, dig["norst"]):
         if dig["use"] == "opm":
-            rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}", t_n])
+            rss = np.array(dig["unrst"]["RSW", t_n])
         else:
-            rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}"][t_n])
+            rss = np.array(dig["unrst"]["RSW"][t_n])
         dil["xcw"] = np.divide(rss, rss + WAT_DEN_REF / GAS_DEN_REF)
         if dig["use"] == "opm":
-            rssat = np.array(dig["unrst"][f"{dig['r_s'].upper()}SAT", t_n])
+            rssat = np.array(dig["unrst"]["RSWSAT", t_n])
         else:
-            rssat = np.array(dig["unrst"][f"{dig['r_s'].upper()}SAT"][t_n])
+            rssat = np.array(dig["unrst"]["RSWSAT"][t_n])
         x_l_co2_max = np.divide(rssat, rssat + WAT_DEN_REF / GAS_DEN_REF)
         dil["xcw"] = np.divide(dil["xcw"], x_l_co2_max)
         if dig["case"] != "spe11c":
@@ -852,30 +847,81 @@ def get_corners(dig, dil):
     """
     for i in ["x", "z"]:
         dil[f"sim{i}cent"] = [0.0] * dig["noxz"]
-    with open(f"{dig['deckf']}/centers.txt", "r", encoding="utf8") as file:
-        for j, row in enumerate(csv.reader(file)):
-            dil["simxcent"][j] = float(row[0])
-            dil["simzcent"][j] = dig["dims"][2] - float(row[2])
-            if dil["simzcent"][j] == 0:
-                dil["simxcent"][j] = -1e10
-                dil["simzcent"][j] = -1e10
+    dil["simycent"] = []
     dil["simpoly"] = []
-    with open(f"{dig['deckf']}/corners.txt", "r", encoding="utf8") as file:
-        for row in csv.reader(file):
-            dil["simpoly"].append(
-                Polygon(
-                    [
-                        (float(row[0]), float(row[1])),
-                        (float(row[2]), float(row[3])),
-                        (float(row[4]), float(row[5])),
-                        (float(row[6]), float(row[7])),
-                    ]
-                )
-            )
     if dig["use"] == "opm":
+        z_0 = dig["egrid"].xyz_from_ijk(0, 0, 0)[2][0]
         dil["satnum"] = list(dig["init"]["SATNUM"])
+        for j in range(dig["gxyz"][2]):
+            for i in range(dig["gxyz"][0]):
+                n = i + (dig["gxyz"][2] - j - 1) * dig["gxyz"][0]
+                m = i + (dig["gxyz"][2] - j - 1) * dig["gxyz"][1] * dig["gxyz"][0]
+                xyz = dig["egrid"].xyz_from_ijk(i, 0, dig["gxyz"][2] - j - 1)
+                dil["simpoly"].append(
+                    Polygon(
+                        [
+                            [xyz[0][0], xyz[2][0] - z_0],
+                            [xyz[0][1], xyz[2][1] - z_0],
+                            [xyz[0][5], xyz[2][5] - z_0],
+                            [xyz[0][4], xyz[2][4] - z_0],
+                        ]
+                    )
+                )
+                pxz = dil["simpoly"][-1].centroid.wkt
+                pxz = list(float(j) for j in pxz[7:-1].split(" "))
+                dil["simxcent"][n] = pxz[0]
+                dil["simzcent"][n] = dig["dims"][2] - pxz[1]
+                if dig["porv"][m] == 0:
+                    dil["simxcent"][n] = -1e10
+                    dil["simzcent"][n] = -1e10
+                    dil["simpoly"][-1] = Polygon(
+                        [
+                            [xyz[0][0], xyz[2][0] - z_0],
+                            [xyz[0][1], xyz[2][1] - z_0],
+                            [xyz[0][1], xyz[2][1] - z_0],
+                            [xyz[0][0], xyz[2][0] - z_0],
+                        ]
+                    )
+        for j in range(dig["gxyz"][1]):
+            xyz = dig["egrid"].xyz_from_ijk(0, j, 0)
+            dil["simycent"].append(0.5 * (xyz[1][2] - xyz[1][1]) + xyz[1][1])
     else:
         dil["satnum"] = list(dig["init"].iget_kw("SATNUM")[0])
+        xyz = dig["egrid"].export_corners(dig["egrid"].export_index())
+        z_0 = xyz[0][2]
+        for j in range(dig["gxyz"][2]):
+            for i in range(dig["gxyz"][0]):
+                n = i + (dig["gxyz"][2] - j - 1) * dig["gxyz"][0]
+                m = i + (dig["gxyz"][2] - j - 1) * dig["gxyz"][1] * dig["gxyz"][0]
+                dil["simpoly"].append(
+                    Polygon(
+                        [
+                            [xyz[m][0], xyz[m][2] - z_0],
+                            [xyz[m][3], xyz[m][5] - z_0],
+                            [xyz[m][15], xyz[m][17] - z_0],
+                            [xyz[m][12], xyz[m][14] - z_0],
+                        ]
+                    )
+                )
+                pxz = dil["simpoly"][-1].centroid.wkt
+                pxz = list(float(j) for j in pxz[7:-1].split(" "))
+                dil["simxcent"][n] = pxz[0]
+                dil["simzcent"][n] = dig["dims"][2] - pxz[1]
+                if dig["porv"][m] == 0:
+                    dil["simxcent"][n] = -1e10
+                    dil["simzcent"][n] = -1e10
+                    dil["simpoly"][-1] = Polygon(
+                        [
+                            [xyz[m][0], xyz[m][2] - z_0],
+                            [xyz[m][3], xyz[m][5] - z_0],
+                            [xyz[m][3], xyz[m][5] - z_0],
+                            [xyz[m][0], xyz[m][2] - z_0],
+                        ]
+                    )
+        for j in range(dig["gxyz"][1]):
+            n = j * dig["gxyz"][0]
+            dil["simycent"].append(0.5 * (xyz[n][7] - xyz[n][1]) + xyz[n][1])
+    dil["simycent"] = np.array(dil["simycent"])
 
 
 def dense_data(dig):
@@ -966,12 +1012,8 @@ def handle_yaxis_mapping_extensive(dig, dil):
         dil (dict): Modified local dictionary
 
     """
-    simycent = [0.0] * dig["gxyz"][1]
-    with open(f"{dig['deckf']}/ycenters.txt", "r", encoding="utf8") as file:
-        for j, row in enumerate(csv.reader(file)):
-            simycent[j] = float(f"{float(row[0]):.1f}")
     simyvert = [0]
-    for ycent in simycent:
+    for ycent in dil["simycent"]:
         simyvert.append(simyvert[-1] + 2 * (ycent - simyvert[-1]))
     weights, indy, ind = [], [], 0
     for i, (y_i, y_f) in enumerate(zip(simyvert[:-1], simyvert[1:])):
@@ -1052,12 +1094,8 @@ def handle_yaxis_mapping_intensive(dig, dil):
         dil (dict): Modified local dictionary
 
     """
-    simycent = [0.0] * dig["gxyz"][1]
-    with open(f"{dig['deckf']}/ycenters.txt", "r", encoding="utf8") as file:
-        for j, row in enumerate(csv.reader(file)):
-            simycent[j] = float(row[0])
     indy = np.array(
-        [pd.Series(np.abs(simycent - y_c)).argmin() for y_c in dil["refycent"]]
+        [pd.Series(np.abs(dil["simycent"] - y_c)).argmin() for y_c in dil["refycent"]]
     )
     tmp_inds = np.zeros(dig["nocellsr"], dtype=int)
     mults = np.zeros(dig["nxyz"][0], dtype=int)
@@ -1386,35 +1424,39 @@ def generate_arrays(dig, dil, names, t_n):
     if dig["use"] == "opm":
         sgas = abs(np.array(dig["unrst"]["SGAS", t_n]))
         rhog = np.array(dig["unrst"]["GAS_DEN", t_n])
-        pres = np.array(dig["unrst"]["PRESSURE", t_n])
-        if dig["unrst"].count("PCGW", t_n):
-            pres -= np.array(dig["unrst"]["PCGW", t_n])
-        rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}", t_n])
-        rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}", t_n])
-        if dig["unrst"].count(f"{dig['r_v'].upper()}", t_n):
-            rvv = np.array(dig["unrst"][f"{dig['r_v'].upper()}", t_n])
-        else:
-            rvv = 0.0 * rss
-        if dig["case"] != "spe11a":
-            dil["temp_array"][dig["actind"]] = np.array(dig["unrst"]["TEMP", t_n])
+        pres = np.array(dig["unrst"]["PRESSURE", t_n]) - np.array(
+            dig["unrst"]["PCGW", t_n]
+        )
+        rhow = np.array(dig["unrst"]["WAT_DEN", t_n])
+        rvv, rss = 0.0 * sgas, 0.0 * sgas
+        if not dig["immiscible"]:
+            rss = np.array(dig["unrst"]["RSW", t_n])
+            if dig["unrst"].count("RVW", t_n):
+                rvv = np.array(dig["unrst"]["RVW", t_n])
+            if dig["case"] != "spe11a":
+                dil["temp_array"][dig["actind"]] = np.array(dig["unrst"]["TEMP", t_n])
     else:
         sgas = abs(np.array(dig["unrst"]["SGAS"][t_n]))
         rhog = np.array(dig["unrst"]["GAS_DEN"][t_n])
-        pres = np.array(dig["unrst"]["PRESSURE"][t_n])
-        if dig["unrst"].has_kw("PCGW"):
-            pres -= np.array(dig["unrst"]["PCGW"][t_n])
-        rhow = np.array(dig["unrst"][f"{dig['watDen'].upper()}"][t_n])
-        rss = np.array(dig["unrst"][f"{dig['r_s'].upper()}"][t_n])
-        if dig["unrst"].has_kw(f"{dig['r_v'].upper()}"):
-            rvv = np.array(dig["unrst"][f"{dig['r_v'].upper()}"][t_n])
-        else:
-            rvv = 0.0 * rss
-        if dig["case"] != "spe11a":
-            dil["temp_array"][dig["actind"]] = np.array(dig["unrst"]["TEMP"][t_n])
-    x_l_co2 = np.divide(rss, rss + WAT_DEN_REF / GAS_DEN_REF)
-    x_g_h2o = np.divide(rvv, rvv + GAS_DEN_REF / WAT_DEN_REF)
-    co2_g = (1 - x_g_h2o) * sgas * rhog * dig["porva"]
-    co2_d = x_l_co2 * (1 - sgas) * rhow * dig["porva"]
+        pres = np.array(dig["unrst"]["PRESSURE"][t_n]) - np.array(
+            dig["unrst"]["PCGW"][t_n]
+        )
+        rhow = np.array(dig["unrst"]["WAT_DEN"][t_n])
+        rvv, rss = 0.0 * sgas, 0.0 * sgas
+        if not dig["immiscible"]:
+            rss = np.array(dig["unrst"]["RSW"][t_n])
+            if dig["unrst"].has_kw("RVW"):
+                rvv = np.array(dig["unrst"]["RVW"][t_n])
+            if dig["case"] != "spe11a":
+                dil["temp_array"][dig["actind"]] = np.array(dig["unrst"]["TEMP"][t_n])
+    if not dig["immiscible"]:
+        x_l_co2 = np.divide(rss, rss + WAT_DEN_REF / GAS_DEN_REF)
+        x_g_h2o = np.divide(rvv, rvv + GAS_DEN_REF / WAT_DEN_REF)
+        co2_g = (1 - x_g_h2o) * sgas * rhog * dig["porva"]
+        co2_d = x_l_co2 * (1 - sgas) * rhow * dig["porva"]
+    else:
+        x_l_co2, x_g_h2o, co2_d = 0, 0, 0
+        co2_g = sgas * rhog * dig["porva"]
     dil["pressure_array"][dig["actind"]] = 1e5 * pres
     dil["sgas_array"][dig["actind"]] = sgas * (sgas > SGAS_THR)
     dil["gden_array"][dig["actind"]] = rhog * (sgas > SGAS_THR)
