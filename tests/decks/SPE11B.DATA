@@ -177,7 +177,7 @@ BWPR
 SCHEDULE
 ----------------------------------------------------------------------------
 RPTRST
-'BASIC=2' DEN PCGW RSWSAT RESIDUAL /
+'BASIC=2' DEN PCGW RESIDUAL RSWSAT /
 
 BCPROP
 1 THERMAL /

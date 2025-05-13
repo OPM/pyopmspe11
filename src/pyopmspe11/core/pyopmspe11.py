@@ -3,13 +3,14 @@
 # pylint: disable=R0912, R0915
 
 """Main script for pyopmspe11"""
+
 import os
 import argparse
 import warnings
 from pyopmspe11.utils.inputvalues import process_input, check_deck, handle_tuning
 from pyopmspe11.utils.runs import simulations, plotting, data
 from pyopmspe11.visualization.plotting import plot_results
-from pyopmspe11.utils.writefile import opm_files, initial
+from pyopmspe11.utils.writefile import opm_files
 from pyopmspe11.utils.mapproperties import grid, positions
 
 
@@ -51,9 +52,8 @@ def pyopmspe11():
         dic["flowf"] = f"{dic['fol']}/flow"
         dic["dataf"] = f"{dic['fol']}/data"
         dic["figsf"] = f"{dic['fol']}/figures"
-        for fil in ["deck", "flow" if dic["mode"] != "deck" else ""]:
-            if not os.path.exists(f"{dic['fol']}/{fil}"):
-                os.system(f"mkdir {dic['fol']}/{fil}")
+        if not os.path.exists(dic["deckf"]):
+            os.system(f"mkdir {dic['deckf']}")
     else:
         dic["deckf"] = f"{dic['fol']}"
         dic["flowf"] = f"{dic['fol']}"
@@ -62,29 +62,21 @@ def pyopmspe11():
     os.chdir(f"{dic['fol']}")
 
     if dic["mode"] == "all" or "deck" in dic["mode"]:
+        print("\nGenerating the deck files, please wait.")
         # Check the generated deck and flow version
         check_deck(dic)
         # Initialize the grid
         grid(dic)
-        # For corner-point grids, get the cell centers by executing flow
-        if dic["grid"] == "corner-point":
-            initial(dic)
-            os.chdir(dic["deckf"])
-            simulations(dic, "INITIAL", True)
-            print(
-                "Files used to generate the corner-point grid (INITIAL.* files).\n"
-                + "Please wait while pyopmspe11 is processing the deck files."
-            )
         # Handle tuning
         handle_tuning(dic)
         # Get the sand and well/sources positions
         positions(dic)
         # Write used opm related files
         opm_files(dic)
-        print(f"The deck files have been written to {dic['deckf']}.")
+        print(f"\nThe deck files have been written to {dic['deckf']}.")
     if dic["mode"] == "all" or "flow" in dic["mode"]:
         # Run the simulations
-        simulations(dic, dic["fol"].split("/")[-1].upper(), False)
+        simulations(dic)
 
     if dic["mode"] == "all" or "data" in dic["mode"]:
         # Write the data

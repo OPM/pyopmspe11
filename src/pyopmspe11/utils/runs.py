@@ -8,27 +8,20 @@ import os
 import subprocess
 
 
-def simulations(dic, deck, dryrun):
+def simulations(dic):
     """
     Run OPM Flow
 
     Args:
-        dic (dict): Global dictionary\n
-        deck (str): Name of the input deck\n
-        dryrun (bool): Run a dry simulation for the initial files.
+        dic (dict): Global dictionary
 
     Returns:
         None
 
     """
-    flag = ""
-    flow = dic["flow"]
-    if dryrun:
-        flow = dic["only_flow"]
-        flag = "--enable-dry-run=1"
     os.system(
-        f"{flow} --output-dir={dic['flowf']} "
-        f"{dic['deckf']}/{deck}.DATA {flag} & wait\n"
+        f"{dic['flow']} --output-dir={dic['flowf']} "
+        f"{dic['deckf']}/{dic['fol'].split('/')[-1].upper()}.DATA & wait\n"
     )
 
 

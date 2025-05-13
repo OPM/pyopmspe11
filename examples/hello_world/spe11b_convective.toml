@@ -48,13 +48,13 @@ rock = [[0.10132, 0.10],
         [1e-5,    1e-6]]
 
 # Properties CO2 convective dissolution: 1) CHI [-], 2) PSI [-], 3) OMEGA [1/s], and 4) OPTION
-    drsdtcon = [[-1.0],
-               [0.04, 0.34, 3.0e-09, "ALL"],
-               [-1.0],
-               [-1.0],
-               [0.04, 0.34, 3.0e-09, "ALL"],
-               [-1.0],
-               [-1.0]]
+drsdtcon = [[-1.0],
+            [0.04, 0.34, 3.0e-09, "ALL"],
+            [-1.0],
+            [-1.0],
+            [0.04, 0.34, 3.0e-09, "ALL"],
+            [-1.0],
+            [-1.0]]
 
 # Define the injection values ([hours] for spe11a; [years] for spe11b/c): 1) injection time, 2) time step size to write results, 3) maximum solver time step, 4) injected fluid (0 water, 1 co2) (well1), 5) injection rate [kg/s] (well1), 6) temperature [C] (well1), 7) injected fluid (0 water, 1 co2) (well2), 8) injection rate [kg/s] (well2), and 9) temperature [C] (well2)
 inj = [[25, 5.0, 0.1, 1, 0.035, 10, 1, 0.035, 10]]
