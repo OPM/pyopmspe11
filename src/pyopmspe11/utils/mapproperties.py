@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
-# pylint: disable=C0302, R0914, R0915
+# pylint: disable=C0302, R0912, R0914, R0915
 
 """
 Utiliy function for the grid and locations in the geological models.
@@ -9,7 +9,7 @@ Utiliy function for the grid and locations in the geological models.
 import csv
 import numpy as np
 import pandas as pd
-from shapely.geometry import Polygon
+from shapely.geometry import Point, Polygon
 from pyopmspe11.utils.writefile import create_corner_point_grid
 
 
@@ -76,12 +76,15 @@ def structured_handling_spe11a(dic):
     sensor1, sensor2 = [], []
     for k in range(dic["noCells"][2]):
         for i in range(dic["noCells"][0]):
-            fgl = pd.Series(
-                (
-                    (dic["cxc1"] - dic["xmx_center"][i]) ** 2
-                    + (dic["czc1"] - dic["zmz_center"][k]) ** 2
-                )
-            ).argmin()
+            print(
+                f"Loop {i+1+k*dic['noCells'][0]}/{dic['noCells'][0]*dic['noCells'][2]}",
+                end="\r",
+            )
+            n = -1
+            for facie, poly in zip(dic["facies"], dic["polygons"]):
+                if poly.contains(Point(dic["xmx_center"][i], dic["zmz_center"][k])):
+                    n = facie
+                    break
             sensor1.append(
                 (dic["xmx_center"][i] - dic["sensors"][0][0]) ** 2
                 + (dic["zmz_center"][k] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
@@ -90,7 +93,7 @@ def structured_handling_spe11a(dic):
                 (dic["xmx_center"][i] - dic["sensors"][1][0]) ** 2
                 + (dic["zmz_center"][k] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
             )
-            dic["fluxnum"].append(dic["ids_gmsh"][fgl][0])
+            dic["fluxnum"].append(str(n))
             boxes(
                 dic, dic["xmx_center"][i], dic["zmz_center"][k], i, dic["fluxnum"][-1]
             )
@@ -116,12 +119,15 @@ def structured_handling_spe11bc(dic):
     sensor1, sensor2, pv_l = [], [], 0
     for k in range(dic["noCells"][2]):
         for i in range(dic["noCells"][0]):
-            fgl = pd.Series(
-                (
-                    (dic["cxc1"] - dic["xmx_center"][i]) ** 2
-                    + (dic["czc1"] - dic["zmz_center"][k]) ** 2
-                )
-            ).argmin()
+            print(
+                f"Loop {i+1+k*dic['noCells'][0]}/{dic['noCells'][0]*dic['noCells'][2]}",
+                end="\r",
+            )
+            n = -1
+            for facie, poly in zip(dic["facies"], dic["polygons"]):
+                if poly.contains(Point(dic["xmx_center"][i], dic["zmz_center"][k])):
+                    n = facie
+                    break
             sensor1.append(
                 (dic["xmx_center"][i] - dic["sensors"][0][0]) ** 2
                 + (dic["ymy_center"][0] - dic["sensors"][0][1]) ** 2
@@ -135,21 +141,15 @@ def structured_handling_spe11bc(dic):
             z_c = dic["zmz_center"][k]
             if dic["spe11"] == "spe11c":
                 z_c -= map_z(dic, 0)
-            dic["fluxnum"].append(dic["ids_gmsh"][fgl][0])
+            dic["fluxnum"].append(str(n))
             boxes(dic, dic["xmx_center"][i], z_c, i, dic["fluxnum"][-1])
-            pv = dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1] * (
-                dic["pvAdded"] + dic["widthBuffer"]
-            )
-            if i == 0 and (
-                int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
-            ):
+            pv = dic["rock"][n - 1][1] * (dic["pvAdded"] + dic["widthBuffer"])
+            if i == 0 and n not in (1, 7):
                 dic["porv"].append(
                     f"PORV {pv*dic['dy'][0]*dic['dz'][k]} 1 1 1 1 {k+1} {k+1} /"
                 )
                 pv_l = pv
-            elif i == dic["noCells"][0] - 1 and (
-                int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
-            ):
+            elif i == dic["noCells"][0] - 1 and n not in (1, 7):
                 dic["porv"].append(
                     f"PORV {pv*dic['dy'][0]*dic['dz'][k]} {dic['noCells'][0]} "
                     + f"{dic['noCells'][0]} 1 1 {k+1} {k+1} /"
@@ -303,14 +303,14 @@ def corner_point_handling_spe11a(dic):
     well1, well2, sensor1, sensor2 = [], [], [], []
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
     for i in range(dic["no_cells"]):
+        print(f"Loop {i+1}/{dic['no_cells']}", end="\r")
         i_x = int(i % dic["noCells"][0])
         k_z = int(np.floor(i / dic["noCells"][0]))
-        fgl = pd.Series(
-            (
-                (dic["cxc1"] - dic["xyz"][i][0]) ** 2
-                + (dic["czc1"] - dic["xyz"][i][2]) ** 2
-            )
-        ).argmin()
+        n = -1
+        for facie, poly in zip(dic["facies"], dic["polygons"]):
+            if poly.contains(Point(dic["xyz"][i][0], dic["xyz"][i][2])):
+                n = facie
+                break
         well1.append(
             (dic["wellCoord"][0][0] - dic["xyz"][i][0]) ** 2
             + (dic["wellCoord"][0][2] - dic["xyz"][i][2]) ** 2
@@ -327,7 +327,7 @@ def corner_point_handling_spe11a(dic):
             (dic["xyz"][i][0] - dic["sensors"][1][0]) ** 2
             + (dic["xyz"][i][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
         )
-        dic["fluxnum"].append(dic["ids_gmsh"][fgl][0])
+        dic["fluxnum"].append(str(n))
         boxes(dic, dic["xyz"][i][0], dic["xyz"][i][2], i_x, dic["fluxnum"][-1])
     dic["pop1"] = pd.Series(sensor1).argmin()
     dic["pop2"] = pd.Series(sensor2).argmin()
@@ -373,16 +373,16 @@ def corner_point_handling_spe11bc(dic):
     )
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
     for i in range(dic["no_cells"]):
+        print(f"Loop {i+1}/{dic['no_cells']}", end="\r")
         i_x = int(i % dic["noCells"][0])
         k_z = int(np.floor(i / dic["noCells"][0]))
         xtemp.append(dic["xyz"][i][0])
         ztemp.append(dic["xyz"][i][2])
-        fgl = pd.Series(
-            (
-                (dic["cxc1"] - dic["xyz"][i][0]) ** 2
-                + (dic["czc1"] - dic["xyz"][i][2]) ** 2
-            )
-        ).argmin()
+        n = -1
+        for facie, poly in zip(dic["facies"], dic["polygons"]):
+            if poly.contains(Point(dic["xyz"][i][0], dic["xyz"][i][2])):
+                n = facie
+                break
         well1.append(
             (dic["wellCoord"][0][0] - dic["xyz"][i][0]) ** 2
             + (dic["wellCoord"][0][2] - dic["xyz"][i][2]) ** 2
@@ -402,22 +402,16 @@ def corner_point_handling_spe11bc(dic):
         z_c = dic["xyz"][i][2]
         if dic["spe11"] == "spe11c":
             z_c -= map_z(dic, 0)
-        dic["fluxnum"].append(dic["ids_gmsh"][fgl][0])
+        dic["fluxnum"].append(str(n))
         boxes(dic, dic["xyz"][i][0], z_c, i_x, dic["fluxnum"][-1])
-        pv = dic["rock"][int(dic["ids_gmsh"][fgl][0]) - 1][1] * (
-            dic["pvAdded"] + dic["widthBuffer"]
-        )
-        if i_x == 0 and (
-            int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
-        ):
+        pv = dic["rock"][n - 1][1] * (dic["pvAdded"] + dic["widthBuffer"])
+        if i_x == 0 and n not in (1, 7):
             dic["porv"].append(
                 f"PORV { pv*dic['d_y'][0]*dic['d_z'][i]} 1 1 1 1 "
                 + f"{k_z+1} {k_z+1} /"
             )
             pv_l = pv
-        elif i_x == dic["noCells"][0] - 1 and (
-            int(dic["ids_gmsh"][fgl][0]) != 1 and int(dic["ids_gmsh"][fgl][0]) != 7
-        ):
+        elif i_x == dic["noCells"][0] - 1 and n not in (1, 7):
             dic["porv"].append(
                 f"PORV {pv*dic['d_y'][0]*dic['d_z'][i]} {dic['noCells'][0]} "
                 + f"{dic['noCells'][0]} 1 1 {k_z+1} {k_z+1} /"
@@ -602,7 +596,7 @@ def positions(dic):
 
     """
     dic["sensorijk"] = [[] for _ in range(len(dic["sensors"]))]
-    getfacies(dic)
+    getpolygons(dic)
     for names in ["fluxnum", "fipnum", "porv"]:
         dic[f"{names}"] = []
     if dic["grid"] == "corner-point":
@@ -718,9 +712,9 @@ def map_z(dic, j):
     return z_pos
 
 
-def getfacies(dic):
+def getpolygons(dic):
     """
-    Function to read the reference Gmsh file
+    Function to create the polygons from the benchmark geo file
 
     Args:
         dic (dict): Global dictionary
@@ -729,101 +723,76 @@ def getfacies(dic):
         dic (dict): Modified global dictionary
 
     """
-    for ent in ["cxc1", "czc1", "ids_gmsh"]:
-        dic[ent] = []
-    # Read the points for the reference mesh file
-    lol, points, simplex, centr, centrxz = ([], [], [], [], [])
-    h_f_c, l_f_c = 0, 0
-
+    points = []
+    lines = []
+    curves = []
+    dic["polygons"] = []
+    dic["facies"] = []
+    facie = 0
     if dic["spe11"] == "spe11a":
-        h_ref = 1.2
-        l_ref = 2.8
+        h_ref = 1
+        l_ref = 1
     else:
-        h_ref = 1200.0
-        l_ref = 8400.0
+        h_ref = 1200.0 / 1.2
+        l_ref = 8400.0 / 2.8
     with open(
-        f"{dic['pat']}/reference_mesh/facies_coordinates.msh",
+        f"{dic['pat']}/reference_mesh/facies_coordinates.geo",
         "r",
         encoding="utf8",
     ) as file:
         for row in csv.reader(file, delimiter=" "):
-            lol.append(row)
-    for i in range(int(lol[14][0])):
-        points.append(lol[15 + i][1:3])
-        l_f_c, h_f_c = max(l_f_c, float(lol[15 + i][1])), max(
-            h_f_c, float(lol[15 + i][2])
+            if row[0] == "//" and not points:
+                continue
+            if row[0][:5] == "Point":
+                points.append(
+                    [
+                        l_ref * float(row[2][1:-1]),
+                        dic["dims"][2] - h_ref * float(row[3][:-1]),
+                    ]
+                )
+            elif row[0][:4] == "Line":
+                lines.append([int(row[2][1:-1]), int(row[3][:-2])])
+            elif row[0] == "Curve":
+                dic["facies"].append(facie)
+                tmp = []
+                tmp.append(int(row[3][1:-1]))
+                for col in row[4:-1]:
+                    tmp.append(int(col[:-1]))
+                tmp.append(int(row[-1][:-2]))
+                curves.append(tmp)
+            else:
+                facie += 1
+    for curve in curves:
+        tmp = []
+        tmp.append(
+            [
+                points[lines[curve[0] - 1][0] - 1][0],
+                points[lines[curve[0] - 1][0] - 1][1],
+            ]
         )
-
-    for i in range(int(lol[int(lol[14][0]) + 17][0])):
-        dic["ids_gmsh"].append(lol[int(lol[14][0]) + 18 + i][3])
-        simplex.append(lol[int(lol[14][0]) + 18 + i][5:])
-        simplex[-1].insert(0, int(lol[int(lol[14][0]) + 18 + i][1]))
-
-    for i, _ in enumerate(simplex):
-        if simplex[i][0] == 2:
-            centr.append(
-                Polygon(
+        tmp.append(
+            [
+                points[lines[curve[0] - 1][1] - 1][0],
+                points[lines[curve[0] - 1][1] - 1][1],
+            ]
+        )
+        for line in curve[1:]:
+            if line < 0:
+                tmp.append(
                     [
-                        [
-                            float(points[int(simplex[i][1]) - 1][0]) * l_ref / l_f_c,
-                            dic["dims"][2]
-                            - float(points[int(simplex[i][1]) - 1][1]) * h_ref / h_f_c,
-                        ],
-                        [
-                            float(points[int(simplex[i][2]) - 1][0]) * l_ref / l_f_c,
-                            dic["dims"][2]
-                            - float(points[int(simplex[i][2]) - 1][1]) * h_ref / h_f_c,
-                        ],
-                        [
-                            float(points[int(simplex[i][3]) - 1][0]) * l_ref / l_f_c,
-                            dic["dims"][2]
-                            - float(points[int(simplex[i][3]) - 1][1]) * h_ref / h_f_c,
-                        ],
-                        [
-                            float(points[int(simplex[i][1]) - 1][0]) * l_ref / l_f_c,
-                            dic["dims"][2]
-                            - float(points[int(simplex[i][1]) - 1][1]) * h_ref / h_f_c,
-                        ],
+                        points[lines[abs(line) - 1][0] - 1][0],
+                        points[lines[abs(line) - 1][0] - 1][1],
                     ]
-                ).centroid.wkt
-            )
-        else:
-            centr.append(
-                Polygon(
+                )
+            else:
+                tmp.append(
                     [
-                        [
-                            float(points[int(simplex[i][1]) - 1][0]) * l_ref / l_f_c,
-                            dic["dims"][2]
-                            - float(points[int(simplex[i][1]) - 1][1]) * h_ref / h_f_c,
-                        ],
-                        [
-                            float(points[int(simplex[i][2]) - 1][0]) * l_ref / l_f_c,
-                            dic["dims"][2]
-                            - float(points[int(simplex[i][2]) - 1][1]) * h_ref / h_f_c,
-                        ],
-                        [
-                            float(points[int(simplex[i][3]) - 1][0]) * l_ref / l_f_c,
-                            dic["dims"][2]
-                            - float(points[int(simplex[i][3]) - 1][1]) * h_ref / h_f_c,
-                        ],
-                        [
-                            float(points[int(simplex[i][4]) - 1][0]) * l_ref / l_f_c,
-                            dic["dims"][2]
-                            - float(points[int(simplex[i][4]) - 1][1]) * h_ref / h_f_c,
-                        ],
-                        [
-                            float(points[int(simplex[i][1]) - 1][0]) * l_ref / l_f_c,
-                            dic["dims"][2]
-                            - float(points[int(simplex[i][1]) - 1][1]) * h_ref / h_f_c,
-                        ],
+                        points[lines[line - 1][1] - 1][0],
+                        points[lines[line - 1][1] - 1][1],
                     ]
-                ).centroid.wkt
-            )
-        centrxz.append([float(j) for j in centr[i][7:-1].split(" ")])
-        dic["cxc1"].append(centrxz[i][0])
-        dic["czc1"].append(centrxz[i][1])
-    dic["cxc1"] = np.array(dic["cxc1"])
-    dic["czc1"] = np.array(dic["czc1"])
+                )
+        tmp.append(tmp[0])
+        dic["polygons"].append(Polygon(tmp))
 
 
 def get_lines(dic):
