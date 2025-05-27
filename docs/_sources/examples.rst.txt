@@ -30,7 +30,7 @@ Then, we run the simulations and we save the results in a different output folde
 
 .. code-block:: bash
 
-    pyopmspe11 -i spe11b.txt -o tensor -m deck_flow_data -g performance_sparse -t 5 -r 50,1,15 -w 1
+    pyopmspe11 -i spe11b.txt -o spe11b_tensor_grid -m deck_flow_data -g performance_sparse -t 5 -r 50,1,15 -w 1
 
 Here we have just set the framework to generate the deck, run the simulations, and generate the performance and sparse data.
 Then, to visualize the comparison between both runs, this can be achived by executing:

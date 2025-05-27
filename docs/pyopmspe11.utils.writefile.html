@@ -101,9 +101,9 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pyopmspe11.utils.writefile.initial">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.writefile.</span></span><span class="sig-name descname"><span class="pre">initial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.writefile.initial" title="Link to this definition"></a></dt>
-<dd><p>Write the initial deck to generate output files used for e.g., find cell coordinates</p>
+<dt class="sig sig-object py" id="pyopmspe11.utils.writefile.create_corner_point_grid">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.writefile.</span></span><span class="sig-name descname"><span class="pre">create_corner_point_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xcoord</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zcoord</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.writefile.create_corner_point_grid" title="Link to this definition"></a></dt>
+<dd><p>Write the corner-point grid</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
 </dd>
@@ -132,6 +132,19 @@
 <dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
 </dd>
 <dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.writefile.z_c">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.writefile.</span></span><span class="sig-name descname"><span class="pre">z_c</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.writefile.z_c" title="Link to this definition"></a></dt>
+<dd><p>Return the z position of the zcorn</p>
+<dl>
+<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
+<p>j : Cell id along the y axis</p>
+</dd>
+<dt>Returns:</dt><dd><p>z: Position</p>
 </dd>
 </dl>
 </dd></dl>

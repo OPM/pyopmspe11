@@ -4,9 +4,7 @@ Installation
 
 The following steps work installing the dependencies in Linux via apt-get or in macOS using brew or macports.
 While using packages managers such as Anaconda, Miniforge, or Mamba might work, these are not tested.
-In addition, the current supported Python versions for macOS are 3.10 to 3.12 and for Linux 3.8 to 3.12.
-We will update the documentation when Python3.13 is supported (e.g., the resdata Python package is not yet available
-via pip install in Python 3.13).
+In addition, the current supported Python versions for macOS are 3.10 (due to resdata) to 3.13 and for Linux 3.9 to 3.13.
 
 Python package
 --------------
@@ -28,7 +26,7 @@ install the Python requirements in a virtual environment with the following comm
     cd pyopmspe11
     # For a specific version (e.g., v2025.04), or skip this step (i.e., edge version)
     git checkout v2025.04
-    # Create virtual environment (to specific Python, python3.12 -m venv vpyopmspe11)
+    # Create virtual environment (to specific Python, python3.13 -m venv vpyopmspe11)
     python3 -m venv vpyopmspe11
     # Activate virtual environment
     source vpyopmspe11/bin/activate

@@ -4,6 +4,12 @@ Benchmark
 
 All configuration files are located in the `benchmark <https://github.com/OPM/pyopmspe11/blob/main/benchmark>`_ folder.
 
+.. note::
+    A few weeks after the OPM Flow 2025.04 release, there was a PR that changed the command line parameters for
+    `--partition-method` and `--edge-weights-method` (see `the PR <https://github.com/OPM/opm-simulators/pull/6264>`_). Then, the 
+    .txt configuration files in the benchmark folder use the old format from the OPM Flow 2025.04 release, while the .toml 
+    configuration files use the new naming after that PR.
+
 ======
 SPE11A
 ======

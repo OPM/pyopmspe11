@@ -79,6 +79,7 @@ def main():
     dic["latex"] = int(cmdargs["latex"])  # LaTeX formatting
     dic["subfolders"] = int(cmdargs["subfolders"]) == 1  # Create subfolders
     plot_results(dic)
+    print(f"The png figures have been saved on {dic['where']}")
 
 
 def plot_results(dic):
@@ -541,7 +542,15 @@ def dense_data(dic):
                             )
                         ]
             for j, time in enumerate(dic["ptimes"]):
-                print(f"Plotting {quantity}, time {j+1} out of {len(dic['times'])}")
+                if j + 1 < len(dic["ptimes"]):
+                    print(
+                        f"Plotting {quantity}, time {j+1} out of {len(dic['ptimes'])}",
+                        end="\r",
+                    )
+                else:
+                    print(
+                        f"Plotting {quantity}, time {j+1} out of {len(dic['ptimes'])}"
+                    )
                 axis = dic["fig"].add_subplot(len(dic["ptimes"]), 3, j + 1)
                 imag = axis.pcolormesh(
                     dic["xmsh"],

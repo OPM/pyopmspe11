@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
-# pylint: disable=C0302, R0912, R0914, R0801, R0915
+# pylint: disable=C0302, R0912, R0914, R0801, R0915, E1102
 
 """
 Script to write the benchmark data
@@ -11,6 +11,7 @@ import warnings
 import csv
 from io import StringIO
 from shapely.geometry import Polygon
+from alive_progress import alive_bar
 from rtree import index
 import numpy as np
 import pandas as pd
@@ -171,6 +172,7 @@ def main():
                 for i in range(int(np.floor((dig["times"][-1]) / dig["dense_t"])) + 1)
             ]
         dense_data(dig)
+    print(f"The csv files have been written to {dig['where']}")
 
 
 def read_resdata(dig):
@@ -984,10 +986,13 @@ def dense_data(dig):
                     dil["cell_indc"][k] = ind
         else:
             dil["cell_indc"][k] = dil["cell_indc"][k - 1]
-    for k, (xcen, zcen) in enumerate(zip(dil["refxgrid"], dil["refzgrid"])):
-        dil["cell_cent"][k] = pd.Series(
-            np.abs(dil["simxcent"] - xcen) + np.abs(dil["simzcent"] - zcen)
-        ).argmin()
+    print("Processing the spatial map between simulation and reporting grids")
+    with alive_bar(len(dil["refxgrid"])) as bar_animation:
+        for k, (xcen, zcen) in enumerate(zip(dil["refxgrid"], dil["refzgrid"])):
+            bar_animation()
+            dil["cell_cent"][k] = pd.Series(
+                np.abs(dil["simxcent"] - xcen) + np.abs(dil["simzcent"] - zcen)
+            ).argmin()
     dig["actindr"] = []
     if max(dil["satnum"]) < 7 and dig["case"] == "spe11a":
         handle_inactive_mapping(dig, dil)
@@ -999,7 +1004,10 @@ def dense_data(dig):
         if dig["case"] != "spe11a":
             names = ["temp"] + names
         for i, rst in enumerate(dil["rstno"]):
-            print(f"Processing dense data {i+1} out of {dil['nrstno']}")
+            if i + 1 < dil["nrstno"]:
+                print(f"Processing dense data {i+1} out of {dil['nrstno']}", end="\r")
+            else:
+                print(f"Processing dense data {i+1} out of {dil['nrstno']}")
             t_n = rst + dig["no_skip_rst"]
             generate_arrays(dig, dil, names, t_n)
             map_to_report_grid(dig, dil, names)
@@ -1164,7 +1172,12 @@ def handle_performance_spatial(dig, dil):
     static_map_to_report_grid_performance_spatial(dig, dil)
     names = ["co2mn", "h2omn", "co2mb", "h2omb"]
     for i, rst in enumerate(dil["rstno"]):
-        print(f"Processing performance spatial {i+1} out of {dil['nrstno']}")
+        if i + 1 < dil["nrstno"]:
+            print(
+                f"Processing performance spatial {i+1} out of {dil['nrstno']}", end="\r"
+            )
+        else:
+            print(f"Processing performance spatial {i+1} out of {dil['nrstno']}")
         for name in names:
             dil[f"{name}_array"] = np.zeros(dig["nocellst"])
         t_n = rst + dig["no_skip_rst"]
