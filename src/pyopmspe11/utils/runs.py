@@ -47,7 +47,7 @@ def plotting(dic):
         "-l " + f"{dic['latex']}",
         "-f " + f"{dic['subfolders']}",
     ]
-    print(" ".join(plot_exe))
+    print("\nPlot: Generation of png figures, please wait.")
     prosc = subprocess.run(plot_exe, check=True)
     if prosc.returncode != 0:
         raise ValueError(f"Invalid result: { prosc.returncode }")
@@ -77,7 +77,9 @@ def data(dic):
         "-f " + f"{dic['subfolders']}",
         "-s " + f"{dic['showpywarn']}",
     ]
-    print(" ".join(data_exe))
+    print(
+        "\nData: Generation of csv files following the SPE11 benchmark format, please wait."
+    )
     prosc = subprocess.run(data_exe, check=True)
     if prosc.returncode != 0:
         raise ValueError(f"Invalid result: { prosc.returncode }")

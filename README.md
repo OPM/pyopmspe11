@@ -1,5 +1,5 @@
 [![Build Status](https://github.com/OPM/pyopmspe11/actions/workflows/CI.yml/badge.svg)](https://github.com/OPM/pyopmspe11/actions/workflows/CI.yml)
-<a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.8%20to%203.12-blue.svg"></a>
+<a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.9%20to%203.13-blue.svg"></a>
 [![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/license/mit/)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.07357/status.svg)](https://doi.org/10.21105/joss.07357)
@@ -30,7 +30,7 @@ git clone https://github.com/OPM/pyopmspe11.git
 cd pyopmspe11
 # For a specific version (e.g., v2025.04), or skip this step (i.e., edge version)
 git checkout v2025.04
-# Create virtual environment (to specific Python, python3.12 -m venv vpyopmspe11)
+# Create virtual environment (to specific Python, python3.13 -m venv vpyopmspe11)
 python3 -m venv vpyopmspe11
 # Activate virtual environment
 source vpyopmspe11/bin/activate

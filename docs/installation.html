@@ -93,9 +93,7 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
 <p>The following steps work installing the dependencies in Linux via apt-get or in macOS using brew or macports.
 While using packages managers such as Anaconda, Miniforge, or Mamba might work, these are not tested.
-In addition, the current supported Python versions for macOS are 3.10 to 3.12 and for Linux 3.8 to 3.12.
-We will update the documentation when Python3.13 is supported (e.g., the resdata Python package is not yet available
-via pip install in Python 3.13).</p>
+In addition, the current supported Python versions for macOS are 3.10 (due to resdata) to 3.13 and for Linux 3.9 to 3.13.</p>
 <section id="python-package">
 <h2>Python package<a class="headerlink" href="#python-package" title="Link to this heading"></a></h2>
 <p>To install the <strong>pyopmspe11</strong> executable from the development version:</p>
@@ -110,7 +108,7 @@ install the Python requirements in a virtual environment with the following comm
 <span class="go">cd pyopmspe11</span>
 <span class="gp"># </span>For<span class="w"> </span>a<span class="w"> </span>specific<span class="w"> </span>version<span class="w"> </span><span class="o">(</span>e.g.,<span class="w"> </span>v2025.04<span class="o">)</span>,<span class="w"> </span>or<span class="w"> </span>skip<span class="w"> </span>this<span class="w"> </span>step<span class="w"> </span><span class="o">(</span>i.e.,<span class="w"> </span>edge<span class="w"> </span>version<span class="o">)</span>
 <span class="go">git checkout v2025.04</span>
-<span class="gp"># </span>Create<span class="w"> </span>virtual<span class="w"> </span>environment<span class="w"> </span><span class="o">(</span>to<span class="w"> </span>specific<span class="w"> </span>Python,<span class="w"> </span>python3.12<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>vpyopmspe11<span class="o">)</span>
+<span class="gp"># </span>Create<span class="w"> </span>virtual<span class="w"> </span>environment<span class="w"> </span><span class="o">(</span>to<span class="w"> </span>specific<span class="w"> </span>Python,<span class="w"> </span>python3.13<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>vpyopmspe11<span class="o">)</span>
 <span class="go">python3 -m venv vpyopmspe11</span>
 <span class="gp"># </span>Activate<span class="w"> </span>virtual<span class="w"> </span>environment
 <span class="go">source vpyopmspe11/bin/activate</span>

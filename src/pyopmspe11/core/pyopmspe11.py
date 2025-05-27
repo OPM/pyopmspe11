@@ -62,7 +62,7 @@ def pyopmspe11():
     os.chdir(f"{dic['fol']}")
 
     if dic["mode"] == "all" or "deck" in dic["mode"]:
-        print("\nGenerating the deck files, please wait.")
+        print("\nDeck: Generating the input files, please wait.")
         # Check the generated deck and flow version
         check_deck(dic)
         # Initialize the grid
@@ -73,7 +73,7 @@ def pyopmspe11():
         positions(dic)
         # Write used opm related files
         opm_files(dic)
-        print(f"\nThe deck files have been written to {dic['deckf']}.")
+        print(f"\nThe deck files have been written to {dic['deckf']}")
     if dic["mode"] == "all" or "flow" in dic["mode"]:
         # Run the simulations
         simulations(dic)

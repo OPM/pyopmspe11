@@ -4,7 +4,7 @@ Configuration file
 
 In the initial development of **pyopmspe11**, the adopted configuration file format was the
 one described below, i.e., via :ref:`txt` files. The current development of **pyopmspe11** considers
-:ref:`toml` files. To keep compatibility with previous configuration files and Python versions of at least 3.8, 
+:ref:`toml` files. To keep compatibility with previous configuration files and Python versions of at least 3.9, 
 then support for :ref:`txt` files will be kept, while new features will by added using :ref:`toml` configuration 
 files (which requires at least Python3.11).
 

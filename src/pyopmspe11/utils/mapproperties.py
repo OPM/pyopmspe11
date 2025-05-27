@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
-# pylint: disable=C0302, R0912, R0914, R0915
+# pylint: disable=C0302, R0912, R0914, R0915, E1102
 
 """
 Utiliy function for the grid and locations in the geological models.
@@ -10,6 +10,7 @@ import csv
 import numpy as np
 import pandas as pd
 from shapely.geometry import Point, Polygon
+from alive_progress import alive_bar
 from pyopmspe11.utils.writefile import create_corner_point_grid
 
 
@@ -74,29 +75,33 @@ def structured_handling_spe11a(dic):
 
     """
     sensor1, sensor2 = [], []
-    for k in range(dic["noCells"][2]):
-        for i in range(dic["noCells"][0]):
-            print(
-                f"Loop {i+1+k*dic['noCells'][0]}/{dic['noCells'][0]*dic['noCells'][2]}",
-                end="\r",
-            )
-            n = -1
-            for facie, poly in zip(dic["facies"], dic["polygons"]):
-                if poly.contains(Point(dic["xmx_center"][i], dic["zmz_center"][k])):
-                    n = facie
-                    break
-            sensor1.append(
-                (dic["xmx_center"][i] - dic["sensors"][0][0]) ** 2
-                + (dic["zmz_center"][k] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
-            )
-            sensor2.append(
-                (dic["xmx_center"][i] - dic["sensors"][1][0]) ** 2
-                + (dic["zmz_center"][k] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
-            )
-            dic["fluxnum"].append(str(n))
-            boxes(
-                dic, dic["xmx_center"][i], dic["zmz_center"][k], i, dic["fluxnum"][-1]
-            )
+    with alive_bar(dic["noCells"][0] * dic["noCells"][2]) as bar_animation:
+        for k in range(dic["noCells"][2]):
+            for i in range(dic["noCells"][0]):
+                bar_animation()
+                n = -1
+                for facie, poly in zip(dic["facies"], dic["polygons"]):
+                    if poly.contains(Point(dic["xmx_center"][i], dic["zmz_center"][k])):
+                        n = facie
+                        break
+                sensor1.append(
+                    (dic["xmx_center"][i] - dic["sensors"][0][0]) ** 2
+                    + (dic["zmz_center"][k] + dic["sensors"][0][2] - dic["dims"][2])
+                    ** 2
+                )
+                sensor2.append(
+                    (dic["xmx_center"][i] - dic["sensors"][1][0]) ** 2
+                    + (dic["zmz_center"][k] + dic["sensors"][1][2] - dic["dims"][2])
+                    ** 2
+                )
+                dic["fluxnum"].append(str(n))
+                boxes(
+                    dic,
+                    dic["xmx_center"][i],
+                    dic["zmz_center"][k],
+                    i,
+                    dic["fluxnum"][-1],
+                )
     dic["pop1"] = pd.Series(sensor1).argmin()
     dic["pop2"] = pd.Series(sensor2).argmin()
     dic["fipnum"][dic["pop1"]] = "8"
@@ -117,84 +122,84 @@ def structured_handling_spe11bc(dic):
 
     """
     sensor1, sensor2, pv_l = [], [], 0
-    for k in range(dic["noCells"][2]):
-        for i in range(dic["noCells"][0]):
-            print(
-                f"Loop {i+1+k*dic['noCells'][0]}/{dic['noCells'][0]*dic['noCells'][2]}",
-                end="\r",
-            )
-            n = -1
-            for facie, poly in zip(dic["facies"], dic["polygons"]):
-                if poly.contains(Point(dic["xmx_center"][i], dic["zmz_center"][k])):
-                    n = facie
-                    break
-            sensor1.append(
-                (dic["xmx_center"][i] - dic["sensors"][0][0]) ** 2
-                + (dic["ymy_center"][0] - dic["sensors"][0][1]) ** 2
-                + (dic["zmz_center"][k] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
-            )
-            sensor2.append(
-                (dic["xmx_center"][i] - dic["sensors"][1][0]) ** 2
-                + (dic["ymy_center"][0] - dic["sensors"][1][1]) ** 2
-                + (dic["zmz_center"][k] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
-            )
-            z_c = dic["zmz_center"][k]
-            if dic["spe11"] == "spe11c":
-                z_c -= map_z(dic, 0)
-            dic["fluxnum"].append(str(n))
-            boxes(dic, dic["xmx_center"][i], z_c, i, dic["fluxnum"][-1])
-            pv = dic["rock"][n - 1][1] * (dic["pvAdded"] + dic["widthBuffer"])
-            if i == 0 and n not in (1, 7):
-                dic["porv"].append(
-                    f"PORV {pv*dic['dy'][0]*dic['dz'][k]} 1 1 1 1 {k+1} {k+1} /"
-                )
-                pv_l = pv
-            elif i == dic["noCells"][0] - 1 and n not in (1, 7):
-                dic["porv"].append(
-                    f"PORV {pv*dic['dy'][0]*dic['dz'][k]} {dic['noCells'][0]} "
-                    + f"{dic['noCells'][0]} 1 1 {k+1} {k+1} /"
-                )
-        for j in range(dic["noCells"][1] - 1):
-            dic["fluxnum"].extend(dic["fluxnum"][-dic["noCells"][0] :])
-            for i_i in range(dic["noCells"][0]):
+    with alive_bar(dic["noCells"][0] * dic["noCells"][2]) as bar_animation:
+        for k in range(dic["noCells"][2]):
+            for i in range(dic["noCells"][0]):
+                bar_animation()
+                n = -1
+                for facie, poly in zip(dic["facies"], dic["polygons"]):
+                    if poly.contains(Point(dic["xmx_center"][i], dic["zmz_center"][k])):
+                        n = facie
+                        break
                 sensor1.append(
-                    (dic["xmx_center"][i_i] - dic["sensors"][0][0]) ** 2
-                    + (dic["ymy_center"][j + 1] - dic["sensors"][0][1]) ** 2
+                    (dic["xmx_center"][i] - dic["sensors"][0][0]) ** 2
+                    + (dic["ymy_center"][0] - dic["sensors"][0][1]) ** 2
                     + (dic["zmz_center"][k] + dic["sensors"][0][2] - dic["dims"][2])
                     ** 2
                 )
                 sensor2.append(
-                    (dic["xmx_center"][i_i] - dic["sensors"][1][0]) ** 2
-                    + (dic["ymy_center"][j + 1] - dic["sensors"][1][1]) ** 2
+                    (dic["xmx_center"][i] - dic["sensors"][1][0]) ** 2
+                    + (dic["ymy_center"][0] - dic["sensors"][1][1]) ** 2
                     + (dic["zmz_center"][k] + dic["sensors"][1][2] - dic["dims"][2])
                     ** 2
                 )
                 z_c = dic["zmz_center"][k]
                 if dic["spe11"] == "spe11c":
-                    z_c -= map_z(dic, j + 1)
-                boxes(
-                    dic,
-                    dic["xmx_center"][i_i],
-                    z_c,
-                    i_i,
-                    dic["fluxnum"][-dic["noCells"][0] + i_i],
-                )
-                if i_i == 0 and (
-                    int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
-                    and int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 7
-                ):
+                    z_c -= map_z(dic, 0)
+                dic["fluxnum"].append(str(n))
+                boxes(dic, dic["xmx_center"][i], z_c, i, dic["fluxnum"][-1])
+                pv = dic["rock"][n - 1][1] * (dic["pvAdded"] + dic["widthBuffer"])
+                if i == 0 and n not in (1, 7):
                     dic["porv"].append(
-                        f"PORV {pv_l*dic['dy'][j+1]*dic['dz'][k]} 1 1 "
-                        + f"{j+2} {j+2} {k+1} {k+1} /"
+                        f"PORV {pv*dic['dy'][0]*dic['dz'][k]} 1 1 1 1 {k+1} {k+1} /"
                     )
-                elif i_i == dic["noCells"][0] - 1 and (
-                    int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
-                    and int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 7
-                ):
+                    pv_l = pv
+                elif i == dic["noCells"][0] - 1 and n not in (1, 7):
                     dic["porv"].append(
-                        f"PORV {pv*dic['dy'][j+1]*dic['dz'][k]} {dic['noCells'][0]} "
-                        + f"{dic['noCells'][0]} {j+2} {j+2} {k+1} {k+1} /"
+                        f"PORV {pv*dic['dy'][0]*dic['dz'][k]} {dic['noCells'][0]} "
+                        + f"{dic['noCells'][0]} 1 1 {k+1} {k+1} /"
                     )
+            for j in range(dic["noCells"][1] - 1):
+                dic["fluxnum"].extend(dic["fluxnum"][-dic["noCells"][0] :])
+                for i_i in range(dic["noCells"][0]):
+                    sensor1.append(
+                        (dic["xmx_center"][i_i] - dic["sensors"][0][0]) ** 2
+                        + (dic["ymy_center"][j + 1] - dic["sensors"][0][1]) ** 2
+                        + (dic["zmz_center"][k] + dic["sensors"][0][2] - dic["dims"][2])
+                        ** 2
+                    )
+                    sensor2.append(
+                        (dic["xmx_center"][i_i] - dic["sensors"][1][0]) ** 2
+                        + (dic["ymy_center"][j + 1] - dic["sensors"][1][1]) ** 2
+                        + (dic["zmz_center"][k] + dic["sensors"][1][2] - dic["dims"][2])
+                        ** 2
+                    )
+                    z_c = dic["zmz_center"][k]
+                    if dic["spe11"] == "spe11c":
+                        z_c -= map_z(dic, j + 1)
+                    boxes(
+                        dic,
+                        dic["xmx_center"][i_i],
+                        z_c,
+                        i_i,
+                        dic["fluxnum"][-dic["noCells"][0] + i_i],
+                    )
+                    if i_i == 0 and (
+                        int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
+                        and int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 7
+                    ):
+                        dic["porv"].append(
+                            f"PORV {pv_l*dic['dy'][j+1]*dic['dz'][k]} 1 1 "
+                            + f"{j+2} {j+2} {k+1} {k+1} /"
+                        )
+                    elif i_i == dic["noCells"][0] - 1 and (
+                        int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
+                        and int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 7
+                    ):
+                        dic["porv"].append(
+                            f"PORV {pv*dic['dy'][j+1]*dic['dz'][k]} {dic['noCells'][0]} "
+                            + f"{dic['noCells'][0]} {j+2} {j+2} {k+1} {k+1} /"
+                        )
     if dic["spe11"] == "spe11c":
         add_pv_fipnum_front_back(dic)
     dic["pop1"] = pd.Series(sensor1).argmin()
@@ -302,33 +307,34 @@ def corner_point_handling_spe11a(dic):
     """
     well1, well2, sensor1, sensor2 = [], [], [], []
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
-    for i in range(dic["no_cells"]):
-        print(f"Loop {i+1}/{dic['no_cells']}", end="\r")
-        i_x = int(i % dic["noCells"][0])
-        k_z = int(np.floor(i / dic["noCells"][0]))
-        n = -1
-        for facie, poly in zip(dic["facies"], dic["polygons"]):
-            if poly.contains(Point(dic["xyz"][i][0], dic["xyz"][i][2])):
-                n = facie
-                break
-        well1.append(
-            (dic["wellCoord"][0][0] - dic["xyz"][i][0]) ** 2
-            + (dic["wellCoord"][0][2] - dic["xyz"][i][2]) ** 2
-        )
-        well2.append(
-            (dic["wellCoord"][1][0] - dic["xyz"][i][0]) ** 2
-            + (dic["wellCoord"][1][2] - dic["xyz"][i][2]) ** 2
-        )
-        sensor1.append(
-            (dic["xyz"][i][0] - dic["sensors"][0][0]) ** 2
-            + (dic["xyz"][i][2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
-        )
-        sensor2.append(
-            (dic["xyz"][i][0] - dic["sensors"][1][0]) ** 2
-            + (dic["xyz"][i][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
-        )
-        dic["fluxnum"].append(str(n))
-        boxes(dic, dic["xyz"][i][0], dic["xyz"][i][2], i_x, dic["fluxnum"][-1])
+    with alive_bar(dic["no_cells"]) as bar_animation:
+        for i in range(dic["no_cells"]):
+            bar_animation()
+            i_x = int(i % dic["noCells"][0])
+            k_z = int(np.floor(i / dic["noCells"][0]))
+            n = -1
+            for facie, poly in zip(dic["facies"], dic["polygons"]):
+                if poly.contains(Point(dic["xyz"][i][0], dic["xyz"][i][2])):
+                    n = facie
+                    break
+            well1.append(
+                (dic["wellCoord"][0][0] - dic["xyz"][i][0]) ** 2
+                + (dic["wellCoord"][0][2] - dic["xyz"][i][2]) ** 2
+            )
+            well2.append(
+                (dic["wellCoord"][1][0] - dic["xyz"][i][0]) ** 2
+                + (dic["wellCoord"][1][2] - dic["xyz"][i][2]) ** 2
+            )
+            sensor1.append(
+                (dic["xyz"][i][0] - dic["sensors"][0][0]) ** 2
+                + (dic["xyz"][i][2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
+            )
+            sensor2.append(
+                (dic["xyz"][i][0] - dic["sensors"][1][0]) ** 2
+                + (dic["xyz"][i][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
+            )
+            dic["fluxnum"].append(str(n))
+            boxes(dic, dic["xyz"][i][0], dic["xyz"][i][2], i_x, dic["fluxnum"][-1])
     dic["pop1"] = pd.Series(sensor1).argmin()
     dic["pop2"] = pd.Series(sensor2).argmin()
     dic["fipnum"][dic["pop1"]] = "8"
@@ -372,84 +378,85 @@ def corner_point_handling_spe11bc(dic):
         0,
     )
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
-    for i in range(dic["no_cells"]):
-        print(f"Loop {i+1}/{dic['no_cells']}", end="\r")
-        i_x = int(i % dic["noCells"][0])
-        k_z = int(np.floor(i / dic["noCells"][0]))
-        xtemp.append(dic["xyz"][i][0])
-        ztemp.append(dic["xyz"][i][2])
-        n = -1
-        for facie, poly in zip(dic["facies"], dic["polygons"]):
-            if poly.contains(Point(dic["xyz"][i][0], dic["xyz"][i][2])):
-                n = facie
-                break
-        well1.append(
-            (dic["wellCoord"][0][0] - dic["xyz"][i][0]) ** 2
-            + (dic["wellCoord"][0][2] - dic["xyz"][i][2]) ** 2
-        )
-        well2.append(
-            (dic["wellCoord"][1][0] - dic["xyz"][i][0]) ** 2
-            + (dic["wellCoord"][1][2] - dic["xyz"][i][2]) ** 2
-        )
-        sensor1.append(
-            (dic["xyz"][i][0] - dic["sensors"][0][0]) ** 2
-            + (dic["xyz"][i][2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
-        )
-        sensor2.append(
-            (dic["xyz"][i][0] - dic["sensors"][1][0]) ** 2
-            + (dic["xyz"][i][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
-        )
-        z_c = dic["xyz"][i][2]
-        if dic["spe11"] == "spe11c":
-            z_c -= map_z(dic, 0)
-        dic["fluxnum"].append(str(n))
-        boxes(dic, dic["xyz"][i][0], z_c, i_x, dic["fluxnum"][-1])
-        pv = dic["rock"][n - 1][1] * (dic["pvAdded"] + dic["widthBuffer"])
-        if i_x == 0 and n not in (1, 7):
-            dic["porv"].append(
-                f"PORV { pv*dic['d_y'][0]*dic['d_z'][i]} 1 1 1 1 "
-                + f"{k_z+1} {k_z+1} /"
+    with alive_bar(dic["no_cells"]) as bar_animation:
+        for i in range(dic["no_cells"]):
+            bar_animation()
+            i_x = int(i % dic["noCells"][0])
+            k_z = int(np.floor(i / dic["noCells"][0]))
+            xtemp.append(dic["xyz"][i][0])
+            ztemp.append(dic["xyz"][i][2])
+            n = -1
+            for facie, poly in zip(dic["facies"], dic["polygons"]):
+                if poly.contains(Point(dic["xyz"][i][0], dic["xyz"][i][2])):
+                    n = facie
+                    break
+            well1.append(
+                (dic["wellCoord"][0][0] - dic["xyz"][i][0]) ** 2
+                + (dic["wellCoord"][0][2] - dic["xyz"][i][2]) ** 2
             )
-            pv_l = pv
-        elif i_x == dic["noCells"][0] - 1 and n not in (1, 7):
-            dic["porv"].append(
-                f"PORV {pv*dic['d_y'][0]*dic['d_z'][i]} {dic['noCells'][0]} "
-                + f"{dic['noCells'][0]} 1 1 {k_z+1} {k_z+1} /"
+            well2.append(
+                (dic["wellCoord"][1][0] - dic["xyz"][i][0]) ** 2
+                + (dic["wellCoord"][1][2] - dic["xyz"][i][2]) ** 2
             )
-        if i_x > 0 and i_x == dic["noCells"][0] - 1:
-            for j in range(dic["noCells"][1] - 1):
-                dic["fluxnum"].extend(dic["fluxnum"][-dic["noCells"][0] :])
-                for i_i in range(dic["noCells"][0]):
-                    z_c = ztemp[i_i]
-                    if dic["spe11"] == "spe11c":
-                        z_c -= map_z(dic, j + 1)
-                    boxes(
-                        dic,
-                        xtemp[i_i],
-                        z_c,
-                        i_i,
-                        dic["fluxnum"][-dic["noCells"][0] + i_i],
-                    )
-                    if i_i == 0 and (
-                        int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
-                        and int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 7
-                    ):
-                        dic["d_zl"] = dic["d_z"][-dic["noCells"][0] + 1 + i]
-                        dic["porv"].append(
-                            "PORV "
-                            + f"{pv_l*dic['d_y'][j+1]*dic['d_zl']} 1 1 "
-                            + f"{j+2} {j+2} {k_z+1} {k_z+1} /"
+            sensor1.append(
+                (dic["xyz"][i][0] - dic["sensors"][0][0]) ** 2
+                + (dic["xyz"][i][2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
+            )
+            sensor2.append(
+                (dic["xyz"][i][0] - dic["sensors"][1][0]) ** 2
+                + (dic["xyz"][i][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
+            )
+            z_c = dic["xyz"][i][2]
+            if dic["spe11"] == "spe11c":
+                z_c -= map_z(dic, 0)
+            dic["fluxnum"].append(str(n))
+            boxes(dic, dic["xyz"][i][0], z_c, i_x, dic["fluxnum"][-1])
+            pv = dic["rock"][n - 1][1] * (dic["pvAdded"] + dic["widthBuffer"])
+            if i_x == 0 and n not in (1, 7):
+                dic["porv"].append(
+                    f"PORV { pv*dic['d_y'][0]*dic['d_z'][i]} 1 1 1 1 "
+                    + f"{k_z+1} {k_z+1} /"
+                )
+                pv_l = pv
+            elif i_x == dic["noCells"][0] - 1 and n not in (1, 7):
+                dic["porv"].append(
+                    f"PORV {pv*dic['d_y'][0]*dic['d_z'][i]} {dic['noCells'][0]} "
+                    + f"{dic['noCells'][0]} 1 1 {k_z+1} {k_z+1} /"
+                )
+            if i_x > 0 and i_x == dic["noCells"][0] - 1:
+                for j in range(dic["noCells"][1] - 1):
+                    dic["fluxnum"].extend(dic["fluxnum"][-dic["noCells"][0] :])
+                    for i_i in range(dic["noCells"][0]):
+                        z_c = ztemp[i_i]
+                        if dic["spe11"] == "spe11c":
+                            z_c -= map_z(dic, j + 1)
+                        boxes(
+                            dic,
+                            xtemp[i_i],
+                            z_c,
+                            i_i,
+                            dic["fluxnum"][-dic["noCells"][0] + i_i],
                         )
-                    elif i_i == dic["noCells"][0] - 1 and (
-                        int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
-                        and int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 7
-                    ):
-                        dic["porv"].append(
-                            f"PORV {pv*dic['d_y'][j+1]*dic['d_z'][i]} "
-                            + f"{dic['noCells'][0]} {dic['noCells'][0]} {j+2} {j+2} "
-                            + f"{k_z+1} {k_z+1} /"
-                        )
-            xtemp, ztemp = [], []
+                        if i_i == 0 and (
+                            int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
+                            and int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 7
+                        ):
+                            dic["d_zl"] = dic["d_z"][-dic["noCells"][0] + 1 + i]
+                            dic["porv"].append(
+                                "PORV "
+                                + f"{pv_l*dic['d_y'][j+1]*dic['d_zl']} 1 1 "
+                                + f"{j+2} {j+2} {k_z+1} {k_z+1} /"
+                            )
+                        elif i_i == dic["noCells"][0] - 1 and (
+                            int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
+                            and int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 7
+                        ):
+                            dic["porv"].append(
+                                f"PORV {pv*dic['d_y'][j+1]*dic['d_z'][i]} "
+                                + f"{dic['noCells'][0]} {dic['noCells'][0]} {j+2} {j+2} "
+                                + f"{k_z+1} {k_z+1} /"
+                            )
+                xtemp, ztemp = [], []
     if dic["spe11"] == "spe11c":
         add_pv_fipnum_front_back(dic)
     dic["pop1"] = pd.Series(sensor1).argmin()

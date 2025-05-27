@@ -8,7 +8,7 @@ corner-point      #Type of grid (cartesian, tensor, or corner-point)
 8400 5000 1200    #Length, width, and depth [m]
 168               #If cartesian, number of x cells [-]; otherwise, variable array of x-refinement
 100               #If cartesian, number of y cells [-]; otherwise, variable array of y-refinement [-] (for spe11c)
-9,7,1,5,5,3,7,7,10,7,7,8,6,15,5,24,24,7  #If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (18 entries)
+9,7,1,5,5,3,7,7,10,7,7,8,6,15,5,24,24,7 #If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (18 entries)
 70 36.12          #Temperature bottom and top rig [C]            
 300 3e7 0.1       #Datum [m], pressure at the datum [Pa], and multiplier for the permeability in the z direction [-] 
 1e-9 2e-8         #Diffusion (in liquid and gas) [m^2/s]
