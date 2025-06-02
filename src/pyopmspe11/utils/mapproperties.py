@@ -80,9 +80,17 @@ def structured_handling_spe11a(dic):
             for i in range(dic["noCells"][0]):
                 bar_animation()
                 n = -1
-                for facie, poly in zip(dic["facies"], dic["polygons"]):
-                    if poly.contains(Point(dic["xmx_center"][i], dic["zmz_center"][k])):
-                        n = facie
+                if dic["zmz_center"][k] > dic["zmidbot"]:
+                    order = dic["under_order"]
+                elif dic["zmz_center"][k] > dic["ztopbot"]:
+                    order = dic["bottom_order"]
+                else:
+                    order = dic["top_order"]
+                for ind in order:
+                    if dic["polygons"][ind].contains(
+                        Point(dic["xmx_center"][i], dic["zmz_center"][k])
+                    ):
+                        n = dic["facies"][ind]
                         break
                 sensor1.append(
                     (dic["xmx_center"][i] - dic["sensors"][0][0]) ** 2
@@ -127,9 +135,17 @@ def structured_handling_spe11bc(dic):
             for i in range(dic["noCells"][0]):
                 bar_animation()
                 n = -1
-                for facie, poly in zip(dic["facies"], dic["polygons"]):
-                    if poly.contains(Point(dic["xmx_center"][i], dic["zmz_center"][k])):
-                        n = facie
+                if dic["zmz_center"][k] > dic["zmidbot"]:
+                    order = dic["under_order"]
+                elif dic["zmz_center"][k] > dic["ztopbot"]:
+                    order = dic["bottom_order"]
+                else:
+                    order = dic["top_order"]
+                for ind in order:
+                    if dic["polygons"][ind].contains(
+                        Point(dic["xmx_center"][i], dic["zmz_center"][k])
+                    ):
+                        n = dic["facies"][ind]
                         break
                 sensor1.append(
                     (dic["xmx_center"][i] - dic["sensors"][0][0]) ** 2
@@ -313,9 +329,17 @@ def corner_point_handling_spe11a(dic):
             i_x = int(i % dic["noCells"][0])
             k_z = int(np.floor(i / dic["noCells"][0]))
             n = -1
-            for facie, poly in zip(dic["facies"], dic["polygons"]):
-                if poly.contains(Point(dic["xyz"][i][0], dic["xyz"][i][2])):
-                    n = facie
+            if dic["xyz"][i][2] > dic["zmidbot"]:
+                order = dic["under_order"]
+            elif dic["xyz"][i][2] > dic["ztopbot"]:
+                order = dic["bottom_order"]
+            else:
+                order = dic["top_order"]
+            for ind in order:
+                if dic["polygons"][ind].contains(
+                    Point(dic["xyz"][i][0], dic["xyz"][i][2])
+                ):
+                    n = dic["facies"][ind]
                     break
             well1.append(
                 (dic["wellCoord"][0][0] - dic["xyz"][i][0]) ** 2
@@ -386,9 +410,17 @@ def corner_point_handling_spe11bc(dic):
             xtemp.append(dic["xyz"][i][0])
             ztemp.append(dic["xyz"][i][2])
             n = -1
-            for facie, poly in zip(dic["facies"], dic["polygons"]):
-                if poly.contains(Point(dic["xyz"][i][0], dic["xyz"][i][2])):
-                    n = facie
+            if dic["xyz"][i][2] > dic["zmidbot"]:
+                order = dic["under_order"]
+            elif dic["xyz"][i][2] > dic["ztopbot"]:
+                order = dic["bottom_order"]
+            else:
+                order = dic["top_order"]
+            for ind in order:
+                if dic["polygons"][ind].contains(
+                    Point(dic["xyz"][i][0], dic["xyz"][i][2])
+                ):
+                    n = dic["facies"][ind]
                     break
             well1.append(
                 (dic["wellCoord"][0][0] - dic["xyz"][i][0]) ** 2
@@ -739,9 +771,13 @@ def getpolygons(dic):
     if dic["spe11"] == "spe11a":
         h_ref = 1
         l_ref = 1
+        dic["ztopbot"] = dic["dims"][2] - 0.644
+        dic["zmidbot"] = dic["dims"][2] - 0.265
     else:
         h_ref = 1200.0 / 1.2
         l_ref = 8400.0 / 2.8
+        dic["ztopbot"] = dic["dims"][2] - 0.644 * 1200.0 / 1.2
+        dic["zmidbot"] = dic["dims"][2] - 0.265 * 1200.0 / 1.2
     with open(
         f"{dic['pat']}/reference_mesh/facies_coordinates.geo",
         "r",
@@ -800,6 +836,109 @@ def getpolygons(dic):
                 )
         tmp.append(tmp[0])
         dic["polygons"].append(Polygon(tmp))
+    # Performance: Set the order to search in the polygons above and below
+    dic["top_order"] = [
+        0,
+        4,
+        5,
+        6,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        22,
+        23,
+        24,
+        27,
+        28,
+        30,
+        7,
+        13,
+        12,
+        20,
+        1,
+        8,
+        19,
+        21,
+        14,
+        2,
+        3,
+        25,
+        26,
+        29,
+        31,
+    ]
+    dic["bottom_order"] = [
+        12,
+        20,
+        1,
+        8,
+        19,
+        21,
+        14,
+        2,
+        3,
+        25,
+        26,
+        29,
+        31,
+        0,
+        4,
+        5,
+        6,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        22,
+        23,
+        24,
+        27,
+        28,
+        30,
+        7,
+        13,
+    ]
+    dic["under_order"] = [
+        25,
+        26,
+        31,
+        29,
+        12,
+        20,
+        1,
+        8,
+        19,
+        21,
+        14,
+        2,
+        3,
+        0,
+        4,
+        5,
+        6,
+        9,
+        10,
+        11,
+        15,
+        16,
+        17,
+        18,
+        22,
+        23,
+        24,
+        27,
+        28,
+        30,
+        7,
+        13,
+    ]
 
 
 def get_lines(dic):

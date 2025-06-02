@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
-# pylint: disable=R0912, R0801
+# pylint: disable=R0912, R0801, R0914
 
 """
 Script to plot the results
@@ -10,9 +10,11 @@ import argparse
 import os
 import warnings
 import math as mt
+from io import StringIO
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib import ticker
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 font = {"family": "normal", "weight": "normal", "size": 20}
@@ -64,6 +66,13 @@ def main():
         "write all generated files in the output directory ('1' by default).",
     )
     parser.add_argument(
+        "-t",
+        "--time",
+        default="5",
+        help="If one number, time step for the spatial maps (spe11a [h]; spe11b/c "
+        "[y]) ('5' by default); otherwise, times separated by commas.",
+    )
+    parser.add_argument(
         "-l",
         "--latex",
         default=1,
@@ -78,6 +87,7 @@ def main():
     dic["compare"] = cmdargs["compare"]  # No empty, then the create compare folder
     dic["latex"] = int(cmdargs["latex"])  # LaTeX formatting
     dic["subfolders"] = int(cmdargs["subfolders"]) == 1  # Create subfolders
+    dic["time"] = np.genfromtxt(StringIO(cmdargs["time"]), delimiter=",", dtype=int)
     plot_results(dic)
     print(f"The png figures have been saved on {dic['where']}")
 
@@ -378,6 +388,13 @@ def generate_grid(dic):
         dic["times"] = np.array([int(file[31:-5]) for file in dic["files"]])
     dic["sort_ind"] = np.argsort(dic["times"])
     dic["times"] = [dic["times"][i] for i in dic["sort_ind"]]
+    if dic["time"].size == 1:
+        if dic["time"] > 0:
+            dic["times"] = list(range(0, dic["times"][-1] + 1, dic["time"]))
+        else:
+            dic["times"] = [dic["time"]]
+    else:
+        dic["times"] = list(dic["time"])
     csv = np.genfromtxt(
         f"{dic['folders'][0]}{dic['dataf']}/{dic['files'][0]}",
         delimiter=",",
@@ -496,28 +513,30 @@ def dense_data(dic):
     generate_grid(dic)
     for kind in dic["kinds"]:
         handle_kind(dic, kind)
-        for k, quantity in enumerate(dic["quantities"]):
-            dic["ptimes"] = dic["times"][: dic["allplots"][k]] + [dic["times"][-1]]
-            ini_quantity_plot(dic)
-            csv = np.genfromtxt(
-                f"{dic['folders'][0]}{dic['dataf']}/{dic['case']}{kind}_spatial_map_"
-                + f"0{dic['tlabel']}.csv",
-                delimiter=",",
-                skip_header=1,
-            )
-            quan = np.array([csv[i][dic["dims"] + k] for i in range(csv.shape[0])])
-            dic["minc"], dic["maxc"] = (
-                quan[~np.isnan(quan)].min(),
-                quan[~np.isnan(quan)].max(),
-            )
-            for tmap in dic["ptimes"]:
-                csv = np.genfromtxt(
+        csvs = []
+        for tmap in dic["times"]:
+            csvs.append(
+                np.genfromtxt(
                     f"{dic['folders'][0]}{dic['dataf']}/{dic['case']}{kind}_spatial_map_"
                     + f"{tmap}{dic['tlabel']}.csv",
                     delimiter=",",
                     skip_header=1,
                 )
-                quan = np.array([csv[i][dic["dims"] + k] for i in range(csv.shape[0])])
+            )
+        for k, quantity in enumerate(dic["quantities"]):
+            dic["ptimes"] = dic["times"][: dic["allplots"][k]] + [dic["times"][-1]]
+            ini_quantity_plot(dic)
+            quan = np.array(
+                [csvs[0][i][dic["dims"] + k] for i in range(csvs[0].shape[0])]
+            )
+            dic["minc"], dic["maxc"] = (
+                quan[~np.isnan(quan)].min(),
+                quan[~np.isnan(quan)].max(),
+            )
+            for n, tmap in enumerate(dic["ptimes"]):
+                quan = np.array(
+                    [csvs[n][i][dic["dims"] + k] for i in range(csvs[n].shape[0])]
+                )
                 dic["min"].append(quan[~np.isnan(quan)].min())
                 dic["max"].append(quan[~np.isnan(quan)].max())
                 if quantity == "tco2":
@@ -579,24 +598,41 @@ def dense_data(dic):
                         + f", {dic['case']} ({dic['folders'][0].split('/')[-1]})"
                     )
                 axis.axis("scaled")
-                divider = make_axes_locatable(axis)
-                vect = np.linspace(
-                    dic["minc"],
-                    dic["maxc"],
-                    5,
-                    endpoint=True,
-                )
-                dic["fig"].colorbar(
-                    imag,
-                    cax=divider.append_axes("right", size="5%", pad=0.05),
-                    orientation="vertical",
-                    ticks=vect,
-                    format=lambda x, _: f"{x:.2e}",
-                )
+                axis.xaxis.set_major_locator(ticker.MaxNLocator(14))
+                axis.yaxis.set_major_locator(ticker.MaxNLocator(4))
                 imag.set_clim(
                     dic["minc"],
                     dic["maxc"],
                 )
+                if j % 3 != 0:
+                    axis.set_yticks([])
+                if (
+                    j
+                    < (np.ceil(len(dic["ptimes"]) / 3) - 1) * 3
+                    - (3 - len(dic["ptimes"]) % 3)
+                    or (len(dic["ptimes"]) % 3 == 1 and j == len(dic["ptimes"]) - 4)
+                    or (len(dic["ptimes"]) % 3 == 2 and j == len(dic["ptimes"]) - 5)
+                ):
+                    axis.set_xticks([])
+                if (
+                    (j + 1) % 3 == 0
+                    or len(dic["ptimes"]) == 1
+                    or (len(dic["ptimes"]) == 2 and j == 1)
+                ):
+                    divider = make_axes_locatable(axis)
+                    vect = np.linspace(
+                        dic["minc"],
+                        dic["maxc"],
+                        5,
+                        endpoint=True,
+                    )
+                    dic["fig"].colorbar(
+                        imag,
+                        cax=divider.append_axes("right", size="5%", pad=0.05),
+                        orientation="vertical",
+                        ticks=vect,
+                        format=lambda x, _: f"{x:.2e}",
+                    )
             dic["fig"].savefig(
                 f"{dic['where']}/{dic['case']}_{quantity}_2Dmaps.png",
                 bbox_inches="tight",

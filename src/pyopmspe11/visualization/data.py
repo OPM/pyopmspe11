@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
-# pylint: disable=C0302, R0912, R0914, R0801, R0915, E1102
+# pylint: disable=C0302, R0912, R0914, R0801, R0915, E1102, C0325
 
 """
 Script to write the benchmark data
@@ -14,7 +14,6 @@ from shapely.geometry import Polygon
 from alive_progress import alive_bar
 from rtree import index
 import numpy as np
-import pandas as pd
 from scipy.interpolate import interp1d
 from resdata.grid import Grid
 from resdata.resfile import ResdataFile
@@ -956,43 +955,135 @@ def dense_data(dig):
     dil["refxgrid"] = np.zeros(dig["nxyz"][0] * dig["nxyz"][2])
     dil["refzgrid"] = np.zeros(dig["nxyz"][0] * dig["nxyz"][2])
     dil["refpoly"] = []
-    ind, dil["cell_ind"] = 0, [[] for _ in range(dig["noxz"])]
-    dil["cell_indc"] = np.zeros(dig["noxz"])
-    dil["cell_cent"] = [0 for _ in range(dig["noxzr"])]
-    idx = index.Index()
-    for k, zcen in enumerate(dil["refzcent"]):
-        for i, xcen in enumerate(dil["refxcent"]):
-            dil["refxgrid"][ind] = xcen
-            dil["refzgrid"][ind] = zcen
-            dil["refpoly"].append(
-                Polygon(
-                    [
-                        (dil["refxvert"][i], dil["refzvert"][k]),
-                        (dil["refxvert"][i + 1], dil["refzvert"][k]),
-                        (dil["refxvert"][i + 1], dil["refzvert"][k + 1]),
-                        (dil["refxvert"][i], dil["refzvert"][k + 1]),
-                    ]
-                )
+    dil["cell_ind"] = [[] for _ in range(dig["noxz"])]
+    dil["cell_indc"] = np.zeros(dig["noxz"], dtype=int)
+    dil["cell_cent"] = np.zeros(dig["noxzr"], dtype=float)
+    if dig["use"] == "opm":
+        dx = dig["init"]["DX"][: dig["gxyz"][0]]
+        dz = dig["init"]["DZ"]
+    else:
+        dx = dig["init"].iget_kw("DX")[0][: dig["gxyz"][0]]
+        dz = dig["init"].iget_kw("DZ")[0]
+    iszunif = min(dz) == max(dz)
+    if (
+        iszunif
+        and dig["nxyz"][2] == dig["gxyz"][2]
+        and min(dx) == max(dx)
+        and dig["nxyz"][0] == dig["gxyz"][0]
+    ):
+        for k in range(dig["nxyz"][2]):
+            dil["cell_cent"][
+                (dig["nxyz"][2] - k - 1)
+                * dig["nxyz"][0] : (dig["nxyz"][2] - k)
+                * dig["nxyz"][0]
+            ] = range(k * dig["nxyz"][0], (k + 1) * dig["nxyz"][0])
+        dil["cell_indc"] = dil["cell_cent"]
+        for n, row in enumerate(dil["cell_indc"]):
+            dil["cell_ind"][n] = [[int(row), 1]]
+    elif (
+        iszunif
+        and dig["nxyz"][2] == dig["gxyz"][2]
+        and min(dx[2:-2]) == max(dx[2:-2])
+        and dig["nxyz"][0] == dig["gxyz"][0] - 2
+    ):
+        for k in range(dig["nxyz"][2]):
+            dil["cell_indc"][(dig["gxyz"][2] - k - 1) * dig["gxyz"][0]] = (
+                k * dig["nxyz"][0]
             )
-            idx.insert(ind, dil["refpoly"][-1].bounds)
-            ind += 1
-    for k, simp in enumerate(dil["simpoly"]):
-        ovrl = list(idx.intersection(simp.bounds))
-        if simp.area > 0:
-            for ind in ovrl:
-                area = simp.intersection(dil["refpoly"][ind]).area / simp.area
-                if area > 0:
-                    dil["cell_ind"][k].append([ind, area])
-                    dil["cell_indc"][k] = ind
-        else:
-            dil["cell_indc"][k] = dil["cell_indc"][k - 1]
-    print("Processing the spatial map between simulation and reporting grids")
-    with alive_bar(len(dil["refxgrid"])) as bar_animation:
-        for k, (xcen, zcen) in enumerate(zip(dil["refxgrid"], dil["refzgrid"])):
-            bar_animation()
-            dil["cell_cent"][k] = pd.Series(
-                np.abs(dil["simxcent"] - xcen) + np.abs(dil["simzcent"] - zcen)
-            ).argmin()
+            dil["cell_indc"][
+                (dig["gxyz"][2] - k - 1) * dig["gxyz"][0]
+                + 1 : (dig["gxyz"][2] - k) * dig["gxyz"][0]
+            ] = range(k * dig["nxyz"][0], (k + 1) * dig["nxyz"][0] + 1)
+            dil["cell_indc"][(dig["gxyz"][2] - k) * dig["gxyz"][0] - 1] = (k + 1) * dig[
+                "nxyz"
+            ][0] - 1
+            dil["cell_cent"][
+                (dig["nxyz"][2] - k - 1)
+                * dig["nxyz"][0] : (dig["nxyz"][2] - k)
+                * dig["nxyz"][0]
+            ] = [
+                row + 2 * k
+                for row in range(k * dig["nxyz"][0] + 1, (k + 1) * dig["nxyz"][0] + 1)
+            ]
+        for n, row in enumerate(dil["cell_indc"]):
+            dil["cell_ind"][n] = [[int(row), 1]]
+    elif (
+        iszunif
+        and dig["gxyz"][2] % dig["nxyz"][2] == 0
+        and min(dx) == max(dx)
+        and dig["gxyz"][0] % dig["nxyz"][0] == 0
+    ):
+        x_n = int(dig["gxyz"][0] / dig["nxyz"][0])
+        z_n = int(dig["gxyz"][2] / dig["nxyz"][2])
+        for k in range(dig["nxyz"][2]):
+            dil["cell_cent"][
+                (dig["nxyz"][2] - k - 1)
+                * dig["nxyz"][0] : (dig["nxyz"][2] - k)
+                * dig["nxyz"][0]
+            ] = [
+                row * x_n
+                + (x_n / 2 - 1)
+                + (z_n / 2 - 1) * dig["gxyz"][0]
+                + k * (z_n - 1) * dig["gxyz"][0]
+                for row in range(k * dig["nxyz"][0], (k + 1) * dig["nxyz"][0])
+            ]
+        for k in range(dig["nxyz"][2]):
+            for k_n in range(z_n):
+                for i in range(dig["nxyz"][0]):
+                    dil["cell_indc"][
+                        (dig["gxyz"][2] - (k * (z_n) + k_n) - 1) * dig["gxyz"][0]
+                        + i
+                        * (x_n) : (dig["gxyz"][2] - (k * (z_n) + k_n) - 1)
+                        * dig["gxyz"][0]
+                        + (i + 1) * (x_n)
+                    ] = [i + k * dig["nxyz"][0] for _ in range(0, x_n)]
+        for n, row in enumerate(dil["cell_indc"]):
+            dil["cell_ind"][n] = [[int(row), 1]]
+    elif (
+        iszunif
+        and dig["gxyz"][2] % dig["nxyz"][2] == 0
+        and min(dx[2:-2]) == max(dx[2:-2])
+        and (dig["gxyz"][0] - 2) % dig["nxyz"][0] == 0
+    ):
+        x_n = int((dig["gxyz"][0] - 2) / dig["nxyz"][0])
+        z_n = int(dig["gxyz"][2] / dig["nxyz"][2])
+        for k in range(dig["nxyz"][2]):
+            dil["cell_cent"][
+                (dig["nxyz"][2] - k - 1)
+                * dig["nxyz"][0] : (dig["nxyz"][2] - k)
+                * dig["nxyz"][0]
+            ] = [
+                row * x_n
+                + (x_n / 2 - 1)
+                + (z_n / 2 - 1) * dig["gxyz"][0]
+                + k * (z_n - 1) * dig["gxyz"][0]
+                + 2 * k
+                + 1
+                for row in range(k * dig["nxyz"][0], (k + 1) * dig["nxyz"][0])
+            ]
+        for k in range(dig["nxyz"][2]):
+            for k_n in range(z_n):
+                for i in range(dig["nxyz"][0]):
+                    dil["cell_indc"][
+                        (dig["gxyz"][2] - (k * (z_n) + k_n) - 1) * dig["gxyz"][0]
+                        + i * (x_n)
+                    ] = (k * dig["nxyz"][0] + i)
+                    dil["cell_indc"][
+                        (dig["gxyz"][2] - (k * (z_n) + k_n) - 1) * dig["gxyz"][0]
+                        + i * (x_n)
+                        + 1 : (dig["gxyz"][2] - (k * (z_n) + k_n) - 1) * dig["gxyz"][0]
+                        + (i + 1) * (x_n)
+                        + 1
+                    ] = [i + k * dig["nxyz"][0] for _ in range(0, x_n)]
+                    dil["cell_indc"][
+                        (dig["gxyz"][2] - (k * (z_n) + k_n) - 1) * dig["gxyz"][0]
+                        + (i + 1) * (x_n)
+                        + 1
+                    ] = (i + k * dig["nxyz"][0])
+        for n, row in enumerate(dil["cell_indc"]):
+            dil["cell_ind"][n] = [[int(row), 1]]
+    else:
+        handle_find_cells_ids(dil)
     dig["actindr"] = []
     if max(dil["satnum"]) < 7 and dig["case"] == "spe11a":
         handle_inactive_mapping(dig, dil)
@@ -1014,6 +1105,56 @@ def dense_data(dig):
             write_dense_data(dig, dil, i)
     if dig["mode"] in ["all", "performance-spatial", "dense_performance-spatial"]:
         handle_performance_spatial(dig, dil)
+
+
+def handle_find_cells_ids(dil):
+    """
+    Find the cells ids when reporting and simulation grids differ
+
+    Args:
+        dil (dict): Local dictionary
+
+    Returns:
+        dil (dict): Modified local dictionary
+
+    """
+    ind, idx = 0, index.Index()
+    for k, zcen in enumerate(dil["refzcent"]):
+        for i, xcen in enumerate(dil["refxcent"]):
+            dil["refxgrid"][ind] = xcen
+            dil["refzgrid"][ind] = zcen
+            dil["refpoly"].append(
+                Polygon(
+                    [
+                        (dil["refxvert"][i], dil["refzvert"][k]),
+                        (dil["refxvert"][i + 1], dil["refzvert"][k]),
+                        (dil["refxvert"][i + 1], dil["refzvert"][k + 1]),
+                        (dil["refxvert"][i], dil["refzvert"][k + 1]),
+                    ]
+                )
+            )
+            idx.insert(ind, dil["refpoly"][-1].bounds)
+            ind += 1
+    print("Processing polygon intersections between simulation and reporting grids")
+    with alive_bar(len(dil["simpoly"])) as bar_animation:
+        for k, simp in enumerate(dil["simpoly"]):
+            bar_animation()
+            ovrl = list(idx.intersection(simp.bounds))
+            if simp.area > 0:
+                for ind in ovrl:
+                    area = simp.intersection(dil["refpoly"][ind]).area / simp.area
+                    if area > 0:
+                        dil["cell_ind"][k].append([ind, area])
+                        dil["cell_indc"][k] = ind
+            else:
+                dil["cell_indc"][k] = dil["cell_indc"][k - 1]
+    print("Finding the cell indices between simulation and reporting grids")
+    with alive_bar(len(dil["refxgrid"])) as bar_animation:
+        for n, (xcen, zcen) in enumerate(zip(dil["refxgrid"], dil["refzgrid"])):
+            bar_animation()
+            dil["cell_cent"][n] = np.argmin(
+                np.abs(dil["simxcent"] - xcen) + np.abs(dil["simzcent"] - zcen)
+            )
 
 
 def handle_yaxis_mapping_extensive(dig, dil):
@@ -1059,7 +1200,7 @@ def handle_yaxis_mapping_extensive(dig, dil):
                 ]
                 for col in row
             ]
-            for i, row in enumerate(dil["cell_ind"][i_i : i_i + dig["gxyz"][0]])
+            for row in dil["cell_ind"][i_i : i_i + dig["gxyz"][0]]
         ]
         wei_inds[iii : iii + dig["gxyz"][0]] = maps
         for j, iy in enumerate(indy[1:]):
@@ -1111,7 +1252,7 @@ def handle_yaxis_mapping_intensive(dig, dil):
 
     """
     indy = np.array(
-        [pd.Series(np.abs(dil["simycent"] - y_c)).argmin() for y_c in dil["refycent"]]
+        [np.argmin(np.abs(dil["simycent"] - y_c)) for y_c in dil["refycent"]]
     )
     tmp_inds = np.zeros(dig["nocellsr"], dtype=int)
     mults = np.zeros(dig["nxyz"][0], dtype=int)
@@ -1212,7 +1353,7 @@ def static_map_to_report_grid_performance_spatial(dig, dil):
                 tsteps.append(86400.0 * float((row[0].strip()).split()[1]))
     infotimes = np.array(infotimes)
     for time in dig["dense_t"][:-1]:
-        ind = pd.Series(np.abs(infotimes - (time + dig["time_initial"]))).argmin()
+        ind = np.argmin(np.abs(infotimes - (time + dig["time_initial"])))
         if ind > 0:
             dil["latest_dts"].append(tsteps[ind - 1])
         else:

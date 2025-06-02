@@ -46,6 +46,7 @@ def plotting(dic):
         "-s " + f"{dic['showpywarn']}",
         "-l " + f"{dic['latex']}",
         "-f " + f"{dic['subfolders']}",
+        "-t " + f"{dic['time_data']}",
     ]
     print("\nPlot: Generation of png figures, please wait.")
     prosc = subprocess.run(plot_exe, check=True)

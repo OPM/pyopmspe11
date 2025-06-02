@@ -330,10 +330,12 @@ def handle_tuning(dic):
         dic (dict): Modified global dictionary
 
     """
-    dic["tim_aft_eve"], dic["sol_res_fac"] = "", ""
+    dic["tim_aft_eve"], dic["sol_res_fac"], dic["tuning"] = "", "", False
     for value in dic["flow"].split():
         if "solver-restart-factor" in value:
             dic["sol_res_fac"] = float(value.split("=")[1])
-            continue
-        if "time-step-after-event-in-days" in value:
+        elif "time-step-after-event-in-days" in value:
             dic["tim_aft_eve"] = float(value.split("=")[1])
+        elif "--enable-tuning" in value:
+            if value[16:] in ["true", "True", "1"]:
+                dic["tuning"] = True
