@@ -31,7 +31,7 @@ THERMAL
 METRIC
 
 START
-1 'JAN' 2025 /
+1 JAN 2025 /
 % if sum(dic['radius']) > 0:
 
 WELLDIMS
@@ -60,8 +60,13 @@ INCLUDE
 TOPS
 ${dic['noCells'][0]}*0.0 /
 % else:
+% if dic["dx"]:
 INCLUDE
 'DX.INC' /
+% else:
+DX 
+${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*${dic['dsize'][0]} /
+% endif
 
 DY 
 ${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*${dic['dsize'][1]} /
@@ -174,7 +179,7 @@ EQUIL
 ${dic['dims'][2]-dic['datum']} ${dic['pressure']/1.E5} 0 0 0 0 1 1 0 /
 
 RPTRST
-'BASIC=2' DEN PCGW ${f"RSWSAT /" if dic['model'] != 'immiscible' else "/"}
+BASIC=2 DEN PCGW ${f"RSWSAT /" if dic['model'] != 'immiscible' else "/"}
 
 RTEMPVD
 0   ${dic["temperature"][1]}
@@ -209,7 +214,7 @@ ${sensor[0]+1} ${sensor[1]+1} ${sensor[2]+1} /
 SCHEDULE
 ----------------------------------------------------------------------------
 RPTRST
-'BASIC=2' DEN PCGW RESIDUAL ${f"RSWSAT /" if dic['model'] != 'immiscible' else "/"}
+BASIC=2 DEN PCGW RESIDUAL ${f"RSWSAT /" if dic['model'] != 'immiscible' else "/"}
 % if dic['model'] == 'convective':
 
 DRSDTCON
@@ -255,10 +260,12 @@ INJ${i} ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]} ${dic['wellijk'][i][2]} 
 % endif
 % for j in range(len(dic['inj'])):
 
+% if dic["tuning"]:
 TUNING
 ${dic["tim_aft_eve"] if dic["tim_aft_eve"] else 1e-2} ${dic['inj'][j][2] / 86400.} 1e-10 2* 1e-12 ${f"{dic['sol_res_fac']} /" if dic["sol_res_fac"] else "/"}
 /
 /
+% endif
 % if max(dic['radius']) > 0:
 WCONINJE
 % for i in range(len(dic['wellijk'])):
@@ -297,6 +304,5 @@ INJ${i} ${dic['inj'][j][5+3*i]} /
 /
 % endif
 TSTEP
-${round(dic['inj'][j][0]/dic['inj'][j][1])}*${dic['inj'][j][1] / 86400.}
-/
+${f"{round(dic['inj'][j][0]/dic['inj'][j][1])}*" if round(dic['inj'][j][0]/dic['inj'][j][1]) > 1 else ""}${dic['inj'][j][1] / 86400.} /
 % endfor

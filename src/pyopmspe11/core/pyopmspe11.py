@@ -38,7 +38,9 @@ def pyopmspe11():
         warnings.warn = lambda *args, **kwargs: None
     # If the compare plots are generated, then we exit right afterwards
     if dic["compare"]:
+        print("\nCompare: Generating common plots to compare results, please wait.")
         plot_results(dic)
+        print(f"\nThe figures have been written to {os.getcwd()}/compare/")
         return
 
     # Process the input file (open pyopmspe11.utils.inputvalues to see the abbreviations meaning)
@@ -63,8 +65,6 @@ def pyopmspe11():
 
     if dic["mode"] == "all" or "deck" in dic["mode"]:
         print("\nDeck: Generating the input files, please wait.")
-        # Check the generated deck and flow version
-        check_deck(dic)
         # Initialize the grid
         grid(dic)
         # Handle tuning
@@ -75,8 +75,12 @@ def pyopmspe11():
         opm_files(dic)
         print(f"\nThe deck files have been written to {dic['deckf']}")
     if dic["mode"] == "all" or "flow" in dic["mode"]:
+        # Check the generated deck and flow version
+        check_deck(dic)
         # Run the simulations
+        print("\nFlow: Running the simulations, please wait.")
         simulations(dic)
+        print(f"\nThe simulation results have been written to {dic['flowf']}")
 
     if dic["mode"] == "all" or "data" in dic["mode"]:
         # Write the data
