@@ -608,7 +608,7 @@ def dense_data(dic):
                     axis.set_yticks([])
                 if (
                     j
-                    < (np.ceil(len(dic["ptimes"]) / 3) - 1) * 3
+                    < ((len(dic["ptimes"]) - len(dic["ptimes"]) % 3) / 3) * 3
                     - (3 - len(dic["ptimes"]) % 3)
                     or (len(dic["ptimes"]) % 3 == 1 and j == len(dic["ptimes"]) - 4)
                     or (len(dic["ptimes"]) % 3 == 2 and j == len(dic["ptimes"]) - 5)
