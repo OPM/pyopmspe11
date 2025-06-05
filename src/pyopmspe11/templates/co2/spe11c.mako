@@ -45,10 +45,10 @@ GRID
 INIT
 
 INCLUDE
-'GRID.INC' /
+GRID.INC /
 
 INCLUDE
-'FLUXNUM.INC' /
+FLUXNUM.INC /
 % if dic['model'] != 'immiscible' and sum(dic["dispersion"]) > 0:
 
 DISPERC
@@ -90,12 +90,12 @@ BCCON
 EDIT
 ----------------------------------------------------------------------------
 INCLUDE
-'PVBOUNDARIES.INC' /
+PVBOUNDARIES.INC /
 ----------------------------------------------------------------------------
 PROPS
 ----------------------------------------------------------------------------
 INCLUDE
-'TABLES.INC' /
+TABLES.INC /
 % if dic['model'] != 'immiscible':
 % if (dic["diffusion"][0] + dic["diffusion"][1]) > 0:
 
@@ -134,7 +134,7 @@ FLUXNUM SATNUM /
 /
 
 INCLUDE
-'FIPNUM.INC' /
+FIPNUM.INC /
 % if dic['model'] == 'convective':
 
 COPY
@@ -151,7 +151,7 @@ RPTRST
 BASIC=2 DEN PCGW ${f"RSWSAT /" if dic['model'] != 'immiscible' else "/"}
 
 RTEMPVD
-0   ${dic["temperature"][1]}
+${"".join([' ' for _ in range(len(str(dic['maxelevation']+dic['dims'][2]))-1)])}0 ${dic["temperature"][1]}
 ${dic['maxelevation']+dic['dims'][2]} ${dic["temperature"][0]} /
 ----------------------------------------------------------------------------
 SUMMARY
@@ -246,11 +246,9 @@ WCONINJE
 % for i in range(len(dic['wellijk'])):
 % if dic['radius'][i] > 0:
 % if dic['inj'][j][3+3*i] > 0:
-INJ${i} GAS ${'OPEN' if dic['inj'][j][4+3*i] > 0 else 'SHUT'}
-RATE ${f"{dic['inj'][j][4+3*i] * 86400 / 1.86843:E}"} 1* 480 /
+INJ${i} GAS ${'OPEN' if dic['inj'][j][4+3*i] > 0 else 'SHUT'} RATE ${f"{dic['inj'][j][4+3*i] * 86400 / 1.86843:E}"} 1* 480 /
 % else:
-INJ${i} WATER ${'OPEN' if dic['inj'][j][4+3*i] > 0 else 'SHUT'}
-RATE ${f"{dic['inj'][j][4+3*i] * 86400 / 998.108:E}"} 1* 480 /
+INJ${i} WATER ${'OPEN' if dic['inj'][j][4+3*i] > 0 else 'SHUT'} RATE ${f"{dic['inj'][j][4+3*i] * 86400 / 998.108:E}"} 1* 480 /
 % endif
 % endif
 % endfor
