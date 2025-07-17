@@ -178,14 +178,6 @@ def readthefirstpart(lol, dic):
     row = list((lol[13][0].strip()).split())
     # Diffusion (in liquid and gas) [m^2/s] to [m^2/day]
     dic["diffusion"] = [float(row[0]) * 86400, float(row[1]) * 86400]
-    if len(row) > 2:
-        print(
-            "Dispersion is now set per facie (Lines 37 to 43 in the configuration "
-            + "file), not anymore in Line 14, e.g., see https://github.com/OPM/pyopm"
-            + "spe11/blob/main/examples/finner_grids/spe11b.txt. Please update the "
-            + "configuration file and try again to run pyopmspe11."
-        )
-        sys.exit()
     row = list((lol[14][0].strip()).split())
     # Rock specific heat and density (for spe11b/c)
     dic["rockExtra"] = [float(row[0]), float(row[1])]

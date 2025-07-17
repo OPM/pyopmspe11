@@ -71,7 +71,7 @@ is first divided with the number of entries in the array, and after it divides e
 the array entry. The corner-point mode generates a grid where the x and y direction are defined as in the array mode, but the 
 cell faces in the z-direction follows the lines as defined in the `lines_coordinates.geo <https://github.com/OPM/pyopmspe11/blob/main/src/pyopmspe11/reference_mesh/lines_coordinates.geo>`_ script,
 resulting in 18 levels. Then, the z-refinement in each of these levels is set. See the configuration files in the `tests <https://github.com/OPM/pyopmspe11/blob/main/tests>`_ and 
-`examples <https://github.com/OPM/pyopmspe11/blob/main/examples>`_ folder for the setting of these grids.
+`benchmark <https://github.com/OPM/pyopmspe11/blob/main/benchmark>`_ folder for the setting of these grids.
 
 .. figure:: figs/satnum.png
 .. figure:: figs/fipnum.png
@@ -221,7 +221,7 @@ The previous configuration file can be written using the widely in-use `toml for
 
 
 For additional examples of configuration files using toml, see the 
-`hello_world <https://github.com/OPM/pyopmspe11/tree/main/examples/hello_world>`_ and `configs <https://github.com/OPM/pyopmspe11/tree/main/tests/configs>`_ folders.
+`examples <https://github.com/OPM/pyopmspe11/tree/main/examples>`_ and `configs <https://github.com/OPM/pyopmspe11/tree/main/tests/configs>`_ folders.
 
 .. note::
     A Python version of at least 3.11 is requiered to use the toml format. For older Python versions, then use the :ref:`txt` configuration files.
@@ -247,7 +247,7 @@ For the convective model, if this is set via a txt file, the following default v
     -1.0 /
     /
 
-These values can be set via the toml configuration file, by adding the following variable (see `spe11b_convective.toml <https://github.com/OPM/pyopmspe11/tree/main/examples/hello_world/spe11b_convective.toml>`_):
+These values can be set via the toml configuration file, by adding the following variable (see `spe11b_convective.toml <https://github.com/OPM/pyopmspe11/tree/main/examples/spe11b_convective.toml>`_):
 
 .. code-block:: python
     :linenos:

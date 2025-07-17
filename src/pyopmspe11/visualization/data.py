@@ -30,7 +30,6 @@ except ImportError:
 GAS_DEN_REF = 1.86843
 WAT_DEN_REF = 998.108
 SECONDS_IN_YEAR = 31536000
-KMOL_TO_KG = 1e3 * 0.044
 SGAS_THR = 0.097
 
 
@@ -366,11 +365,11 @@ def performance(dig):
     )
     if dig["use"] == "opm":
         tcpu = dig["smspec"]["TCPU"]
-        fgip = GAS_DEN_REF * dig["smspec"]["FGIP"]
+        fgmip = dig["smspec"]["FGMIP"]
         times = 86400.0 * dig["smspec"]["TIME"] - dig["time_initial"]
     else:
         tcpu = dig["smspec"]["TCPU"].values
-        fgip = GAS_DEN_REF * dig["smspec"]["FGIP"].values
+        fgmip = dig["smspec"]["FGMIP"].values
         times = 86400.0 * dig["smspec"]["TIME"].values - dig["time_initial"]
     dil["map_sum"] = np.array(
         [time0 + int(np.floor(time / dig["sparse_t"])) for time in dil["times_det"]]
@@ -383,23 +382,23 @@ def performance(dig):
         tcpu[1:] -= tcpu[:-1]
     if dig["time_initial"] == 0:
         times = np.insert(times, 0, 0)
-        fgip = np.insert(fgip, 0, 0)
-    interp_fgip = interp1d(
+        fgmip = np.insert(fgmip, 0, 0)
+    interp_fgmip = interp1d(
         times,
-        fgip,
+        fgmip,
         fill_value="extrapolate",
     )
-    write_performance(dig, dil, interp_fgip, tcpu, infotimes)
+    write_performance(dig, dil, interp_fgmip, tcpu, infotimes)
 
 
-def write_performance(dig, dil, interp_fgip, tcpu, infotimes):
+def write_performance(dig, dil, interp_fgmip, tcpu, infotimes):
     """
     Write the performance data
 
     Args:
         dig (dict): Global dictionary\n
         dil (dict): Local dictionary\n
-        interp_fgip (object): Interpolator (time) for the CO2 mass\n
+        interp_fgmip (object): Interpolator (time) for the CO2 mass\n
         tcpu (array): Floats with the simulation times\n
         infotimes (array): Floats with the simulation time steps
 
@@ -449,7 +448,7 @@ def write_performance(dig, dil, interp_fgip, tcpu, infotimes):
             f"{time:.3e}, "
             + f"{dil['tstep']/weig[j]:.3e}, "
             + f"{np.sum(dil['fsteps'][ind])/weig[j]:.3e}, "
-            + f"{interp_fgip(time):.3e}, "
+            + f"{interp_fgmip(time):.3e}, "
             + f"{dig['dof'] * dig['nocellsa']:.3e}, "
             + f"{np.sum(dil['nliters'][ind])/weig[j]:.3e}, "
             + f"{np.sum(dil['nress'][ind])/weig[j]:.3e}, "
@@ -476,7 +475,7 @@ def write_performance(dig, dil, interp_fgip, tcpu, infotimes):
                 f"{time:.3e}, "
                 + f"{max(dil['tsteps'][ind]):.3e}, "
                 + f"{np.sum(dil['fsteps'][ind]):.3e}, "
-                + f"{interp_fgip(time):.3e}, "
+                + f"{interp_fgmip(time):.3e}, "
                 + f"{dig['dof'] * dig['nocellsa']:.3e}, "
                 + f"{np.sum(dil['nliters'][ind]):.3e}, "
                 + f"{np.sum(dil['nress'][ind]):.3e}, "
@@ -518,52 +517,53 @@ def create_from_summary(dig, dil):
                 break
     sort = sorted(range(len(i_jk)), key=i_jk.__getitem__)
     if dig["use"] == "opm":
-        pop1 = dig["unrst"]["PRESSURE", 0][dil["fipnum"].index(8)]
-        pop2 = dig["unrst"]["PRESSURE", 0][dil["fipnum"].index(9)]
-        if dig["unrst"].count("PCGW", 0):
-            pop1 -= dig["unrst"]["PCGW", 0][dil["fipnum"].index(8)]
-            pop2 -= dig["unrst"]["PCGW", 0][dil["fipnum"].index(9)]
+        pop1 = (
+            dig["unrst"]["PRESSURE", 0][dil["fipnum"].index(8)]
+            - dig["unrst"]["PCGW", 0][dil["fipnum"].index(8)]
+        )
+        pop2 = (
+            dig["unrst"]["PRESSURE", 0][dil["fipnum"].index(9)]
+            - dig["unrst"]["PCGW", 0][dil["fipnum"].index(9)]
+        )
         dil["pop1"] = [pop1 * 1.0e5] + list(dig["smspec"][names[sort[0]]] * 1.0e5)  # Pa
         dil["pop2"] = [pop2 * 1.0e5] + list(dig["smspec"][names[sort[1]]] * 1.0e5)  # Pa
         for i in dil["fip_diss_a"]:
-            dil["moba"] += dig["smspec"][f"RGKDM:{i}"] * KMOL_TO_KG
-            dil["imma"] += dig["smspec"][f"RGKDI:{i}"] * KMOL_TO_KG
-            dil["dissa"] += dig["smspec"][f"RWCD:{i}"] * KMOL_TO_KG
+            dil["moba"] += dig["smspec"][f"RGKMO:{i}"]
+            dil["imma"] += dig["smspec"][f"RGKTR:{i}"]
+            dil["dissa"] += dig["smspec"][f"RGMDS:{i}"]
         for i in dil["fip_seal_a"]:
             dil["seala"] += (
-                dig["smspec"][f"RWCD:{i}"]
-                + dig["smspec"][f"RGKDM:{i}"]
-                + dig["smspec"][f"RGKDI:{i}"]
-            ) * KMOL_TO_KG
+                dig["smspec"][f"RGMDS:{i}"]
+                + dig["smspec"][f"RGKMO:{i}"]
+                + dig["smspec"][f"RGKTR:{i}"]
+            )
         for i in dil["fip_diss_b"]:
-            dil["mobb"] += dig["smspec"][f"RGKDM:{i}"] * KMOL_TO_KG
-            dil["immb"] += dig["smspec"][f"RGKDI:{i}"] * KMOL_TO_KG
-            dil["dissb"] += dig["smspec"][f"RWCD:{i}"] * KMOL_TO_KG
+            dil["mobb"] += dig["smspec"][f"RGKMO:{i}"]
+            dil["immb"] += dig["smspec"][f"RGKTR:{i}"]
+            dil["dissb"] += dig["smspec"][f"RGMDS:{i}"]
         for i in dil["fip_seal_b"]:
             dil["sealb"] += (
-                dig["smspec"][f"RWCD:{i}"]
-                + dig["smspec"][f"RGKDM:{i}"]
-                + dig["smspec"][f"RGKDI:{i}"]
-            ) * KMOL_TO_KG
+                dig["smspec"][f"RGMDS:{i}"]
+                + dig["smspec"][f"RGKMO:{i}"]
+                + dig["smspec"][f"RGKTR:{i}"]
+            )
         dil["sealt"] = dil["seala"] + dil["sealb"]
-        for name in ["RWCD", "RGKDM", "RGKDI"]:
-            dil["sealt"] += (
-                dig["smspec"][f"{name}:7"] + dig["smspec"][f"{name}:9"]
-            ) * KMOL_TO_KG
+        for name in ["RGMDS", "RGKMO", "RGKTR"]:
+            dil["sealt"] += dig["smspec"][f"{name}:7"] + dig["smspec"][f"{name}:9"]
         if dig["case"] != "spe11a":
             sealbound = (
-                dig["smspec"]["RWCD:10"]
-                + dig["smspec"]["RGKDM:10"]
-                + dig["smspec"]["RGKDI:10"]
-            ) * KMOL_TO_KG
+                dig["smspec"]["RGMDS:10"]
+                + dig["smspec"]["RGKMO:10"]
+                + dig["smspec"]["RGKTR:10"]
+            )
             dil["sealt"] += sealbound
             dil["boundtot"] = sealbound
             for i in dil["fip_bound_t"]:
                 dil["boundtot"] += (
-                    dig["smspec"][f"RWCD:{i}"]
-                    + dig["smspec"][f"RGKDM:{i}"]
-                    + dig["smspec"][f"RGKDI:{i}"]
-                ) * KMOL_TO_KG
+                    dig["smspec"][f"RGMDS:{i}"]
+                    + dig["smspec"][f"RGKMO:{i}"]
+                    + dig["smspec"][f"RGKTR:{i}"]
+                )
     else:
         resdata_summary(dig, dil, names, sort)
 
@@ -582,11 +582,14 @@ def resdata_summary(dig, dil, names, sort):
         dil (dict): Modified local dictionary
 
     """
-    pop1 = dig["unrst"]["PRESSURE"][0][dil["fipnum"].index(8)]
-    pop2 = dig["unrst"]["PRESSURE"][0][dil["fipnum"].index(9)]
-    if dig["unrst"].has_kw("PCGW"):
-        pop1 -= dig["unrst"]["PCGW"][0][dil["fipnum"].index(8)]
-        pop2 -= dig["unrst"]["PCGW"][0][dil["fipnum"].index(9)]
+    pop1 = (
+        dig["unrst"]["PRESSURE"][0][dil["fipnum"].index(8)]
+        - dig["unrst"]["PCGW"][0][dil["fipnum"].index(8)]
+    )
+    pop2 = (
+        dig["unrst"]["PRESSURE"][0][dil["fipnum"].index(9)]
+        - dig["unrst"]["PCGW"][0][dil["fipnum"].index(9)]
+    )
     dil["pop1"] = [pop1 * 1.0e5] + list(
         dig["smspec"][names[sort[0]]].values * 1.0e5
     )  # Pa
@@ -594,44 +597,44 @@ def resdata_summary(dig, dil, names, sort):
         dig["smspec"][names[sort[1]]].values * 1.0e5
     )  # Pa
     for i in dil["fip_diss_a"]:
-        dil["moba"] += dig["smspec"][f"RGKDM:{i}"].values * KMOL_TO_KG
-        dil["imma"] += dig["smspec"][f"RGKDI:{i}"].values * KMOL_TO_KG
-        dil["dissa"] += dig["smspec"][f"RWCD:{i}"].values * KMOL_TO_KG
+        dil["moba"] += dig["smspec"][f"RGKMO:{i}"].values
+        dil["imma"] += dig["smspec"][f"RGKTR:{i}"].values
+        dil["dissa"] += dig["smspec"][f"RGMDS:{i}"].values
     for i in dil["fip_seal_a"]:
         dil["seala"] += (
-            dig["smspec"][f"RWCD:{i}"].values
-            + dig["smspec"][f"RGKDM:{i}"].values
-            + dig["smspec"][f"RGKDI:{i}"].values
-        ) * KMOL_TO_KG
+            dig["smspec"][f"RGMDS:{i}"].values
+            + dig["smspec"][f"RGKMO:{i}"].values
+            + dig["smspec"][f"RGKTR:{i}"].values
+        )
     for i in dil["fip_diss_b"]:
-        dil["mobb"] += dig["smspec"][f"RGKDM:{i}"].values * KMOL_TO_KG
-        dil["immb"] += dig["smspec"][f"RGKDI:{i}"].values * KMOL_TO_KG
-        dil["dissb"] += dig["smspec"][f"RWCD:{i}"].values * KMOL_TO_KG
+        dil["mobb"] += dig["smspec"][f"RGKMO:{i}"].values
+        dil["immb"] += dig["smspec"][f"RGKTR:{i}"].values
+        dil["dissb"] += dig["smspec"][f"RGMDS:{i}"].values
     for i in dil["fip_seal_b"]:
         dil["sealb"] += (
-            dig["smspec"][f"RWCD:{i}"].values
-            + dig["smspec"][f"RGKDM:{i}"].values
-            + dig["smspec"][f"RGKDI:{i}"].values
-        ) * KMOL_TO_KG
+            dig["smspec"][f"RGMDS:{i}"].values
+            + dig["smspec"][f"RGKMO:{i}"].values
+            + dig["smspec"][f"RGKTR:{i}"].values
+        )
     dil["sealt"] = dil["seala"] + dil["sealb"]
-    for name in ["RWCD", "RGKDM", "RGKDI"]:
+    for name in ["RGMDS", "RGKMO", "RGKTR"]:
         dil["sealt"] += (
             dig["smspec"][f"{name}:7"].values + dig["smspec"][f"{name}:9"].values
-        ) * KMOL_TO_KG
+        )
     if dig["case"] != "spe11a":
         sealbound = (
-            dig["smspec"]["RWCD:10"].values
-            + dig["smspec"]["RGKDM:10"].values
-            + dig["smspec"]["RGKDI:10"].values
-        ) * KMOL_TO_KG
+            dig["smspec"]["RGMDS:10"].values
+            + dig["smspec"]["RGKMO:10"].values
+            + dig["smspec"]["RGKTR:10"].values
+        )
         dil["sealt"] += sealbound
         dil["boundtot"] = sealbound
         for i in dil["fip_bound_t"]:
             dil["boundtot"] += (
-                dig["smspec"][f"RWCD:{i}"].values
-                + dig["smspec"][f"RGKDM:{i}"].values
-                + dig["smspec"][f"RGKDI:{i}"].values
-            ) * KMOL_TO_KG
+                dig["smspec"][f"RGMDS:{i}"].values
+                + dig["smspec"][f"RGKMO:{i}"].values
+                + dig["smspec"][f"RGKTR:{i}"].values
+            )
 
 
 def sparse_data(dig):
