@@ -171,15 +171,12 @@ opm-*
 
 # Examples outputs
 cssr
+compare
 debugging
 developing
-examples/finner_grids/spe11a
-examples/finner_grids/spe11b
-examples/finner_grids/spe11c
-examples/hello_world/spe11a
-examples/hello_world/spe11b
-examples/hello_world/spe11c
 playground
+examples/spe11b
+examples/spe11b_tensor_grid
 
 # Tests
 tests/configs/check_format.py

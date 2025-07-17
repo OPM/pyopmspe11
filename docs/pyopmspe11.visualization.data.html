@@ -182,6 +182,18 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.data.handle_find_cells_ids">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">handle_find_cells_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dil</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.handle_find_cells_ids" title="Link to this definition"></a></dt>
+<dd><p>Find the cells ids when reporting and simulation grids differ</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dil (dict): Local dictionary</p>
+</dd>
+<dt>Returns:</dt><dd><p>dil (dict): Modified local dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.visualization.data.handle_fipnums">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">handle_fipnums</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.handle_fipnums" title="Link to this definition"></a></dt>
 <dd><p>Set the fipnum groups to compute the sparse data</p>
@@ -387,12 +399,12 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.visualization.data.write_performance">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">write_performance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_fgip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tcpu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infotimes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.write_performance" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.data.</span></span><span class="sig-name descname"><span class="pre">write_performance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dil</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_fgmip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tcpu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infotimes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.data.write_performance" title="Link to this definition"></a></dt>
 <dd><p>Write the performance data</p>
 <dl>
 <dt>Args:</dt><dd><p>dig (dict): Global dictionary</p>
 <p>dil (dict): Local dictionary</p>
-<p>interp_fgip (object): Interpolator (time) for the CO2 mass</p>
+<p>interp_fgmip (object): Interpolator (time) for the CO2 mass</p>
 <p>tcpu (array): Floats with the simulation times</p>
 <p>infotimes (array): Floats with the simulation time steps</p>
 </dd>

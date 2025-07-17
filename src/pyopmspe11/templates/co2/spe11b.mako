@@ -188,22 +188,12 @@ ${dic['dims'][2]} ${dic["temperature"][0]} /
 SUMMARY
 ----------------------------------------------------------------------------
 PERFORMA
-FGIP
-FGIR
-FGIT
-RGKDI
+FGMIP
+RGKTR
 /
-RGKDM
+RGKMO
 /
-RGIP
-/
-RWCD
-/
-WBHP
-/
-WGIR
-/
-WGIT
+RGMDS
 /
 BWPR
 % for sensor in dic["sensorijk"]: 
