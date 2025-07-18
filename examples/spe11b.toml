@@ -47,5 +47,5 @@ rock = [[0.10132, 0.10],
         [2026.50, 0.35],
         [1e-5,    1e-6]]
 
-# Define the injection values ([hours] for spe11a; [years] for spe11b/c): 1) injection time, 2) time step size to write results, 3) maximum solver time step, 4) injected fluid (0 water, 1 co2) (well1), 5) injection rate [kg/s] (well1), 6) temperature [C] (well1), 7) injected fluid (0 water, 1 co2) (well2), 8) injection rate [kg/s] (well2), and 9) temperature [C] (well2)
-inj = [[25, 5.0, 0.1, 1, 0.035, 10, 1, 0.035, 10]]
+# Define the injection values ([hours] for spe11a; [years] for spe11b/c): 1) injection time, 2) time step size to write results, 3) injected fluid (0 water, 1 co2) (well1), 4) injection rate [kg/s] (well1), 5) temperature [C] (well1), 6) injected fluid (0 water, 1 co2) (well2), 7) injection rate [kg/s] (well2), and 8) temperature [C] (well2). If --enable-tuning=1, then the TUNING values [days] as described in the OPM manual
+inj = [[25, 5, 1, 0.035, 10, 1, 0.035, 10, '10 36.5']]

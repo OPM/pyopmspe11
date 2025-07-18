@@ -135,14 +135,27 @@ The last part of the configuration file sets the wells radius, location, and the
     0.15 5100. 1000. 700. 5100. 4000. 700. #Well 2 
 
     """Define the injection values ([hours] for spe11a; [years] for spe11b/c)""" 
-    """injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
-    999.9 999.9   100 1  0 10 1  0 10
-      0.1   0.1   0.1 1  0 10 1  0 10
-       25     5     5 1 50 10 1  0 10
-       25     5     5 1 50 10 1 50 10
-       50    25    25 1  0 10 1  0 10
-      400    50    50 1  0 10 1  0 10
-      500   100   100 1  0 10 1  0 10
+    """1) injection time, 2) time step size to write results, 3) injected fluid (0 water, 1 co2) (well1), 4) injection rate [kg/s] (well1), 5) temperature [C] (well1), 6) injected fluid (0 water, 1 co2) (well2), 7) injection rate [kg/s] (well2), and 8) temperature [C] (well2). If --enable-tuning=1, then the TUNING values [days] as described in the OPM manual"""
+    999.9 999.9 1  0 10 1  0 10
+      0.1   0.1 1  0 10 1  0 10
+       25     5 1 50 10 1  0 10
+       25     5 1 50 10 1 50 10
+       50    25 1  0 10 1  0 10
+      400    50 1  0 10 1  0 10
+      500   100 1  0 10 1  0 10
+
+.. note::
+    If tuning is enabled by the OPM flag **--enable-tuning**, then the TUNING keywords are added to the deck, see the OPM Flow manual for the definitions of all 
+    34 different options and their default values. To set this values, then one can add per injection line in the configuration file a string with the corresponding values, e.g., to set a 
+    maximum time step of 10 days at the beginning og the injection:
+
+    .. code-block:: python
+
+        25 5 1 50 10 1 0 10 '1* 10'
+
+    The first value is defaulted (1*), and the second entry corresponds to TSMAXZ. Note that the TUNING units for the time quantites are in days, for the three SPE cases. See
+    `this configuration file <https://github.com/OPM/pyopmspe11/blob/main/examples/spe11c.txt>`_ for an example setting more TUNING values, where entries are given for the three 
+    different records (lines) of the TUNING keyword. 
     
 .. warning::
     Keep the linebreak between the sections (in the current implementation this is used for the reading of the parameters).
@@ -210,14 +223,14 @@ The previous configuration file can be written using the widely in-use `toml for
             [2026.50, 0.35],
             [1e-5,    1e-6]]
 
-    # Define the injection values ([hours] for spe11a; [years] for spe11b/c): 1) injection time, 2) time step size to write results, 3) maximum solver time step, 4) injected fluid (0 water, 1 co2) (well1), 5) injection rate [kg/s] (well1), 6) temperature [C] (well1), 7) injected fluid (0 water, 1 co2) (well2), 8) injection rate [kg/s] (well2), and 9) temperature [C] (well2)
-    inj = [[999.9, 999.9, 100, 1,  0, 10, 1,  0, 10],
-           [  0.1,   0.1, 0.1, 1,  0, 10, 1,  0, 10],
-           [   25,     5,   5, 1, 50, 10, 1,  0, 10],
-           [   25,     5,   5, 1, 50, 10, 1, 50, 10],
-           [   50,    25,  25, 1,  0, 10, 1,  0, 10],
-           [  400,    50,  50, 1,  0, 10, 1,  0, 10],
-           [  500,   100, 100, 1,  0, 10, 1,  0, 10]]
+    # Define the injection values ([hours] for spe11a; [years] for spe11b/c): 1) injection time, 2) time step size to write results, 3) injected fluid (0 water, 1 co2) (well1), 4) injection rate [kg/s] (well1), 5) temperature [C] (well1), 6) injected fluid (0 water, 1 co2) (well2), 7) injection rate [kg/s] (well2), and 8) temperature [C] (well2). If --enable-tuning=1, then the TUNING values [days] as described in the OPM manual
+    inj = [[999.9, 999.9, 1,  0, 10, 1,  0, 10],
+           [  0.1,   0.1, 1,  0, 10, 1,  0, 10],
+           [   25,     5, 1, 50, 10, 1,  0, 10],
+           [   25,     5, 1, 50, 10, 1, 50, 10],
+           [   50,    25, 1,  0, 10, 1,  0, 10],
+           [  400,    50, 1,  0, 10, 1,  0, 10],
+           [  500,   100, 1,  0, 10, 1,  0, 10]]
 
 
 For additional examples of configuration files using toml, see the 

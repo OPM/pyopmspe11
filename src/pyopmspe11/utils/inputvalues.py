@@ -29,6 +29,20 @@ def process_input(dic, in_file):
         dic (dict): Modified global dictionary
 
     """
+    dic["msg1"] = (
+        "\nAfter the pyopmspe11 2025.04 release, the CO2STORE functionality only "
+        + "uses the gaswater implementation, not the gasoil implementation.\nThen "
+        + "either remove the gasoil text in your configuration file, or use an "
+        + "older release of pyopmspe11.\nThe execution of pyopmspe11 will continue "
+        + "setting the deck with the gaswater implementation."
+    )
+    dic["msg2"] = (
+        "\nAfter the pyopmspe11 2025.04 release, column 3 for the maximum solver time "
+        + "step in the injection has been moved to the end of the column, including the "
+        + "items for the TUNING keyword, which gives more control when setting "
+        + "the simulations. Please see the configuration files in the examples and "
+        + "online documentation, and update your configuration file accordingly.\n"
+    )
     if in_file.endswith(".toml"):
         if sys.version_info[1] < 11:
             print(
@@ -51,6 +65,11 @@ def process_input(dic, in_file):
         readthefirstpart(lol, dic)
         setcaseproperties(dic)
         readthesecondpart(lol, dic)
+    dic["tuning"] = False
+    for value in dic["flow"].split():
+        if "--enable-tuning" in value:
+            if value[16:] in ["true", "True", "1"]:
+                dic["tuning"] = True
 
 
 def postprocesstoml(dic):
@@ -70,7 +89,6 @@ def postprocesstoml(dic):
     for i in range(len(dic["inj"])):  # To [s]
         dic["inj"][i][0] *= dic["time"]
         dic["inj"][i][1] *= dic["time"]
-        dic["inj"][i][2] *= dic["time"]
     dic["wellCoord"][0][-1] = dic["dims"][2] - dic["wellCoord"][0][-1]
     dic["wellCoord"][1][-1] = dic["dims"][2] - dic["wellCoord"][1][-1]
     if dic["spe11"] == "spe11c":
@@ -80,13 +98,17 @@ def postprocesstoml(dic):
         dic["rockCond"] = np.array(dic["rockCond"]) * 86400.0 / 1e3  # To [kJ/(m day K)]
     if "co2store" in dic:
         if dic["co2store"] == "gasoil":
-            print(
-                "\nAfter the pyopmspe11 2025.04 release, the CO2STORE functionality only "
-                + "uses the gaswater implementation, not the gasoil implementation.\nThen "
-                + "either remove the gasoil text in your configuration file, or use an "
-                + "older release of pyopmspe11.\nThe execution of pyopmspe11 will continue "
-                + "setting the deck with the gaswater implementation."
-            )
+            print(dic["msg1"])
+    if len(dic["inj"][0]) == 9:
+        if not isinstance(dic["inj"][0][-1], str):
+            print(dic["msg2"])
+            sys.exit()
+        for i, inj in enumerate(dic["inj"]):
+            tmp = inj[-1].split("/")
+            dic["inj"][i][-1] = tmp[0].strip()
+            if len(tmp) > 1:
+                for val in tmp[1:]:
+                    dic["inj"][i].append(val.strip())
 
 
 def setcaseproperties(dic):
@@ -146,13 +168,7 @@ def readthefirstpart(lol, dic):
     dic["model"] = row[0]  # Model to run (immiscible, convective, or complete)
     if len(row) > 1:
         if row[1] == "gasoil":
-            print(
-                "\nAfter the pyopmspe11 2025.04 release, the CO2STORE functionality only "
-                + "uses the gaswater implementation, not the gasoil implementation.\nThen "
-                + "either remove the gasoil text in your configuration file, or use an "
-                + "older release of pyopmspe11.\nThe execution of pyopmspe11 will continue "
-                + "setting the deck with the gaswater implementation."
-            )
+            print(dic["msg1"])
     dic["grid"] = str(lol[6][0]).strip()  # Grid (Cartesian, tensor, or corner-point)
     dic["dims"] = [float((lol[7][0].strip()).split()[j]) for j in range(3)]
     if dic["grid"] == "cartesian":
@@ -276,10 +292,17 @@ def readthesecondpart(lol, dic):
             [
                 float(row[0]) * dic["time"],
                 float(row[1]) * dic["time"],
-                float(row[2]) * dic["time"],
             ]
-            + [float(row[j]) for j in range(3, 3 + 3 * len(dic["wellCoord"]))]
+            + [float(row[j]) for j in range(2, 8)]
         )
+        if len(row) > 8:
+            if row[-1][-1] not in ['"', "'"]:
+                print(dic["msg2"])
+                sys.exit()
+            tmp = (" ".join(row[8:])).split("/")
+            for val in tmp:
+                tun = (val.strip()).replace("'", "")
+                column[-1].append(str((tun.strip()).replace('"', "")))
     dic["inj"] = column
 
 
@@ -308,26 +331,3 @@ def check_deck(dic):
             + "build Flow from the master GitHub branches.\n"
         )
         sys.exit()
-
-
-def handle_tuning(dic):
-    """
-    If tuning is enable, then we write the entries corresponding to the maximum
-    length of the next time step after event and the solver restart factor.
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    dic["tim_aft_eve"], dic["sol_res_fac"], dic["tuning"] = "", "", False
-    for value in dic["flow"].split():
-        if "solver-restart-factor" in value:
-            dic["sol_res_fac"] = float(value.split("=")[1])
-        elif "time-step-after-event-in-days" in value:
-            dic["tim_aft_eve"] = float(value.split("=")[1])
-        elif "--enable-tuning" in value:
-            if value[16:] in ["true", "True", "1"]:
-                dic["tuning"] = True

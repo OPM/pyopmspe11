@@ -1,5 +1,5 @@
 """Set the full path to the flow executable and flags"""
-flow --newton-min-iterations=1 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations
+flow --newton-min-iterations=1 --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations
 
 """Set the model parameters"""
 spe11a release    #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
@@ -48,7 +48,7 @@ PERM7          0 PORO7    0 DISP7    0
 0 1.7 0.005 0.7 #Well 2
 
 """Define the injection values ([hours] for spe11a; [years] for spe11b/c)""" 
-"""injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
-2.5 0.5 0.5 1 1.7e-7 20 1      0 20
-2.5 0.5 0.5 1 1.7e-7 20 1 1.7e-7 20
-115   1   1 1      0 20 1      0 20
+"""1) injection time, 2) time step size to write results, 3) injected fluid (0 water, 1 co2) (well1), 4) injection rate [kg/s] (well1), 5) temperature [C] (well1), 6) injected fluid (0 water, 1 co2) (well2), 7) injection rate [kg/s] (well2), and 8) temperature [C] (well2). If --enable-tuning=1, then the TUNING values [days] as described in the OPM manual"""
+2.5 0.5 1 1.7e-7 20 1      0 20
+2.5 0.5 1 1.7e-7 20 1 1.7e-7 20
+115   1 1      0 20 1      0 20

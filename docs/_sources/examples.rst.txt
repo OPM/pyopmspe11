@@ -19,6 +19,17 @@ compare your example results to this figure to evaluate if your example ran corr
 
 .. figure:: figs/spe11b_tco2_2Dmaps.png
 
+
+.. note::
+    To generate only the input files, this can be achieved by executing:
+
+    .. code-block:: bash
+
+        pyopmspe11 -i spe11b.txt -o spe11b -m deck
+    
+    This does not required to have OPM Flow installed, and in principle should work in Windows without using the subsystem for Linux.
+    Then, one could always generate a deck with the grid and all include files, and modify them in order to use other simulators different than OPM Flow. 
+
 Using the :ref:`toml` format, the previous run is equivalent to (this requires a Python version of at least 3.11 [due to `tomllib <https://toml.io/en/>`_]):
 
 .. code-block:: bash
