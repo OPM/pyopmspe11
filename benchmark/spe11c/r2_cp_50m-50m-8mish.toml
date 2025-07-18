@@ -1,5 +1,5 @@
 # Set the full path to the flow executable and flags
-flow = "mpirun -np 64 flow --partition-method=metis --edge-weights-method=logtrans --imbalance-tol=1.1 --relaxed-max-pv-fraction=0 --tolerance-mb=1e-7 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations --newton-min-iterations=1 --linear-solver=cpr_trueimpes --time-step-control=newtoniterationcount --newton-max-iterations=13 --solver-growth-factor=1.9 --time-step-control-growth-rate=1.5"
+flow = "mpirun -np 64 flow --partition-method=metis --edge-weights-method=logtrans --imbalance-tol=1.1 --relaxed-max-pv-fraction=0 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations --newton-min-iterations=1 --linear-solver=cpr_trueimpes --time-step-control=newtoniterationcount --newton-max-iterations=13 --solver-growth-factor=1.9 --time-step-control-growth-rate=1.5"
 
 # Set the model parameters
 spe11 = "spe11c" # Name of the spe case (spe11a, spe11b, or spe11c)
@@ -50,11 +50,11 @@ rock = [[0.10132, 0.10],
         [2026.50, 0.35],
         [1e-5,    1e-6]]
 
-# Define the injection values ([hours] for spe11a; [years] for spe11b/c): 1) injection time, 2) time step size to write results, 3) maximum solver time step, 4) injected fluid (0 water, 1 co2) (well1), 5) injection rate [kg/s] (well1), 6) temperature [C] (well1), 7) injected fluid (0 water, 1 co2) (well2), 8) injection rate [kg/s] (well2), and 9) temperature [C] (well2)
-inj = [[999.9, 999.9,    10, 1,  0, 10, 1,  0, 10],
-       [  0.1,   0.1,   0.1, 1,  0, 10, 1,  0, 10],
-       [   25,     5,     1, 1, 50, 10, 1,  0, 10],
-       [   25,     5,   0.3, 1, 50, 10, 1, 50, 10],
-       [   50,    25,   0.5, 1,  0, 10, 1,  0, 10],
-       [  400,    50,   0.5, 1,  0, 10, 1,  0, 10],
-       [  500,   100,     1, 1,  0, 10, 1,  0, 10]]
+# Define the injection values ([hours] for spe11a; [years] for spe11b/c): 1) injection time, 2) time step size to write results, 3) injected fluid (0 water, 1 co2) (well1), 4) injection rate [kg/s] (well1), 5) temperature [C] (well1), 6) injected fluid (0 water, 1 co2) (well2), 7) injection rate [kg/s] (well2), and 8) temperature [C] (well2). If --enable-tuning=1, then the TUNING values [days] as described in the OPM manual
+inj = [[999.9, 999.9, 1,  0, 10, 1,  0, 10, "0.01 3650"],
+       [  0.1,   0.1, 1,  0, 10, 1,  0, 10, "0.01 36.5"],
+       [   25,     5, 1, 50, 10, 1,  0, 10, "0.01 365"],
+       [   25,     5, 1, 50, 10, 1, 50, 10, "0.01 109.5"],
+       [   50,    25, 1,  0, 10, 1,  0, 10, "0.01 182.5"],
+       [  400,    50, 1,  0, 10, 1,  0, 10, "0.01 182.5"],
+       [  500,   100, 1,  0, 10, 1,  0, 10, "0.01 365"]]

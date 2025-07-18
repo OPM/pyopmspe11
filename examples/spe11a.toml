@@ -1,5 +1,5 @@
 # Set the full path to the flow executable and flags
-flow = "flow --relaxed-max-pv-fraction=0 --newton-min-iterations=1 --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations --enable-well-operability-check=false --min-time-step-before-shutting-problematic-wells-in-days=1e-99"
+flow = "flow --relaxed-max-pv-fraction=0 --newton-min-iterations=1 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations --enable-well-operability-check=false --min-time-step-before-shutting-problematic-wells-in-days=1e-99"
 
 # Set the model parameters
 spe11 = "spe11a" # Name of the spe case (spe11a, spe11b, or spe11c)
@@ -44,5 +44,5 @@ rock = [[44529.9988, 0.44],
         [10132499.7, 0.46],
         [         0,    0]]
 
-# Define the injection values ([hours] for spe11a; [years] for spe11b/c): 1) injection time, 2) time step size to write results, 3) maximum solver time step, 4) injected fluid (0 water, 1 co2) (well1), 5) injection rate [kg/s] (well1), 6) temperature [C] (well1), 7) injected fluid (0 water, 1 co2) (well2), 8) injection rate [kg/s] (well2), and 9) temperature [C] (well2)
-inj = [[5, 0.5, 1e-2, 1, 1.7e-7, 20, 1, 1.7e-7, 20]]
+# Define the injection values ([hours] for spe11a; [years] for spe11b/c): 1) injection time, 2) time step size to write results, 3) injected fluid (0 water, 1 co2) (well1), 4) injection rate [kg/s] (well1), 5) temperature [C] (well1), 6) injected fluid (0 water, 1 co2) (well2), 7) injection rate [kg/s] (well2), and 8) temperature [C] (well2). If --enable-tuning=1, then the TUNING values [days] as described in the OPM manual
+inj = [[5, 0.5, 1, 1.7e-7, 20, 1, 1.7e-7, 20, "1e-2 3e-4 1e-20 1e-20 1.6 0.2 0.65 1.1"]]

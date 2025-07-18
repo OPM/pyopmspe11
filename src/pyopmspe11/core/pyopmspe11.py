@@ -7,7 +7,7 @@
 import os
 import argparse
 import warnings
-from pyopmspe11.utils.inputvalues import process_input, check_deck, handle_tuning
+from pyopmspe11.utils.inputvalues import process_input, check_deck
 from pyopmspe11.utils.runs import simulations, plotting, data
 from pyopmspe11.visualization.plotting import plot_results
 from pyopmspe11.utils.writefile import opm_files
@@ -67,8 +67,6 @@ def pyopmspe11():
         print("\nDeck: Generating the input files, please wait.")
         # Initialize the grid
         grid(dic)
-        # Handle tuning
-        handle_tuning(dic)
         # Get the sand and well/sources positions
         positions(dic)
         # Write used opm related files

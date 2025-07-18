@@ -1,5 +1,5 @@
 """Set the full path to the flow executable and flags"""
-mpirun -np 64 flow --relaxed-max-pv-fraction=0 --partition-method=2 --edge-weights-method=2 --imbalance-tol=1.1 --tolerance-mb=1e-7 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations --newton-min-iterations=1 --linear-solver=cpr_trueimpes --time-step-control=newtoniterationcount --newton-max-iterations=13 --solver-growth-factor=1.9 --time-step-control-growth-rate=1.5
+mpirun -np 64 flow --relaxed-max-pv-fraction=0 --partition-method=2 --edge-weights-method=2 --imbalance-tol=1.1 --enable-tuning=true --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations --newton-min-iterations=1 --linear-solver=cpr_trueimpes --time-step-control=newtoniterationcount --newton-max-iterations=13 --solver-growth-factor=1.9 --time-step-control-growth-rate=1.5
 
 """Set the model parameters"""
 spe11c master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
@@ -48,11 +48,11 @@ PERM7    1e-5 PORO7 1e-6 DISP7  0 THCONR7 2.00
 0 5100. 1000. 700. 5100. 4000. 700. #Well 2
 
 """Define the injection values ([hours] for spe11a; [years] for spe11b/c)"""
-"""injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
-999.9 999.9    10 1  0 10 1  0 10
-  0.1   0.1   0.1 1  0 10 1  0 10
-   25     5     1 1 50 10 1  0 10
-   25     5   0.3 1 50 10 1 50 10
-   50    25   0.5 1  0 10 1  0 10
-  400    50   0.5 1  0 10 1  0 10
-  500   100     1 1  0 10 1  0 10
+"""1) injection time, 2) time step size to write results, 3) injected fluid (0 water, 1 co2) (well1), 4) injection rate [kg/s] (well1), 5) temperature [C] (well1), 6) injected fluid (0 water, 1 co2) (well2), 7) injection rate [kg/s] (well2), and 8) temperature [C] (well2). If --enable-tuning=1, then the TUNING values [days] as described in the OPM manual"""
+999.9 999.9 1  0 10 1  0 10 '0.01 3650'
+  0.1   0.1 1  0 10 1  0 10 '0.01 36.5'
+   25     5 1 50 10 1  0 10 '0.01 365'
+   25     5 1 50 10 1 50 10 '0.01 109.5'
+   50    25 1  0 10 1  0 10 '0.01 182.5'
+  400    50 1  0 10 1  0 10 '0.01 182.5'
+  500   100 1  0 10 1  0 10 '0.01 365'

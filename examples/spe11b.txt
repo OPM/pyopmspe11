@@ -48,5 +48,5 @@ PERM7    1e-5 PORO7 1e-6 DISP7  0 THCONR7 2.00
 0 5100. 0.5 700. #Well 2 
 
 """Define the injection values ([hours] for spe11a; [years] for spe11b/c)""" 
-"""injection time, time step size to write results, maximum solver time step, injected fluid (0 water, 1 co2) (well1), injection rate [kg/s] (well1), temperature [C] (well1), injected fluid (0 water, 1 co2) (well2), ..."""
-25 5 .1 1 0.035 10 1 0.035 10
+"""1) injection time, 2) time step size to write results, 3) injected fluid (0 water, 1 co2) (well1), 4) injection rate [kg/s] (well1), 5) temperature [C] (well1), 6) injected fluid (0 water, 1 co2) (well2), 7) injection rate [kg/s] (well2), and 8) temperature [C] (well2). If --enable-tuning=1, then the TUNING values [days] as described in the OPM manual"""
+25 5 1 0.035 10 1 0.035 10 '10 36.5'
