@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2023 NORCE
 # SPDX-License-Identifier: MIT
-# pylint: disable=R0912, R0801, R0914
+# pylint: disable=R0912, R0801, R0914, R0915
 
 """
 Script to plot the results
@@ -73,6 +73,12 @@ def main():
         help="If one number, time step for the spatial maps (spe11a [h]; spe11b/c "
         "[y]) ('5' by default); otherwise, times separated by commas.",
     )
+    parser.add_argument(
+        "-n",
+        "--neighbourhood",
+        default="",
+        help="Region to model; valid options are 'lower' or '' (all reservoir) ('' by default)",
+    )
     cmdargs = vars(parser.parse_known_args()[0])
     if int(cmdargs["showpywarn"]) != 1:  # Show or hidde python warnings
         warnings.warn = lambda *args, **kwargs: None
@@ -82,6 +88,7 @@ def main():
     dic["compare"] = cmdargs["compare"]  # No empty, then the create compare folder
     dic["subfolders"] = int(cmdargs["subfolders"]) == 1  # Create subfolders
     dic["time"] = np.genfromtxt(StringIO(cmdargs["time"]), delimiter=",", dtype=int)
+    dic["lower"] = bool(cmdargs["neighbourhood"].strip())  # Lower model
     plot_results(dic)
     print(f"The png figures have been saved on {dic['where']}")
 
@@ -494,6 +501,8 @@ def ini_quantity_plot(dic):
     """
     if dic["case"] != "spe11a":
         dic["fig"] = plt.figure(figsize=(50, 3 * len(dic["ptimes"])))
+        if dic["lower"]:
+            dic["fig"] = plt.figure(figsize=(100, 3 * len(dic["ptimes"])))
     else:
         dic["fig"] = plt.figure(figsize=(45, 6.5 * len(dic["ptimes"])), dpi=80)
     for name in ["plot", "min", "max", "sum"]:
@@ -525,15 +534,17 @@ def dense_data(dic):
                 )
             )
         for k, quantity in enumerate(dic["quantities"]):
-            dic["ptimes"] = dic["times"][: dic["allplots"][k]] + [dic["times"][-1]]
-            ini_quantity_plot(dic)
             quan = np.array(
                 [csvs[0][i][dic["dims"] + k] for i in range(csvs[0].shape[0])]
             )
+            if np.isnan(quan).all():
+                continue
             dic["minc"], dic["maxc"] = (
                 np.min(quan[~np.isnan(quan)]),
                 np.max(quan[~np.isnan(quan)]),
             )
+            dic["ptimes"] = dic["times"][: dic["allplots"][k]] + [dic["times"][-1]]
+            ini_quantity_plot(dic)
             for n, tmap in enumerate(dic["ptimes"]):
                 quan = np.array(
                     [csvs[n][i][dic["dims"] + k] for i in range(csvs[n].shape[0])]
@@ -634,6 +645,11 @@ def dense_data(dic):
                         ticks=vect,
                         format=lambda x, _: f"{x:.2e}",
                     )
+                if dic["lower"]:
+                    if dic["case"] == "spe11a":
+                        axis.set_ylim([0, 0.55])
+                    else:
+                        axis.set_ylim([0, 550])
             dic["fig"].savefig(
                 f"{dic['where']}/{dic['case']}_{quantity}_2Dmaps.png",
                 bbox_inches="tight",

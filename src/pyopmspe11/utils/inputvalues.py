@@ -113,15 +113,17 @@ def setcaseproperties(dic):
         dic (dict): Modified global dictionary
 
     """
+    # For the lower domain, locatting sensor 1 in facie 5
+    mlt = 0.995 if dic["lower"] and dic["grid"] != "corner-point" else 1
     dic["maxelevation"] = 0.0
     if dic["spe11"] == "spe11a":
-        dic["sensors"] = [[1.5, 0.005, 0.5], [1.7, 0.005, 1.1]]
+        dic["sensors"] = [[1.5, 0.005, mlt * 0.5], [1.7, 0.005, 1.1]]
         dic["boxa"] = [[1.1, 0.0, 0.0], [2.8, 0.01, 0.6]]
         dic["boxb"] = [[0.0, 0.0, 0.6], [1.1, 0.01, 1.2]]
         dic["boxc"] = [[1.1, 0.0, 0.1], [2.6, 0.01, 0.4]]
         dic["time"] = 3600.0  # hour to seconds
     elif dic["spe11"] == "spe11b":
-        dic["sensors"] = [[4500.0, 0.5, 500], [5100.0, 0.5, 1100.0]]
+        dic["sensors"] = [[4500.0, 0.5, mlt * 500], [5100.0, 0.5, 1100.0]]
         dic["boxa"] = [[3300.0, 0.0, 0.0], [8300.0, 1.0, 600.0]]
         dic["boxb"] = [[100.0, 0.0, 600.0], [3300.0, 1.0, 1200.0]]
         dic["boxc"] = [[3300.0, 0.0, 100.0], [7800.0, 1.0, 400.0]]
@@ -130,7 +132,7 @@ def setcaseproperties(dic):
         dic["maxelevation"] = 155.04166666666666  # at y = 2541 + 2/3
         corr = dic["elevation"] + 0.5 * dic["backElevation"]
         dic["sensors"] = [
-            [4500.0, 2500.0, 655.0 - corr],
+            [4500.0, 2500.0, mlt * (655.0 - corr)],
             [5100.0, 2500.0, 1255.0 - corr],
         ]
         dic["boxa"] = [[3300.0, 0.0, 0.0], [8300.0, 5000.0, 750.0]]

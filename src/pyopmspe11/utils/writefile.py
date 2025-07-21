@@ -63,9 +63,15 @@ def create_corner_point_grid(dic, xcoord, zcoord):
     if dic["spe11"] == "spe11c":
         for j in range(dic["noCells"][1]):
             for i in range(dic["noCells"][0]):
-                tmp.append(f"{z_c(dic, j):E} {z_c(dic, j):E} ")
+                tmp.append(
+                    f"{z_c(dic, j) + zcoord[(i * (dic['noCells'][2] + 1))]:E} "
+                    + f"{z_c(dic, j) + zcoord[((i + 1) * (dic['noCells'][2] + 1))]:E} "
+                )
             for i in range(dic["noCells"][0]):
-                tmp.append(f"{z_c(dic, j+1):E} {z_c(dic, j+1):E} ")
+                tmp.append(
+                    f"{z_c(dic, j+1)+ zcoord[(i * (dic['noCells'][2] + 1))]:E} "
+                    + f"{z_c(dic, j+1) + zcoord[((i + 1) * (dic['noCells'][2] + 1))]:E} "
+                )
         for k in range(dic["noCells"][2] - 1):
             for j in range(dic["noCells"][1]):
                 for i in range(dic["noCells"][0]):

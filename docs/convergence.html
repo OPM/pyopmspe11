@@ -1,0 +1,164 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Convergence &mdash; pyopmspe11  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pyopmspe11 Python API" href="api.html" />
+    <link rel="prev" title="Benchmark" href="benchmark.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #aaaaaa" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Convergence</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#full-domain">Full domain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lower-domain">Lower domain</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="related.html">Related</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #aaaaaa" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyopmspe11</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Convergence</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/convergence.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="convergence">
+<h1>Convergence<a class="headerlink" href="#convergence" title="Link to this heading"></a></h1>
+<p>This section describes how to run the cases in the paper <cite>Exploring Convergence and Its Limits in Case B of the 11th SPE Comparative Solution Project, to appear in SPE J</cite>.</p>
+<p>To run the cases in the terminal, inside the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/convergence">convergence</a> folder:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>convergence.py
+</pre></div>
+</div>
+<p><a class="reference external" href="https://github.com/cssr-tools/plopm">plopm</a> is used to generate the figures, which can be installed by executing in the terminal:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/cssr-tools/plopm.git
+</pre></div>
+</div>
+<p>The cases are run with 8 cpus, then you can remove or increase this in the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/convergence/spe11b.mako">spe11b.mako</a> template.</p>
+<section id="full-domain">
+<h2>Full domain<a class="headerlink" href="#full-domain" title="Link to this heading"></a></h2>
+<p>These cases are run in the grid sizes of 40, 20, 10, and 5 meters. To simulate additional refinements, edit the ‘sizes’ variable in <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/convergence/convergence.py">convergence.py</a>.</p>
+<figure class="align-default" id="id2">
+<img alt="_images/convergence_moba.png" src="_images/convergence_moba.png" />
+<figcaption>
+<p><span class="caption-text">(Left) mobile CO2 in box A for the four different refinements and (right) adding all participants (time axis in log scale).</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<img alt="_images/full_spatial_map_adding_participants.png" src="_images/full_spatial_map_adding_participants.png" />
+<p>As shown in these figures, in the convergence.py script the SPE11B benchmark data from the participants is donwloaded and used to compare the results. To achive this,
+the functionality of <strong>plopm</strong> to read csv files is used (see the commands inside the convergence.py script), which provides flexibility to edit the format of the figures (e.g., color, width, and style of the lines, to which participant compare the results, etc.).
+For example, executing the following line generates the figure below, where the result at grid resolution 5 m is compared to the selected participants in Fig. 7 in the <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S1750583625002178">the SPE11 benchmark paper</a>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>plopm<span class="w"> </span>-i<span class="w"> </span><span class="s2">&quot;spe11b/ifpen1/spe11b_spatial_map_500y spe11b/opm4/spe11b_spatial_map_500y spe11b/sintef2/spe11b_spatial_map_500y spe11b/stuttgart1/spe11b_spatial_map_500y full_cp0-z40mish-x40m/spe11b_spatial_map_500y&quot;</span><span class="w">  </span>-csv<span class="w"> </span><span class="s2">&quot;1,2,9&quot;</span><span class="w"> </span>-subfigs<span class="w"> </span><span class="m">3</span>,2<span class="w"> </span>-delax<span class="w"> </span><span class="m">1</span><span class="w"> </span>-suptitle<span class="w"> </span><span class="m">0</span><span class="w"> </span>-z<span class="w"> </span><span class="m">0</span><span class="w"> </span>-cbsfax<span class="w"> </span><span class="m">0</span>.35,0.97,0.3,0.02<span class="w"> </span>-yunits<span class="w"> </span>km<span class="w"> </span>-xunits<span class="w"> </span>km<span class="w"> </span>-yformat<span class="w"> </span>.1f<span class="w"> </span>-f<span class="w"> </span><span class="m">20</span><span class="w"> </span>-xformat<span class="w"> </span>.1f<span class="w"> </span>-cnum<span class="w"> </span><span class="m">4</span><span class="w"> </span>-xlnum<span class="w"> </span><span class="m">8</span><span class="w"> </span>-cformat<span class="w"> </span>.2e<span class="w"> </span>-d<span class="w"> </span><span class="m">14</span>,10<span class="w"> </span>-t<span class="w"> </span><span class="s2">&quot;IFPEN1  OPM4  SINTEF2  Stuttgart1  5 m&quot;</span><span class="w"> </span>-clabel<span class="w"> </span><span class="s1">&#39;total CO$_2$ mass [kg] at 500 years&#39;</span><span class="w"> </span>-c<span class="w"> </span>cet_CET_CBTL1_r<span class="w"> </span>-b<span class="w"> </span><span class="s1">&#39;[0,5e3]&#39;</span>
+</pre></div>
+</div>
+<img alt="_images/spe11b_spatial_map_500y_csv_csv_t-1.png" src="_images/spe11b_spatial_map_500y_csv_csv_t-1.png" />
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>See the <a class="reference external" href="https://cssr-tools.github.io/plopm/">plopm online docmunetation</a> for additional information of supported flag parameters to generate customized PNGs and GIFs.</p>
+</div>
+</section>
+<section id="lower-domain">
+<h2>Lower domain<a class="headerlink" href="#lower-domain" title="Link to this heading"></a></h2>
+<p>These cases are run in the grid sizes of 320, 160, 80, 40, 20, 10, and 5 meters. Here a different colormap than the paper is used, given as
+a command flag parameter to <strong>plopm</strong> (‘-c cet_CET_L19’ in line 39 of convergence.py instead of ‘-c cet_CET_CBTL1_r’).</p>
+<figure class="align-default">
+<img alt="_images/lower_spatial_map_all.png" src="_images/lower_spatial_map_all.png" />
+</figure>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="benchmark.html" class="btn btn-neutral float-left" title="Benchmark" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="pyopmspe11 Python API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, NORCE Research AS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

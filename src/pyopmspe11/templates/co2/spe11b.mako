@@ -58,7 +58,11 @@ INCLUDE
 DZ.INC /
 
 TOPS
+% if dic["lower"]:
+${dic['noCells'][0]}*${dic["dims"][2] - dic['cut']} /
+% else:
 ${dic['noCells'][0]}*0 /
+% endif
 % else:
 % if dic["dx"]:
 INCLUDE
@@ -75,7 +79,11 @@ DZ
 ${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*${dic['dsize'][2]} /
 
 TOPS
+% if dic["lower"]:
+${dic['noCells'][0]}*${dic["dims"][2] - dic['cut']} /
+% else:
 ${dic['noCells'][0]}*0 /
+% endif
 % endif
 
 INCLUDE
@@ -198,6 +206,9 @@ RGMDS
 BWPR
 % for sensor in dic["sensorijk"]: 
 ${sensor[0]+1} ${sensor[1]+1} ${sensor[2]+1} /
+% if dic["lower"]:
+<% break %>
+% endif
 % endfor
 /
 ----------------------------------------------------------------------------
@@ -237,6 +248,9 @@ WELSPECS
 % if dic['radius'][i] > 0:
 INJ${i} G1 ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]} 1* GAS ${dic['radius'][i]} /
 % endif
+% if dic["lower"]:
+<% break %>
+% endif
 % endfor
 /
 
@@ -244,6 +258,9 @@ COMPDAT
 % for i in range(len(dic['wellijk'])):
 % if dic['radius'][i] > 0:
 INJ${i} ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]} ${dic['wellijk'][i][2]} ${dic['wellijk'][i][2]} OPEN 2* ${2.*dic['radius'][i]} /
+% endif
+% if dic["lower"]:
+<% break %>
 % endif
 % endfor
 /
@@ -266,6 +283,9 @@ INJ${i} GAS ${'OPEN' if dic['inj'][j][3+3*i] > 0 else 'SHUT'} RATE ${f"{dic['inj
 INJ${i} WATER ${'OPEN' if dic['inj'][j][3+3*i] > 0 else 'SHUT'} RATE ${f"{dic['inj'][j][3+3*i] * 86400 / 998.108:E}"} 1* 480 /
 % endif
 % endif
+% if dic["lower"]:
+<% break %>
+% endif
 % endfor
 /
 % endif
@@ -279,6 +299,9 @@ ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]} ${dic['wellijk'][i][2]} GAS ${f"
 ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]} ${dic['wellijk'][i][2]} WATER ${f"{dic['inj'][j][3+3*i] * 86400:E}"} 1* ${f"{dic['inj'][j][4+3*i]:E}"} /
 % endif
 % endif
+% if dic["lower"]:
+<% break %>
+% endif
 % endfor
 /
 % endif
@@ -287,6 +310,9 @@ WTEMP
 % for i in range(len(dic['wellijk'])):
 % if dic['radius'][i] > 0:
 INJ${i} ${dic['inj'][j][4+3*i]} /
+% endif
+% if dic["lower"]:
+<% break %>
 % endif
 % endfor
 /

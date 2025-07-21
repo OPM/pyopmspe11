@@ -35,7 +35,11 @@ START
 % if sum(dic['radius']) > 0:
 
 WELLDIMS
+% if dic["lower"]:
+1 ${1+dic['wellijkf'][0][1]-dic['wellijk'][0][1]} 1 1 /
+% else:
 ${len(dic['wellijk'])} ${1+max(dic['wellijkf'][0][1]-dic['wellijk'][0][1], dic['wellijkf'][1][1]-dic['wellijk'][1][1])} ${len(dic['wellijk'])} ${len(dic['wellijk'])} /
+% endif
 % endif
 
 UNIFOUT
@@ -167,6 +171,9 @@ RGMDS
 BWPR
 % for sensor in dic["sensorijk"]: 
 ${sensor[0]+1} ${sensor[1]+1} ${sensor[2]+1} /
+% if dic["lower"]:
+<% break %>
+% endif
 % endfor
 /
 ----------------------------------------------------------------------------
@@ -206,6 +213,9 @@ WELSPECS
 % if dic['radius'][i] > 0:
 INJ${i} G1 ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]} 1* GAS ${dic['radius'][i]} /
 % endif
+% if dic["lower"]:
+<% break %>
+% endif
 % endfor
 /
 
@@ -219,6 +229,9 @@ INJ${i} ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]+j} ${dic['wellijk'][i][2]
 INJ${i} ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]+j} ${dic['wellkh'][j]} ${dic['wellkh'][j]} OPEN 2* ${2.*dic['radius'][i]} /
 % endif
 % endfor
+% endif
+% if dic["lower"]:
+<% break %>
 % endif
 % endfor
 /
@@ -241,6 +254,9 @@ INJ${i} GAS ${'OPEN' if dic['inj'][j][3+3*i] > 0 else 'SHUT'} RATE ${f"{dic['inj
 INJ${i} WATER ${'OPEN' if dic['inj'][j][3+3*i] > 0 else 'SHUT'} RATE ${f"{dic['inj'][j][3+3*i] * 86400 / 998.108:E}"} 1* 480 /
 % endif
 % endif
+% if dic["lower"]:
+<% break %>
+% endif
 % endfor
 /
 % endif
@@ -256,6 +272,9 @@ ${dic['wellijk'][i][0]} ${dic['wellijk'][i][1]+k} ${dic['wellijk'][i][2] if i==1
 % endif
 % endfor
 % endif
+% if dic["lower"]:
+<% break %>
+% endif
 % endfor
 /
 % endif
@@ -264,6 +283,9 @@ WTEMP
 % for i in range(len(dic['wellijk'])):
 % if dic['radius'][i] > 0:
 INJ${i} ${dic['inj'][j][4+3*i]} /
+% endif
+% if dic["lower"]:
+<% break %>
 % endif
 % endfor
 /

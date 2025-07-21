@@ -23,12 +23,14 @@ def test_deck_content():
                 f"{testpth}/decks/SPE11{x}",
                 "-m",
                 "deck",
+                "-f",
+                "0",
             ],
             check=True,
         )
-        text = f"Difference between SPE11{x}.DATA and {testpth}/decks/SPE11{x}/deck/SPE11{x}.DATA"
+        text = f"Difference between SPE11{x}.DATA and {testpth}/decks/SPE11{x}/SPE11{x}.DATA"
         assert filecmp.cmp(
             f"{testpth}/decks/SPE11{x}.DATA",
-            f"{testpth}/decks/SPE11{x}/deck/SPE11{x}.DATA",
+            f"{testpth}/decks/SPE11{x}/SPE11{x}.DATA",
             shallow=False,
         ), text
