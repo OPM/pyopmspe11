@@ -26,8 +26,8 @@ This requires a Python version of at least 3.11 (due to `tomllib <https://toml.i
     #. **pip install -r dev-requirements.txt** (this installs the `dev-requirements.txt <https://github.com/cssr-tools/pyopmspe11/blob/main/dev-requirements.txt>`_; in addition, both opm Python and LaTeX are required, then for not macOs users run **pip install opm** and **sudo apt-get install texlive-fonts-recommended texlive-fonts-extra dvipng cm-super**, or else follow the instructions in `macOS installation <https://cssr-tools.github.io/pyopmspe11/installation.html#source-build-in-macos>`_)
     #. **black src/ tests/** (this formats the code)
     #. **pylint src/ tests/** (this analyses the code, and might rise issues that need to be fixed before the pull request)
-    #. **mypy --ignore-missing-imports src/ tests/** (this is a static checker, and might rise issues that need to be fixed before the pull request)
-    #. **pytest --cov=pyopmspe11 --cov-report term-missing tests/** (this runs locally the tests in ca. 30 minutes, and might rise issues that need to be fixed before the pull request)
+    #. **mypy \-\-ignore-missing-imports src/ tests/** (this is a static checker, and might rise issues that need to be fixed before the pull request)
+    #. **pytest \-\-cov=pyopmspe11 \-\-cov-report term-missing tests/** (this runs locally the tests in ca. 30 minutes, and might rise issues that need to be fixed before the pull request)
     #. **pushd docs & make html** (this generates the documentation, and might rise issues that need to be fixed before the pull request; if the build succeeds and if the contribution changes the documentation, then delete all content from the `docs <https://github.com/cssr-tools/pyopmspe11/tree/main/docs>`_ folder except `Makefile <https://github.com/OPM/pyopmspe11/blob/main/docs/Makefile>`_, `text <https://github.com/OPM/pyopmspe11/blob/main/docs/text>`_, and `.nojekyll <https://github.com/OPM/pyopmspe11/blob/main/docs/.nojekyll>`_, after copy all contents from the docs/_build/html/ folder, and finally paste them in the `docs <https://github.com/cssr-tools/pyopmspe11/tree/main/docs>`_ folder)
     
     .. tip::

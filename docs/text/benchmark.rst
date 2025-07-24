@@ -6,7 +6,7 @@ All configuration files are located in the `benchmark <https://github.com/OPM/py
 
 .. note::
     A few weeks after the OPM Flow 2025.04 release, there was a PR that changed the command line parameters for
-    `--partition-method` and `--edge-weights-method` (see `the PR <https://github.com/OPM/opm-simulators/pull/6264>`_). Then, the 
+    `\-\-partition-method` and `\-\-edge-weights-method` (see `the PR <https://github.com/OPM/opm-simulators/pull/6264>`_). Then, the 
     .txt configuration files in the benchmark folder use the old format from the OPM Flow 2025.04 release, while the .toml 
     configuration files use the new naming after that PR.
 
@@ -156,7 +156,11 @@ Spatial maps
         plopm -v xco2l -i "r1_Cart_50m-50m-10m/flow/R1_CART_50M-50M-10M r2_cp_50m-50m-8mish/flow/R2_CP_50M-50M-8MISH r3_cp_50m-50m-8mish_convective/flow/R3_CP_50M-50M-8MISH_CONVECTIVE r4_cp_8m-8mish-8mish/flow/R4_CP_8M-8MISH-8MISH" -dpi 300 -c cet_diverging_protanopic_deuteranopic_bwy_60_95_c32 -cnum 3 -xlnum 8 -clabel 'SPE11C: CO$_2$ mass fraction (liquid phase) after 1000 years (y=2.5 [km])' -d 16,3 -t "r1 Cart [50m,50m,10m]  r2 cp [50m,50m,8mish]  r3 cp [50m,50m,8mish] convective  r4 cp [8m,8mish,8mish]" -yunits km -xunits km -yformat .1f -xformat .1f -r 27 -save massfractc -cformat .2e -mask satnum -maskthr 1e-4 -suptitle 0 -subfigs 2,2 -cbsfax 0.30,0.97,0.4,0.02 -delax 1 -s ',51, ,51, ,51, ,304,' -u opm
 
 .. tip::
-    You can install `plopm <https://github.com/cssr-tools/plopm>`_ by executing in the terminal: pip install git+https://github.com/cssr-tools/plopm.git.
+    You can install `plopm <https://github.com/cssr-tools/plopm>`_ by executing in the terminal:
+    
+    .. code-block:: bash
+        
+        pip install git+https://github.com/cssr-tools/plopm.git
 
 -----------------
 Well 1 correction
