@@ -2,7 +2,7 @@
 Related
 =======
 
-Below are some tools that might be of interest; check them out 🙂.
+Below are some tools that might be of interest; check 'em out 🙂.
 
 ******
 pycopm

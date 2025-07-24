@@ -99,11 +99,11 @@ def postprocesstoml(dic):
     if "co2store" in dic:
         if dic["co2store"] == "gasoil":
             print(dic["msg1"])
-    if len(dic["inj"][0]) == 9:
-        if not isinstance(dic["inj"][0][-1], str):
-            print(dic["msg2"])
-            sys.exit()
-        for i, inj in enumerate(dic["inj"]):
+    for i, inj in enumerate(dic["inj"]):
+        if len(inj) == 9:
+            if not isinstance(inj[-1], str):
+                print(dic["msg2"])
+                sys.exit()
             tmp = inj[-1].split("/")
             dic["inj"][i][-1] = tmp[0].strip()
             if len(tmp) > 1:
