@@ -55,4 +55,9 @@ The following are some of the figures generated in the compare folder:
 .. figure:: figs/spe11b_performance.png
 .. figure:: figs/spe11b_sparse_data.png
 
-This example uses a very coarser grid to run fast. See the :doc:`benchmark <./benchmark>` section for finer grids. 
+.. tip::
+
+    `This example <https://cssr-tools.github.io/plopm/examples.html#reading-from-csv-files>`_ shows how to use `plopm <https://github.com/cssr-tools/plopm>`_ to
+    generate nice figures to compare simulation results (both from csv files (e.g., using the `benchmark data set <https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4750>`_ ) and from OPM Flow output files).
+
+This example uses a very coarser grid to run fast. See the :doc:`benchmark <./benchmark>` section for finer grids.
