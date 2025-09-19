@@ -816,7 +816,7 @@ def write_sparse_data(dig, dil):
         dil[f"{name}"] = interp(dil["times_data"])
     text = [
         "# t [s], p1 [Pa], p2 [Pa], mobA [kg], immA [kg], dissA [kg], sealA [kg], "
-        + "<same for B>, MC [m^2], sealTot [kg]"
+        + "mobB [kg], immB [kg], dissB [kg], sealB [kg], MC [m^2], sealTot [kg]"
     ]
     if dig["case"] == "spe11a":
         for j, time in enumerate(dil["times_data"]):
