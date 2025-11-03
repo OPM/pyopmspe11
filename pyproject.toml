@@ -26,15 +26,15 @@ classifiers = [
     "Operating System :: OS Independent"
 ]
 dependencies = [
-    "alive_progress<=3.3.0",
-    "mako<=1.3.10",
-    "matplotlib<=3.10.7",
-    "opm<=2025.10",
-    "pandas<=2.3.3",
-    "pyarrow<=22.0.0",
-    "rtree<=1.4.1",
-    "scipy<=1.16.3",
-    "shapely<=2.1.2",
+    "alive_progress",
+    "mako",
+    "matplotlib",
+    "opm",
+    "pandas",
+    "pyarrow",
+    "rtree",
+    "scipy",
+    "shapely",
 ]
 requires-python = ">=3.11"
 
