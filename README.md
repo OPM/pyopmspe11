@@ -21,15 +21,15 @@ To install the _pyopmspe11_ executable from the development version:
 pip install git+https://github.com/OPM/pyopmspe11.git
 ```
 
-If you are interested in a specific version (e.g., v2025.04) or in modifying the source code, then you can clone the repository and install the Python requirements in a virtual environment with the following commands:
+If you are interested in a specific version (e.g., v2025.10) or in modifying the source code, then you can clone the repository and install the Python requirements in a virtual environment with the following commands:
 
 ```bash
 # Clone the repo
 git clone https://github.com/OPM/pyopmspe11.git
 # Get inside the folder
 cd pyopmspe11
-# For a specific version (e.g., v2025.04), or skip this step (i.e., edge version)
-git checkout v2025.04
+# For a specific version (e.g., v2025.10), or skip this step (i.e., edge version)
+git checkout v2025.10
 # Create virtual environment (to specific Python, python3.14 -m venv vpyopmspe11)
 python3 -m venv vpyopmspe11
 # Activate virtual environment
