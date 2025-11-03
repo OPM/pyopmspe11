@@ -15,17 +15,10 @@ from alive_progress import alive_bar
 from rtree import index
 import numpy as np
 from scipy.interpolate import interp1d
-from resdata.grid import Grid
-from resdata.resfile import ResdataFile
-from resdata.summary import Summary
-
-try:
-    from opm.io.ecl import EclFile as OpmFile
-    from opm.io.ecl import EGrid as OpmGrid
-    from opm.io.ecl import ERst as OpmRestart
-    from opm.io.ecl import ESmry as OpmSummary
-except ImportError:
-    pass
+from opm.io.ecl import EclFile as OpmFile
+from opm.io.ecl import EGrid as OpmGrid
+from opm.io.ecl import ERst as OpmRestart
+from opm.io.ecl import ESmry as OpmSummary
 
 GAS_DEN_REF = 1.86843
 WAT_DEN_REF = 998.108
@@ -77,12 +70,6 @@ def main():
         "'dense_sparse', 'dense_performance_sparse', or 'all'",
     )
     parser.add_argument(
-        "-u",
-        "--use",
-        default="resdata",
-        help="Using the 'resdata' or python package (resdata by default).",
-    )
-    parser.add_argument(
         "-f",
         "--subfolders",
         default=1,
@@ -109,7 +96,6 @@ def main():
         dig["deckf"] = dig["path"]
         dig["flowf"] = dig["path"]
         dig["where"] = dig["path"]
-    dig["use"] = cmdargs["use"].strip()
     dig["nxyz"] = np.genfromtxt(
         StringIO(cmdargs["resolution"]), delimiter=",", dtype=int
     )
@@ -135,10 +121,7 @@ def main():
     dig["noxzr"] = dig["nxyz"][0] * dig["nxyz"][2]
     dig["time_initial"], dig["no_skip_rst"], dig["times"] = 0, 0, []
     dig["immiscible"] = False
-    if dig["use"] == "opm":
-        read_opm(dig)
-    else:
-        read_resdata(dig)
+    read_simulations(dig)
     if dig["mode"] in [
         "performance",
         "all",
@@ -173,67 +156,7 @@ def main():
     print(f"The csv files have been written to {dig['where']}")
 
 
-def read_resdata(dig):
-    """
-    Read the simulation files using resdata
-
-    Args:
-        dig (dict): Global dictionary
-
-    Returns:
-        dig (dict): Modified global dictionary
-
-    """
-    dig["unrst"] = ResdataFile(f"{dig['sim']}.UNRST")
-    time = []
-    for i in range(dig["unrst"].num_report_steps()):
-        time.append(86400 * dig["unrst"].iget_kw("DOUBHEAD")[i][0])
-        if len(dig["times"]) == 0:
-            if dig["unrst"].has_kw("RSW"):
-                if max(dig["unrst"].iget_kw("RSW")[i]) > 0:
-                    dig["time_initial"] = (
-                        86400 * dig["unrst"].iget_kw("DOUBHEAD")[i - 1][0]
-                    )
-                    dig["no_skip_rst"] = i - 1
-                    dig["times"].append(0)
-                    dig["times"].append(time[-1] - dig["time_initial"])
-            else:
-                dig["immiscible"] = True
-                if max(dig["unrst"].iget_kw("SGAS")[i]) > 0:
-                    dig["time_initial"] = (
-                        86400 * dig["unrst"].iget_kw("DOUBHEAD")[i - 1][0]
-                    )
-                    dig["no_skip_rst"] = i - 1
-                    dig["times"].append(0)
-                    dig["times"].append(time[-1] - dig["time_initial"])
-        else:
-            dig["times"].append(time[-1] - dig["time_initial"])
-    if not dig["times"]:
-        dig["times"] = time
-    dig["init"] = ResdataFile(f"{dig['sim']}.INIT")
-    dig["egrid"] = Grid(f"{dig['sim']}.EGRID")
-    dig["smspec"] = Summary(f"{dig['sim']}.SMSPEC")
-    dig["porv"] = np.array(dig["init"].iget_kw("PORV")[0])
-    dig["actnum"] = list(dig["egrid"].export_actnum())
-    dig["actind"] = list(i for i, act in enumerate(dig["actnum"]) if act == 1)
-    dig["porva"] = np.array(
-        [porv for (porv, act) in zip(dig["porv"], dig["actnum"]) if act == 1]
-    )
-    dig["nocellst"], dig["nocellsa"] = len(dig["actnum"]), sum(dig["actnum"])
-    dig["norst"] = dig["unrst"].num_report_steps()
-    dig["times_summary"] = [0.0]
-    dig["times_summary"] += list(
-        86400.0 * dig["smspec"]["TIME"].values - dig["time_initial"]
-    )
-    dig["gxyz"] = [
-        dig["egrid"].nx,
-        dig["egrid"].ny,
-        dig["egrid"].nz,
-    ]
-    dig["noxz"] = dig["egrid"].nx * dig["egrid"].nz
-
-
-def read_opm(dig):
+def read_simulations(dig):
     """
     Read the simulation files using OPM
 
@@ -363,14 +286,9 @@ def performance(dig):
     dil["alltsteps"] = np.array(
         [86400 * infostep[tag.index("TStep(day)")] for infostep in dil["infosteps"]]
     )
-    if dig["use"] == "opm":
-        tcpu = dig["smspec"]["TCPU"]
-        fgmip = dig["smspec"]["FGMIP"]
-        times = 86400.0 * dig["smspec"]["TIME"] - dig["time_initial"]
-    else:
-        tcpu = dig["smspec"]["TCPU"].values
-        fgmip = dig["smspec"]["FGMIP"].values
-        times = 86400.0 * dig["smspec"]["TIME"].values - dig["time_initial"]
+    tcpu = dig["smspec"]["TCPU"]
+    fgmip = dig["smspec"]["FGMIP"]
+    times = 86400.0 * dig["smspec"]["TIME"] - dig["time_initial"]
     dil["map_sum"] = np.array(
         [time0 + int(np.floor(time / dig["sparse_t"])) for time in dil["times_det"]]
     )
@@ -516,124 +434,52 @@ def create_from_summary(dig, dil):
             if ind == 2:
                 break
     sort = sorted(range(len(i_jk)), key=i_jk.__getitem__)
-    if dig["use"] == "opm":
-        pop1 = (
-            dig["unrst"]["PRESSURE", 0][dil["fipnum"].index(8)]
-            - dig["unrst"]["PCGW", 0][dil["fipnum"].index(8)]
-        )
-        pop2 = (
-            dig["unrst"]["PRESSURE", 0][dil["fipnum"].index(9)]
-            - dig["unrst"]["PCGW", 0][dil["fipnum"].index(9)]
-        )
-        dil["pop1"] = [pop1 * 1.0e5] + list(dig["smspec"][names[sort[0]]] * 1.0e5)  # Pa
-        dil["pop2"] = [pop2 * 1.0e5] + list(dig["smspec"][names[sort[1]]] * 1.0e5)  # Pa
-        for i in dil["fip_diss_a"]:
-            dil["moba"] += dig["smspec"][f"RGKMO:{i}"]
-            dil["imma"] += dig["smspec"][f"RGKTR:{i}"]
-            dil["dissa"] += dig["smspec"][f"RGMDS:{i}"]
-        for i in dil["fip_seal_a"]:
-            dil["seala"] += (
-                dig["smspec"][f"RGMDS:{i}"]
-                + dig["smspec"][f"RGKMO:{i}"]
-                + dig["smspec"][f"RGKTR:{i}"]
-            )
-        for i in dil["fip_diss_b"]:
-            dil["mobb"] += dig["smspec"][f"RGKMO:{i}"]
-            dil["immb"] += dig["smspec"][f"RGKTR:{i}"]
-            dil["dissb"] += dig["smspec"][f"RGMDS:{i}"]
-        for i in dil["fip_seal_b"]:
-            dil["sealb"] += (
-                dig["smspec"][f"RGMDS:{i}"]
-                + dig["smspec"][f"RGKMO:{i}"]
-                + dig["smspec"][f"RGKTR:{i}"]
-            )
-        dil["sealt"] = dil["seala"] + dil["sealb"]
-        for name in ["RGMDS", "RGKMO", "RGKTR"]:
-            dil["sealt"] += dig["smspec"][f"{name}:7"] + dig["smspec"][f"{name}:9"]
-        if dig["case"] != "spe11a":
-            sealbound = (
-                dig["smspec"]["RGMDS:10"]
-                + dig["smspec"]["RGKMO:10"]
-                + dig["smspec"]["RGKTR:10"]
-            )
-            dil["sealt"] += sealbound
-            dil["boundtot"] = sealbound
-            for i in dil["fip_bound_t"]:
-                dil["boundtot"] += (
-                    dig["smspec"][f"RGMDS:{i}"]
-                    + dig["smspec"][f"RGKMO:{i}"]
-                    + dig["smspec"][f"RGKTR:{i}"]
-                )
-    else:
-        resdata_summary(dig, dil, names, sort)
-
-
-def resdata_summary(dig, dil, names, sort):
-    """
-    Read the summary arrays using resdata
-
-    Args:
-        dig (dict): Global dictionary\n
-        dil (dict): Local dictionary\n
-        names (list): Strings with the sensors ijk locations\n
-        sort (list): Integers with the right order for the sensors
-
-    Returns:
-        dil (dict): Modified local dictionary
-
-    """
     pop1 = (
-        dig["unrst"]["PRESSURE"][0][dil["fipnum"].index(8)]
-        - dig["unrst"]["PCGW"][0][dil["fipnum"].index(8)]
+        dig["unrst"]["PRESSURE", 0][dil["fipnum"].index(8)]
+        - dig["unrst"]["PCGW", 0][dil["fipnum"].index(8)]
     )
     pop2 = (
-        dig["unrst"]["PRESSURE"][0][dil["fipnum"].index(9)]
-        - dig["unrst"]["PCGW"][0][dil["fipnum"].index(9)]
+        dig["unrst"]["PRESSURE", 0][dil["fipnum"].index(9)]
+        - dig["unrst"]["PCGW", 0][dil["fipnum"].index(9)]
     )
-    dil["pop1"] = [pop1 * 1.0e5] + list(
-        dig["smspec"][names[sort[0]]].values * 1.0e5
-    )  # Pa
-    dil["pop2"] = [pop2 * 1.0e5] + list(
-        dig["smspec"][names[sort[1]]].values * 1.0e5
-    )  # Pa
+    dil["pop1"] = [pop1 * 1.0e5] + list(dig["smspec"][names[sort[0]]] * 1.0e5)  # Pa
+    dil["pop2"] = [pop2 * 1.0e5] + list(dig["smspec"][names[sort[1]]] * 1.0e5)  # Pa
     for i in dil["fip_diss_a"]:
-        dil["moba"] += dig["smspec"][f"RGKMO:{i}"].values
-        dil["imma"] += dig["smspec"][f"RGKTR:{i}"].values
-        dil["dissa"] += dig["smspec"][f"RGMDS:{i}"].values
+        dil["moba"] += dig["smspec"][f"RGKMO:{i}"]
+        dil["imma"] += dig["smspec"][f"RGKTR:{i}"]
+        dil["dissa"] += dig["smspec"][f"RGMDS:{i}"]
     for i in dil["fip_seal_a"]:
         dil["seala"] += (
-            dig["smspec"][f"RGMDS:{i}"].values
-            + dig["smspec"][f"RGKMO:{i}"].values
-            + dig["smspec"][f"RGKTR:{i}"].values
+            dig["smspec"][f"RGMDS:{i}"]
+            + dig["smspec"][f"RGKMO:{i}"]
+            + dig["smspec"][f"RGKTR:{i}"]
         )
     for i in dil["fip_diss_b"]:
-        dil["mobb"] += dig["smspec"][f"RGKMO:{i}"].values
-        dil["immb"] += dig["smspec"][f"RGKTR:{i}"].values
-        dil["dissb"] += dig["smspec"][f"RGMDS:{i}"].values
+        dil["mobb"] += dig["smspec"][f"RGKMO:{i}"]
+        dil["immb"] += dig["smspec"][f"RGKTR:{i}"]
+        dil["dissb"] += dig["smspec"][f"RGMDS:{i}"]
     for i in dil["fip_seal_b"]:
         dil["sealb"] += (
-            dig["smspec"][f"RGMDS:{i}"].values
-            + dig["smspec"][f"RGKMO:{i}"].values
-            + dig["smspec"][f"RGKTR:{i}"].values
+            dig["smspec"][f"RGMDS:{i}"]
+            + dig["smspec"][f"RGKMO:{i}"]
+            + dig["smspec"][f"RGKTR:{i}"]
         )
     dil["sealt"] = dil["seala"] + dil["sealb"]
     for name in ["RGMDS", "RGKMO", "RGKTR"]:
-        dil["sealt"] += (
-            dig["smspec"][f"{name}:7"].values + dig["smspec"][f"{name}:9"].values
-        )
+        dil["sealt"] += dig["smspec"][f"{name}:7"] + dig["smspec"][f"{name}:9"]
     if dig["case"] != "spe11a":
         sealbound = (
-            dig["smspec"]["RGMDS:10"].values
-            + dig["smspec"]["RGKMO:10"].values
-            + dig["smspec"]["RGKTR:10"].values
+            dig["smspec"]["RGMDS:10"]
+            + dig["smspec"]["RGKMO:10"]
+            + dig["smspec"]["RGKTR:10"]
         )
         dil["sealt"] += sealbound
         dil["boundtot"] = sealbound
         for i in dil["fip_bound_t"]:
             dil["boundtot"] += (
-                dig["smspec"][f"RGMDS:{i}"].values
-                + dig["smspec"][f"RGKMO:{i}"].values
-                + dig["smspec"][f"RGKTR:{i}"].values
+                dig["smspec"][f"RGMDS:{i}"]
+                + dig["smspec"][f"RGKMO:{i}"]
+                + dig["smspec"][f"RGKTR:{i}"]
             )
 
 
@@ -653,14 +499,9 @@ def sparse_data(dig):
             0, dig["times"][-1], round(dig["times"][-1] / dig["sparse_t"]) + 1
         )
     }
-    if dig["use"] == "opm":
-        dil["fipnum"] = list(dig["init"]["FIPNUM"])
-        for name in ["dx", "dy", "dz"]:
-            dil[f"{name}"] = np.array(dig["init"][name.upper()])
-    else:
-        dil["fipnum"] = list(dig["init"].iget_kw("FIPNUM")[0])
-        for name in ["dx", "dy", "dz"]:
-            dil[f"{name}"] = np.array(dig["init"].iget_kw(name.upper())[0])
+    dil["fipnum"] = list(dig["init"]["FIPNUM"])
+    for name in ["dx", "dy", "dz"]:
+        dil[f"{name}"] = np.array(dig["init"][name.upper()])
     dil["names"] = [
         "pop1",
         "pop2",
@@ -736,15 +577,9 @@ def compute_m_c(dig, dil):
     dil["boxc_y"] = np.roll(dil["boxc"], -dig["gxyz"][0])
     dil["boxc_z"] = np.roll(dil["boxc"], -dig["gxyz"][0] * dig["gxyz"][1])
     for t_n in range(dig["no_skip_rst"] + 1, dig["norst"]):
-        if dig["use"] == "opm":
-            rss = np.array(dig["unrst"]["RSW", t_n])
-        else:
-            rss = np.array(dig["unrst"]["RSW"][t_n])
+        rss = np.array(dig["unrst"]["RSW", t_n])
         dil["xcw"] = np.divide(rss, rss + WAT_DEN_REF / GAS_DEN_REF)
-        if dig["use"] == "opm":
-            rssat = np.array(dig["unrst"]["RSWSAT", t_n])
-        else:
-            rssat = np.array(dig["unrst"]["RSWSAT"][t_n])
+        rssat = np.array(dig["unrst"]["RSWSAT", t_n])
         x_l_co2_max = np.divide(rssat, rssat + WAT_DEN_REF / GAS_DEN_REF)
         dil["xcw"] = np.divide(dil["xcw"], x_l_co2_max)
         if dig["case"] != "spe11c":
@@ -859,80 +694,41 @@ def get_corners(dig, dil):
         dil[f"sim{i}cent"] = [0.0] * dig["noxz"]
     dil["simycent"] = [0.0] * dig["gxyz"][1]
     dil["simpoly"] = [0.0] * dig["noxz"]
-    if dig["use"] == "opm":
-        z_0 = dig["egrid"].xyz_from_ijk(0, 0, 0)[2][0]
-        dil["satnum"] = list(dig["init"]["SATNUM"])
-        for j in range(dig["gxyz"][2]):
-            for i in range(dig["gxyz"][0]):
-                n = i + (dig["gxyz"][2] - j - 1) * dig["gxyz"][0]
-                m = i + (dig["gxyz"][2] - j - 1) * dig["gxyz"][1] * dig["gxyz"][0]
-                xyz = dig["egrid"].xyz_from_ijk(i, 0, dig["gxyz"][2] - j - 1)
+    z_0 = dig["egrid"].xyz_from_ijk(0, 0, 0)[2][0]
+    dil["satnum"] = list(dig["init"]["SATNUM"])
+    for j in range(dig["gxyz"][2]):
+        for i in range(dig["gxyz"][0]):
+            n = i + (dig["gxyz"][2] - j - 1) * dig["gxyz"][0]
+            xyz = dig["egrid"].xyz_from_ijk(i, 0, dig["gxyz"][2] - j - 1)
+            dil["simpoly"][n] = Polygon(
+                [
+                    [xyz[0][0], dig["dims"][2] - (xyz[2][0] - z_0)],
+                    [xyz[0][1], dig["dims"][2] - (xyz[2][1] - z_0)],
+                    [xyz[0][5], dig["dims"][2] - (xyz[2][5] - z_0)],
+                    [xyz[0][4], dig["dims"][2] - (xyz[2][4] - z_0)],
+                ]
+            )
+            pxz = dil["simpoly"][n].centroid.wkt
+            pxz = list(float(j) for j in pxz[7:-1].split(" "))
+            dil["simxcent"][n] = pxz[0]
+            dil["simzcent"][n] = pxz[1]
+            if (
+                pxz[1] / 1.2 < 1e-4 / dig["dims"][2]
+                and 2.72 / 2.8 < pxz[0] / dig["dims"][0]
+            ):
+                dil["simxcent"][n] = -1e10
+                dil["simzcent"][n] = -1e10
                 dil["simpoly"][n] = Polygon(
                     [
                         [xyz[0][0], dig["dims"][2] - (xyz[2][0] - z_0)],
                         [xyz[0][1], dig["dims"][2] - (xyz[2][1] - z_0)],
-                        [xyz[0][5], dig["dims"][2] - (xyz[2][5] - z_0)],
-                        [xyz[0][4], dig["dims"][2] - (xyz[2][4] - z_0)],
+                        [xyz[0][1], dig["dims"][2] - (xyz[2][1] - z_0)],
+                        [xyz[0][0], dig["dims"][2] - (xyz[2][0] - z_0)],
                     ]
                 )
-                pxz = dil["simpoly"][n].centroid.wkt
-                pxz = list(float(j) for j in pxz[7:-1].split(" "))
-                dil["simxcent"][n] = pxz[0]
-                dil["simzcent"][n] = pxz[1]
-                if (
-                    pxz[1] / 1.2 < 1e-4 / dig["dims"][2]
-                    and 2.72 / 2.8 < pxz[0] / dig["dims"][0]
-                ):
-                    dil["simxcent"][n] = -1e10
-                    dil["simzcent"][n] = -1e10
-                    dil["simpoly"][n] = Polygon(
-                        [
-                            [xyz[0][0], dig["dims"][2] - (xyz[2][0] - z_0)],
-                            [xyz[0][1], dig["dims"][2] - (xyz[2][1] - z_0)],
-                            [xyz[0][1], dig["dims"][2] - (xyz[2][1] - z_0)],
-                            [xyz[0][0], dig["dims"][2] - (xyz[2][0] - z_0)],
-                        ]
-                    )
-        for j in range(dig["gxyz"][1]):
-            xyz = dig["egrid"].xyz_from_ijk(0, j, 0)
-            dil["simycent"][j] = 0.5 * (xyz[1][2] - xyz[1][1]) + xyz[1][1]
-    else:
-        dil["satnum"] = list(dig["init"].iget_kw("SATNUM")[0])
-        xyz = dig["egrid"].export_corners(dig["egrid"].export_index())
-        z_0 = xyz[0][2]
-        for j in range(dig["gxyz"][2]):
-            for i in range(dig["gxyz"][0]):
-                n = i + (dig["gxyz"][2] - j - 1) * dig["gxyz"][0]
-                m = i + (dig["gxyz"][2] - j - 1) * dig["gxyz"][1] * dig["gxyz"][0]
-                dil["simpoly"][n] = Polygon(
-                    [
-                        [xyz[m][0], dig["dims"][2] - (xyz[m][2] - z_0)],
-                        [xyz[m][3], dig["dims"][2] - (xyz[m][5] - z_0)],
-                        [xyz[m][15], dig["dims"][2] - (xyz[m][17] - z_0)],
-                        [xyz[m][12], dig["dims"][2] - (xyz[m][14] - z_0)],
-                    ]
-                )
-                pxz = dil["simpoly"][n].centroid.wkt
-                pxz = list(float(j) for j in pxz[7:-1].split(" "))
-                dil["simxcent"][n] = pxz[0]
-                dil["simzcent"][n] = pxz[1]
-                if (
-                    pxz[1] / 1.2 < 1e-4 / dig["dims"][2]
-                    and 2.72 / 2.8 < pxz[0] / dig["dims"][0]
-                ):
-                    dil["simxcent"][n] = -1e10
-                    dil["simzcent"][n] = -1e10
-                    dil["simpoly"][n] = Polygon(
-                        [
-                            [xyz[m][0], dig["dims"][2] - (xyz[m][2] - z_0)],
-                            [xyz[m][3], dig["dims"][2] - (xyz[m][5] - z_0)],
-                            [xyz[m][3], dig["dims"][2] - (xyz[m][5] - z_0)],
-                            [xyz[m][0], dig["dims"][2] - (xyz[m][2] - z_0)],
-                        ]
-                    )
-        for j in range(dig["gxyz"][1]):
-            n = j * dig["gxyz"][0]
-            dil["simycent"][j] = 0.5 * (xyz[n][7] - xyz[n][1]) + xyz[n][1]
+    for j in range(dig["gxyz"][1]):
+        xyz = dig["egrid"].xyz_from_ijk(0, j, 0)
+        dil["simycent"][j] = 0.5 * (xyz[1][2] - xyz[1][1]) + xyz[1][1]
     dil["simycent"] = np.array(dil["simycent"])
 
 
@@ -961,12 +757,8 @@ def dense_data(dig):
     dil["cell_ind"] = [[] for _ in range(dig["noxz"])]
     dil["cell_indc"] = np.zeros(dig["noxz"], dtype=int)
     dil["cell_cent"] = np.zeros(dig["noxzr"], dtype=float)
-    if dig["use"] == "opm":
-        dx = dig["init"]["DX"][: dig["gxyz"][0]]
-        dz = dig["init"]["DZ"]
-    else:
-        dx = dig["init"].iget_kw("DX")[0][: dig["gxyz"][0]]
-        dz = dig["init"].iget_kw("DZ")[0]
+    dx = dig["init"]["DX"][: dig["gxyz"][0]]
+    dz = dig["init"]["DZ"]
     iszunif = min(dz) == max(dz)
     if (
         iszunif
@@ -1365,38 +1157,19 @@ def static_map_to_report_grid_performance_spatial(dig, dil):
     for name in ["cvol", "arat"]:
         dil[f"{name}_array"] = np.zeros(dig["nocellst"])
         dil[f"{name}_refg"] = np.zeros(dig["nocellsr"])
-    if dig["use"] == "opm":
-        dil["cvol_array"][dig["actind"]] = np.divide(
-            dig["porva"], np.array(dig["init"]["PORO"])
+    dil["cvol_array"][dig["actind"]] = np.divide(
+        dig["porva"], np.array(dig["init"]["PORO"])
+    )
+    if dig["case"] != "spe11c":
+        dil["arat_array"][dig["actind"]] = np.divide(
+            np.array(dig["init"]["DZ"]), np.array(dig["init"]["DX"])
         )
-        if dig["case"] != "spe11c":
-            dil["arat_array"][dig["actind"]] = np.divide(
-                np.array(dig["init"]["DZ"]), np.array(dig["init"]["DX"])
-            )
-        else:
-            dil["arat_array"][dig["actind"]] = np.divide(
-                np.array(dig["init"]["DZ"]),
-                (np.array(dig["init"]["DX"]) ** 2 + np.array(dig["init"]["DY"]) ** 2)
-                ** 0.5,
-            )
     else:
-        dil["cvol_array"][dig["actind"]] = np.divide(
-            dig["porva"], np.array(dig["init"].iget_kw("PORO")[0])
+        dil["arat_array"][dig["actind"]] = np.divide(
+            np.array(dig["init"]["DZ"]),
+            (np.array(dig["init"]["DX"]) ** 2 + np.array(dig["init"]["DY"]) ** 2)
+            ** 0.5,
         )
-        if dig["case"] != "spe11c":
-            dil["arat_array"][dig["actind"]] = np.divide(
-                np.array(dig["init"].iget_kw("DZ")[0]),
-                np.array(dig["init"].iget_kw("DX")[0]),
-            )
-        else:
-            dil["arat_array"][dig["actind"]] = np.divide(
-                np.array(dig["init"].iget_kw("DZ")[0]),
-                (
-                    np.array(dig["init"].iget_kw("DX")[0]) ** 2
-                    + np.array(dig["init"].iget_kw("DY")[0]) ** 2
-                )
-                ** 0.5,
-            )
     for i in dig["actind"]:
         for mask in dil["cell_ind"][i]:
             dil["cvol_refg"][mask[0]] += dil["cvol_array"][i]
@@ -1424,22 +1197,11 @@ def generate_arrays_performance_spatial(dig, dil, t_n):
         dil (dict): Modified local dictionary
 
     """
-    if dig["use"] == "opm":
-        dil["co2mb_array"][dig["actind"]] = np.array(dig["unrst"]["RES_GAS", t_n + 1])
-        if dig["unrst"].count("RES_WAT", t_n + 1):
-            dil["h2omb_array"][dig["actind"]] = np.array(
-                dig["unrst"]["RES_WAT", t_n + 1]
-            )
-        else:
-            dil["h2omb_array"][dig["actind"]] = np.array(
-                dig["unrst"]["RES_OIL", t_n + 1]
-            )
+    dil["co2mb_array"][dig["actind"]] = np.array(dig["unrst"]["RES_GAS", t_n + 1])
+    if dig["unrst"].count("RES_WAT", t_n + 1):
+        dil["h2omb_array"][dig["actind"]] = np.array(dig["unrst"]["RES_WAT", t_n + 1])
     else:
-        dil["co2mb_array"][dig["actind"]] = np.array(dig["unrst"]["RES_GAS"][t_n])
-        if dig["unrst"].has_kw("RES_WAT"):
-            dil["h2omb_array"][dig["actind"]] = np.array(dig["unrst"]["RES_WAT"][t_n])
-        else:
-            dil["h2omb_array"][dig["actind"]] = np.array(dig["unrst"]["RES_OIL"][t_n])
+        dil["h2omb_array"][dig["actind"]] = np.array(dig["unrst"]["RES_OIL", t_n + 1])
     dil["co2mn_array"][dig["actind"]] = np.divide(
         np.abs(dil["co2mb_array"][dig["actind"]]), dig["porva"]
     )
@@ -1586,34 +1348,17 @@ def generate_arrays(dig, dil, names, t_n):
     dil["tco2_array"] = np.zeros(dig["nocellst"])
     dil["tco2_refg"] = np.zeros(dig["nocellsr"])
     dil["tco2_refg"][dig["actindr"]] = np.nan
-    if dig["use"] == "opm":
-        sgas = abs(np.array(dig["unrst"]["SGAS", t_n]))
-        rhog = np.array(dig["unrst"]["GAS_DEN", t_n])
-        pres = np.array(dig["unrst"]["PRESSURE", t_n]) - np.array(
-            dig["unrst"]["PCGW", t_n]
-        )
-        rhow = np.array(dig["unrst"]["WAT_DEN", t_n])
-        rvv, rss = 0.0 * sgas, 0.0 * sgas
-        if not dig["immiscible"]:
-            rss = np.array(dig["unrst"]["RSW", t_n])
-            if dig["unrst"].count("RVW", t_n):
-                rvv = np.array(dig["unrst"]["RVW", t_n])
-            if dig["case"] != "spe11a":
-                dil["temp_array"][dig["actind"]] = np.array(dig["unrst"]["TEMP", t_n])
-    else:
-        sgas = abs(np.array(dig["unrst"]["SGAS"][t_n]))
-        rhog = np.array(dig["unrst"]["GAS_DEN"][t_n])
-        pres = np.array(dig["unrst"]["PRESSURE"][t_n]) - np.array(
-            dig["unrst"]["PCGW"][t_n]
-        )
-        rhow = np.array(dig["unrst"]["WAT_DEN"][t_n])
-        rvv, rss = 0.0 * sgas, 0.0 * sgas
-        if not dig["immiscible"]:
-            rss = np.array(dig["unrst"]["RSW"][t_n])
-            if dig["unrst"].has_kw("RVW"):
-                rvv = np.array(dig["unrst"]["RVW"][t_n])
-            if dig["case"] != "spe11a":
-                dil["temp_array"][dig["actind"]] = np.array(dig["unrst"]["TEMP"][t_n])
+    sgas = abs(np.array(dig["unrst"]["SGAS", t_n]))
+    rhog = np.array(dig["unrst"]["GAS_DEN", t_n])
+    pres = np.array(dig["unrst"]["PRESSURE", t_n]) - np.array(dig["unrst"]["PCGW", t_n])
+    rhow = np.array(dig["unrst"]["WAT_DEN", t_n])
+    rvv, rss = 0.0 * sgas, 0.0 * sgas
+    if not dig["immiscible"]:
+        rss = np.array(dig["unrst"]["RSW", t_n])
+        if dig["unrst"].count("RVW", t_n):
+            rvv = np.array(dig["unrst"]["RVW", t_n])
+        if dig["case"] != "spe11a":
+            dil["temp_array"][dig["actind"]] = np.array(dig["unrst"]["TEMP", t_n])
     if not dig["immiscible"]:
         x_l_co2 = np.divide(rss, rss + WAT_DEN_REF / GAS_DEN_REF)
         x_g_h2o = np.divide(rvv, rvv + GAS_DEN_REF / WAT_DEN_REF)

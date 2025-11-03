@@ -60,7 +60,7 @@ The following input lines in the configuration file are:
     0 5e4 1           #Added pore volume on top boundary (for spe11a [if 0, free flow bc]), pore volume on lateral boundaries, and width of buffer cell [m] (for spe11b/c)
     150 10            #Elevation of the parabola and back [m] (for spe11c) 
 
-In line 5 you specify if you are using OPM Flow from the master branch or from the latest stable release (OPM-flow 2025.04 release).
+In line 5 you specify if you are using OPM Flow from the master branch or from the latest stable release (OPM-flow 2025.10 release).
 This since there are continuous changues in the OPM master branch. Then we 
 will keep updating the decks for using Flow from master and also we will keep the framework to produce decks compatible for the latest OPM stable release.
 The immiscible model allows for faster prototyping while the complete model includes dissolution of the components in the

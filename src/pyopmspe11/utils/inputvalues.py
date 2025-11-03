@@ -44,15 +44,6 @@ def process_input(dic, in_file):
         + "online documentation, and update your configuration file accordingly.\n"
     )
     if in_file.endswith(".toml"):
-        if sys.version_info[1] < 11:
-            print(
-                "\nInput configuration files with toml extension requieres "
-                + "a Python version of at least 3.11.\nYou could either use "
-                + "configuration files with txt extension or use a higher "
-                + "Python version.\nYour Python version is "
-                + f"3.{sys.version_info[1]}.{sys.version_info[2]}.\n"
-            )
-            sys.exit()
         with open(in_file, "rb") as file:
             dic.update(tomllib.load(file))
         setcaseproperties(dic)
@@ -325,9 +316,10 @@ def check_deck(dic):
         args=f"{dic['only_flow']} --version", stdout=PIPE, shell=True
     ) as process:
         dic["flow_version"] = str(process.communicate()[0])[7:-3]
-    if dic["flow_version"] == "2024.10":
-        print(
-            "\nYou are using Flow 2024.10. Please update to Flow 2025.04, or "
-            + "build Flow from the master GitHub branches.\n"
-        )
-        sys.exit()
+    for version in ["2025.04", "2024.10", "2024.04"]:
+        if dic["flow_version"] == version:
+            print(
+                f"\nYou are using Flow {version}. Please update to Flow 2025.10, "
+                + "or build Flow from the master GitHub branches.\n"
+            )
+            sys.exit()

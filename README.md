@@ -1,5 +1,5 @@
 [![Build Status](https://github.com/OPM/pyopmspe11/actions/workflows/CI.yml/badge.svg)](https://github.com/OPM/pyopmspe11/actions/workflows/CI.yml)
-<a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.9%20to%203.13-blue.svg"></a>
+<a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.11%20to%203.14-blue.svg"></a>
 [![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/license/mit/)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.07357/status.svg)](https://doi.org/10.21105/joss.07357)
@@ -13,7 +13,7 @@ Here we use the [_OPM-Flow_](https://opm-project.org/?page_id=19) simulator.
 
 ## Installation
 You will first need to install
-* Flow (https://opm-project.org, Release 2025.04 or current master branches)
+* Flow (https://opm-project.org, Release 2025.10 or current master branches)
 
 To install the _pyopmspe11_ executable from the development version: 
 
@@ -30,7 +30,7 @@ git clone https://github.com/OPM/pyopmspe11.git
 cd pyopmspe11
 # For a specific version (e.g., v2025.04), or skip this step (i.e., edge version)
 git checkout v2025.04
-# Create virtual environment (to specific Python, python3.13 -m venv vpyopmspe11)
+# Create virtual environment (to specific Python, python3.14 -m venv vpyopmspe11)
 python3 -m venv vpyopmspe11
 # Activate virtual environment
 source vpyopmspe11/bin/activate
@@ -42,7 +42,7 @@ pip install -e .
 pip install -r dev-requirements.txt
 ``` 
 
-See the [_installation_](https://OPM.github.io/pyopmspe11/installation.html) for further details on building OPM Flow from the master branches in Linux, Windows, and macOS, as well as the OPM Python package and LaTeX dependencies.
+See the [_installation_](https://OPM.github.io/pyopmspe11/installation.html) for further details on building OPM Flow from the master branches in Linux, Windows (via [_WSL_](https://learn.microsoft.com/en-us/windows/wsl/)), and macOS, as well as the LaTeX (optional) dependency.
 
 ## Running pyopmspe11
 You can run _pyopmspe11_ as a single command line:

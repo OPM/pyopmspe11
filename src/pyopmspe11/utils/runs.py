@@ -74,7 +74,6 @@ def data(dic):
         "-r " + f"{dic['resolution']}",
         "-t " + f"{dic['time_data']}",
         "-w " + f"{dic['dt_data']}",
-        "-u " + f"{dic['use']}",
         "-f " + f"{dic['subfolders']}",
         "-s " + f"{dic['showpywarn']}",
     ]

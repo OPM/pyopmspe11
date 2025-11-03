@@ -102,7 +102,6 @@ documentation about collaborating with pull request; also, looking at previous m
 </section>
 <section id="contribute-to-the-software">
 <h2>Contribute to the software<a class="headerlink" href="#contribute-to-the-software" title="Link to this heading"></a></h2>
-<p>This requires a Python version of at least 3.11 (due to <a class="reference external" href="https://toml.io/en/">tomllib</a>).</p>
 <ol class="arabic">
 <li><p>Work on your own fork of the main repo</p></li>
 <li><p>In the main repo execute:</p>
@@ -117,7 +116,9 @@ documentation about collaborating with pull request; also, looking at previous m
 </ol>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>See the <a class="reference external" href="https://github.com/cssr-tools/pyopmspe11/blob/main/.github/workflows/CI.yml">CI.yml</a> script and the <a class="reference external" href="https://github.com/cssr-tools/pyopmspe11/actions">Actions</a> for installation of pyopmspe11, OPM Flow (binary packages), and dependencies, as well as the execution of the six previous steps in Ubuntu 24.10 using Python3.11.</p>
+<p>See the <a class="reference external" href="https://github.com/cssr-tools/pyopmspe11/blob/main/.github/workflows/CI.yml">CI.yml</a> script and the <a class="reference external" href="https://github.com/cssr-tools/pyopmspe11/actions">Actions</a> for installation of pyopmspe11, OPM Flow (binary packages), and dependencies, as well as the execution of the six previous steps in Ubuntu 24.04 using Python 3.11.
+For macOS users, see the <a class="reference external" href="https://github.com/daavid00/OPM-Flow_macOS/blob/main/.github/workflows/ci_pycopm_macos.yml">ci_pycopm_macos.yml</a> script and the <a class="reference external" href="https://github.com/cssr-tools/pycopm/actions">OPM-Flow_macOS Actions</a> for installation of pycopm (a related tool to pyopmspe11), OPM Flow (source build), and dependencies in macOS 26 using Python 3.13.
+In addition for macOS, you need to add the directory containing the OPM Flow executable to your system’s PATH environment variable (e.g., export PATH=$PATH:/Users/yourname/pyopmspe11/build/opm-simulators/bin).</p>
 </div>
 </div></blockquote>
 </li>
@@ -156,7 +157,7 @@ documentation about collaborating with pull request; also, looking at previous m
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023-2025, NORCE Norwegian Research Centre AS.</p>
+    <p>&#169; Copyright 2023-2025, NORCE Research AS.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

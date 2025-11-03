@@ -4,12 +4,6 @@ Benchmark
 
 All configuration files are located in the `benchmark <https://github.com/OPM/pyopmspe11/blob/main/benchmark>`_ folder.
 
-.. note::
-    A few weeks after the OPM Flow 2025.04 release, there was a PR that changed the command line parameters for
-    `\-\-partition-method` and `\-\-edge-weights-method` (see `the PR <https://github.com/OPM/opm-simulators/pull/6264>`_). Then, the 
-    .txt configuration files in the benchmark folder use the old format from the OPM Flow 2025.04 release, while the .toml 
-    configuration files use the new naming after that PR.
-
 ======
 SPE11A
 ======
@@ -123,7 +117,7 @@ To run the cases in the terminal:
     pyopmspe11 -i r1_Cart_50m-50m-10m.txt -o r1_Cart_50m-50m-10m -m all -g all -r 168,100,120 -t 0,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000 -w 0.1
     pyopmspe11 -i r2_cp_50m-50m-8mish.txt -o r2_cp_50m-50m-8mish -m all -g all -r 168,100,120 -t 0,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000 -w 0.1
     pyopmspe11 -i r3_cp_50m-50m-8mish_convective.txt -o r3_cp_50m-50m-8mish_convective -m all -g all -r 168,100,120 -t 0,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000 -w 0.1
-    pyopmspe11 -i r4_cp_8m-8mish-8mish.txt -o r4_cp_8m-8mish-8mish -m all -g all -r 168,100,120 -t 0,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000 -w 0.1 -u opm
+    pyopmspe11 -i r4_cp_8m-8mish-8mish.txt -o r4_cp_8m-8mish-8mish -m all -g all -r 168,100,120 -t 0,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000 -w 0.1
 
 To run the case with more than 100 million cells (r4), it required improvements in the OPM Flow simulator (e.g., `METIS support <https://github.com/OPM/opm-grid/pull/738>`_), as well as in the **pyopmspe11** pre- and postprocessing functionality
 (and of course a big computer, the `NORCE <https://www.norceresearch.no>`_ HPC cluster). See `this gif <https://github.com/OPM/pyopmspe11/blob/main/docs/text/figs/pyopmspe11c100Mcells.gif>`_ for visualization in `ParaView <https://www.paraview.org>`_ of the CO2 molar fraction (liquid phase) over time.
@@ -153,7 +147,7 @@ Spatial maps
 
         plopm -v xco2l -i 'r1_Cart_1cm/flow/R1_CART_1CM r2_Cart_1cm_capmax2500Pa/flow/R2_CART_1CM_CAPMAX2500PA r3_cp_1cmish_capmax2500Pa/flow/R3_CP_1CMISH_CAPMAX2500PA r4_Cart_1mm_capmax2500Pa/flow/R4_CART_1MM_CAPMAX2500PA' -dpi 300 -c cet_diverging_protanopic_deuteranopic_bwy_60_95_c32 -cnum 3 -xlnum 8 -clabel 'SPE11A: CO$_2$ mass fraction (liquid phase) after 1 day' -d 16,6.5 -t "r1 Cart 1cm  r2 Cart 1cm capmax 2500 Pa  r3 cp 1cmish capmax 2500 Pa  r4 Cart 1mm capmax 2500 Pa" -yunits cm -xunits cm -yformat .0f -xformat .0f -r 29 -save massfracta -cformat .2e -mask satnum -maskthr 7e-5 -suptitle 0 -subfigs 2,2 -cbsfax 0.35,0.97,0.3,0.02 -delax 1
         plopm -v xco2l -i "r1_Cart_10m/flow/R1_CART_10M r2_cp_10mish/flow/R2_CP_10MISH r3_cp_10mish_convective/flow/R3_CP_10MISH_CONVECTIVE r4_Cart_1m/flow/R4_CART_1M" -dpi 300 -c cet_diverging_protanopic_deuteranopic_bwy_60_95_c32 -cnum 3 -xlnum 8 -clabel 'SPE11B: CO$_2$ mass fraction (liquid phase) after 500 years' -d 16,3 -t "r1 Cart 10m  r2 cp 10mish  r3 cp 10mish convective  r4 Cart 1m" -yunits km -xunits km -yformat .1f -xformat .1f -r 98 -save massfractb -cformat .2e -mask satnum -maskthr 5e-3 -suptitle 0 -subfigs 2,2 -cbsfax 0.35,0.97,0.3,0.02 -delax 1
-        plopm -v xco2l -i "r1_Cart_50m-50m-10m/flow/R1_CART_50M-50M-10M r2_cp_50m-50m-8mish/flow/R2_CP_50M-50M-8MISH r3_cp_50m-50m-8mish_convective/flow/R3_CP_50M-50M-8MISH_CONVECTIVE r4_cp_8m-8mish-8mish/flow/R4_CP_8M-8MISH-8MISH" -dpi 300 -c cet_diverging_protanopic_deuteranopic_bwy_60_95_c32 -cnum 3 -xlnum 8 -clabel 'SPE11C: CO$_2$ mass fraction (liquid phase) after 1000 years (y=2.5 [km])' -d 16,3 -t "r1 Cart [50m,50m,10m]  r2 cp [50m,50m,8mish]  r3 cp [50m,50m,8mish] convective  r4 cp [8m,8mish,8mish]" -yunits km -xunits km -yformat .1f -xformat .1f -r 27 -save massfractc -cformat .2e -mask satnum -maskthr 1e-4 -suptitle 0 -subfigs 2,2 -cbsfax 0.30,0.97,0.4,0.02 -delax 1 -s ',51, ,51, ,51, ,304,' -u opm
+        plopm -v xco2l -i "r1_Cart_50m-50m-10m/flow/R1_CART_50M-50M-10M r2_cp_50m-50m-8mish/flow/R2_CP_50M-50M-8MISH r3_cp_50m-50m-8mish_convective/flow/R3_CP_50M-50M-8MISH_CONVECTIVE r4_cp_8m-8mish-8mish/flow/R4_CP_8M-8MISH-8MISH" -dpi 300 -c cet_diverging_protanopic_deuteranopic_bwy_60_95_c32 -cnum 3 -xlnum 8 -clabel 'SPE11C: CO$_2$ mass fraction (liquid phase) after 1000 years (y=2.5 [km])' -d 16,3 -t "r1 Cart [50m,50m,10m]  r2 cp [50m,50m,8mish]  r3 cp [50m,50m,8mish] convective  r4 cp [8m,8mish,8mish]" -yunits km -xunits km -yformat .1f -xformat .1f -r 27 -save massfractc -cformat .2e -mask satnum -maskthr 1e-4 -suptitle 0 -subfigs 2,2 -cbsfax 0.30,0.97,0.4,0.02 -delax 1 -s ',51, ,51, ,51, ,304,'
 
 .. tip::
     You can install `plopm <https://github.com/cssr-tools/plopm>`_ by executing in the terminal:

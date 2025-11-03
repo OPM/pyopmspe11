@@ -39,7 +39,6 @@ where
 -g  Write only the 'dense', 'sparse', 'performance', 'performance-spatial', 'dense_performance', 'dense_sparse', 'performance_sparse', 'dense_performance-spatial', 'dense_performance_sparse', or 'all' ('performance_sparse') by default.
 -r  Number of x, y, and z elements to map the simulation results to the dense report data ('8,1,5' by default).
 -t  If one number, time step for the spatial maps (spe11a [h]; spe11b/c [y]) ('5' by default); otherwise, times separated by commas.
--u  Using the 'opm' or 'resdata' python package ('resdata' by default).
 -w  Time interval for the sparse and performance data (spe11a [h]; spe11b/c [y]) ('0.1' by default).
 -c  Generate a common plot for the current folders for 'spe11a', 'spe11b', or 'spe11c' ('' by default).
 -s  Set to 1 to show Python warnings ('0' by default).

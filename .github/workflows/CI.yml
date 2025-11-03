@@ -44,7 +44,7 @@ jobs:
         
     - name: Install pyopmspe11
       run: |
-        pip install .[opm]
+        pip install .
         
     - name: Check code style and linting 
       run: |
