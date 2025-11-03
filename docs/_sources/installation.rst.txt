@@ -4,7 +4,9 @@ Installation
 
 The following steps work installing the dependencies in Linux via apt-get or in macOS using brew or macports.
 While using packages managers such as Anaconda, Miniforge, or Mamba might work, these are not tested.
-In addition, the current supported Python versions for macOS are 3.10 (due to resdata) to 3.13 and for Linux 3.9 to 3.13.
+The supported Python versions are 3.11 to 3.14.
+
+.. _vpyopmspe11:
 
 Python package
 --------------
@@ -42,15 +44,7 @@ install the Python requirements in a virtual environment with the following comm
     Typing **git tag -l** writes all available specific versions.
 
 .. note::
-
-    For not macOS users, to install the Python opm package (this is an alternative
-    to `resdata <https://github.com/equinor/resdata>`_, both are use to read OPM output files; while resdata is easier to
-    install in macOS, opm seems to be faster), execute in the terminal
-
-    **pip install opm**
-
-    This is equivalent to execute **pip install -e .[opm]** in the installation process.  
-
+  
     For not macOS users, to install the dependencies used for the figure's LaTeX formatting, execute 
     
     **sudo apt-get install texlive-fonts-recommended texlive-fonts-extra dvipng cm-super**
@@ -61,7 +55,7 @@ OPM Flow
 --------
 You also need to install:
 
-* OPM Flow (https://opm-project.org, Release 2024.10 or current master branches)
+* OPM Flow (https://opm-project.org, Release 2025.10 or current master branches)
 
 .. tip::
 
@@ -70,34 +64,28 @@ You also need to install:
 
 Source build in Linux/Windows
 +++++++++++++++++++++++++++++
-If you are a Linux user (including the Windows subsystem for Linux), then you could try to build Flow (after installing the `prerequisites <https://opm-project.org/?page_id=239>`_) from the master branches with mpi support by running
+If you are a Linux user (including the Windows subsystem for Linux, see `this link <https://learn.microsoft.com/en-us/windows/python/web-frameworks>`_ 
+for a nice tutorial for setting Python environments in WSL), then you could try to build flow (after installing the `prerequisites <https://opm-project.org/?page_id=239>`_) from the master branches with mpi support by running
 in the terminal the following lines (which in turn should build flow in the folder ./build/opm-simulators/bin/flow): 
 
 .. code-block:: console
 
     CURRENT_DIRECTORY="$PWD"
 
-    for repo in common grid simulators
-    do
-        git clone https://github.com/OPM/opm-$repo.git
-    done
-
     mkdir build
 
     for repo in common grid
-    do
+    do  git clone https://github.com/OPM/opm-$repo.git
         mkdir build/opm-$repo
         cd build/opm-$repo
-        cmake -DUSE_MPI=1 -DWITH_NDEBUG=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$CURRENT_DIRECTORY/build/opm-common" $CURRENT_DIRECTORY/opm-$repo
-        make -j5 opm$repo
+        cmake -DUSE_MPI=1 -DWITH_NDEBUG=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$CURRENT_DIRECTORY/build/opm-common;$CURRENT_DIRECTORY/build/opm-grid" $CURRENT_DIRECTORY/opm-$repo
+        if [[ $repo == simulators ]]; then
+            make -j5 flow
+        else
+            make -j5 opm$repo
+        fi
         cd ../..
-    done    
-
-    mkdir build/opm-simulators
-    cd build/opm-simulators
-    cmake -DUSE_MPI=1 -DWITH_NDEBUG=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$CURRENT_DIRECTORY/build/opm-common;$CURRENT_DIRECTORY/build/opm-grid" $CURRENT_DIRECTORY/opm-simulators
-    make -j5 flow
-    cd ../..
+    done
 
 
 .. tip::
@@ -114,57 +102,47 @@ For example, with brew the prerequisites can be installed by:
 
 .. code-block:: console
 
-    brew install boost@1.85 cmake openblas suite-sparse
+    brew install boost openblas suite-sparse python@3.14 cmake
 
-.. note::
-    boost 1.89.0 was made available recently (August 14th, 2025), which it is not compatible with OPM Flow (yet).
-    Then, we install boost 1.85, and add the cmake path to the boost include folder, as shown in the bash lines below.
-
-This can be achieved by the following lines:
+In addition, it is recommended to uprade and update your macOS to the latest available versions (the following steps have 
+worked for macOS Tahoe 26.0.1 with Apple clang version 17.0.0).
+After the prerequisites are installed and the vpyopmspe11 Python environment is created (see :ref:`vpyopmspe11`), 
+then building OPM Flow can be achieved with the following bash lines:
 
 .. code-block:: console
 
     CURRENT_DIRECTORY="$PWD"
 
+    deactivate
+    source vpyopmspe11/bin/activate
+
     for module in common geometry grid istl
     do   git clone https://gitlab.dune-project.org/core/dune-$module.git --branch v2.9.1
+        ./dune-common/bin/dunecontrol --only=dune-$module cmake -DCMAKE_DISABLE_FIND_PACKAGE_MPI=1
+        ./dune-common/bin/dunecontrol --only=dune-$module make -j5
     done
-    for module in common geometry grid istl
-    do   ./dune-common/bin/dunecontrol --only=dune-$module cmake -DCMAKE_DISABLE_FIND_PACKAGE_MPI=1
-         ./dune-common/bin/dunecontrol --only=dune-$module make -j5
-    done
-
-    for repo in common grid simulators
-    do
-        git clone https://github.com/OPM/opm-$repo.git
-    done
-
-    source vpyopmspe11/bin/activate
 
     mkdir build
 
-    for repo in common grid
-    do
+    for repo in common grid simulators
+    do  git clone https://github.com/OPM/opm-$repo.git
         mkdir build/opm-$repo
         cd build/opm-$repo
-        cmake -DPYTHON_EXECUTABLE=$(which python) -DWITH_NDEBUG=1 -DUSE_MPI=0 -DOPM_ENABLE_PYTHON=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="/opt/homebrew/opt/boost@1.85/include;$CURRENT_DIRECTORY/dune-common/build-cmake;$CURRENT_DIRECTORY/dune-grid/build-cmake;$CURRENT_DIRECTORY/dune-geometry/build-cmake;$CURRENT_DIRECTORY/dune-istl/build-cmake;$CURRENT_DIRECTORY/build/opm-common" $CURRENT_DIRECTORY/opm-$repo
-        make -j5 opm$repo
+        cmake -DUSE_MPI=0 -DWITH_NDEBUG=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$CURRENT_DIRECTORY/dune-common/build-cmake;$CURRENT_DIRECTORY/dune-grid/build-cmake;$CURRENT_DIRECTORY/dune-geometry/build-cmake;$CURRENT_DIRECTORY/dune-istl/build-cmake;$CURRENT_DIRECTORY/build/opm-common;$CURRENT_DIRECTORY/build/opm-grid" $CURRENT_DIRECTORY/opm-$repo
+        if [[ $repo == simulators ]]; then
+            make -j5 flow
+        else
+            make -j5 opm$repo
+        fi
         cd ../..
-    done    
+    done
 
-    mkdir build/opm-simulators
-    cd build/opm-simulators
-    cmake -DUSE_MPI=0 -DWITH_NDEBUG=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="/opt/homebrew/opt/boost@1.85/include;$CURRENT_DIRECTORY/dune-common/build-cmake;$CURRENT_DIRECTORY/dune-grid/build-cmake;$CURRENT_DIRECTORY/dune-geometry/build-cmake;$CURRENT_DIRECTORY/dune-istl/build-cmake;$CURRENT_DIRECTORY/build/opm-common;$CURRENT_DIRECTORY/build/opm-grid" $CURRENT_DIRECTORY/opm-simulators
-    make -j5 flow
-    cd ../..
+    echo "export PATH=\$PATH:$CURRENT_DIRECTORY/build/opm-simulators/bin" >> $CURRENT_DIRECTORY/vpyopmspe11/bin/activate
 
-    echo "export PYTHONPATH=\$PYTHONPATH:$CURRENT_DIRECTORY/build/opm-common/python" >> $CURRENT_DIRECTORY/vpyopmspe11/bin/activate
+    deactivate
+    source vpyopmspe11/bin/activate
 
-
-This builds OPM Flow as well as the OPM Python library, and it exports the required PYTHONPATH. Then after execution, deactivate and activate the Python virtual environment.
-
-Regarding the resdata Python package, it might not be available depending on the Python version (e.g., it is not found using Python 3.9, but it is installed using Python 3.10). 
-Then, for macOS users, you need to use a Python version equal or higher than 3.10.
+This builds OPM Flow, and it exports the path to the flow executable (i.e., executing in the terminal **which flow** should print the path).
 
 For macOS, the LaTeX dependency can be installed from https://www.tug.org/mactex/. If after installation you still face an error due to LaTeX 
 when executing pyopmspe11, then add the flag **-l 0** to pyopmspe11.

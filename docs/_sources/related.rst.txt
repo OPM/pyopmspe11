@@ -14,6 +14,14 @@ pycopm
 `An open-source tool to tailor OPM Flow geological models <https://github.com/cssr-tools/pycopm>`_.
 
 *****
+pofff
+*****
+
+.. image:: ./figs/pofff.png
+
+`An image-based history-matching framework for the FluidFlower Benchmark using OPM Flow <https://github.com/cssr-tools/pofff>`_.
+
+*****
 plopm
 *****
 

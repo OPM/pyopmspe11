@@ -19,25 +19,24 @@ classifiers = [
     "Natural Language :: English",
     "Topic :: Scientific/Engineering",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Operating System :: OS Independent"
 ]
 dependencies = [
     "alive_progress",
     "mako",
     "matplotlib",
+    "opm",
     "pandas",
     "Pyarrow",
-    "resdata",
     "rtree",
     "scipy",
     "shapely",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 
 [tool.setuptools.dynamic]
 version = {attr = "pyopmspe11.__version__"}
@@ -52,6 +51,3 @@ Repository = "https://github.com/cssr-tools/pyopmspe11"
 [tool.setuptools]
 packages.find.where = ["src"]
 platforms = ["all"]
-
-[project.optional-dependencies]
-opm = ["opm"]
