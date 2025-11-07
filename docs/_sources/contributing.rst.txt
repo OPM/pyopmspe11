@@ -21,7 +21,7 @@ Contribute to the software
 #. Work on your own fork of the main repo
 #. In the main repo execute:
 
-    #. **pip install -r dev-requirements.txt** (this installs the `dev-requirements.txt <https://github.com/cssr-tools/pyopmspe11/blob/main/dev-requirements.txt>`_; in addition, both opm Python and LaTeX are required, then for not macOs users run **pip install opm** and **sudo apt-get install texlive-fonts-recommended texlive-fonts-extra dvipng cm-super**, or else follow the instructions in `macOS installation <https://cssr-tools.github.io/pyopmspe11/installation.html#source-build-in-macos>`_)
+    #. **pip install -r dev-requirements.txt** (this installs the `dev-requirements.txt <https://github.com/cssr-tools/pyopmspe11/blob/main/dev-requirements.txt>`_; in addition, LaTeX is required, then for not macOs users run **sudo apt-get install texlive-fonts-recommended texlive-fonts-extra dvipng cm-super**, or else follow the instructions in `macOS installation <https://cssr-tools.github.io/pyopmspe11/installation.html#source-build-in-macos>`_)
     #. **black src/ tests/** (this formats the code)
     #. **pylint src/ tests/** (this analyses the code, and might rise issues that need to be fixed before the pull request)
     #. **mypy \-\-ignore-missing-imports src/ tests/** (this is a static checker, and might rise issues that need to be fixed before the pull request)
