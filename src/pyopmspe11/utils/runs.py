@@ -44,7 +44,6 @@ def plotting(dic):
         "-g " + f"{dic['generate']}",
         "-r " + f"{dic['resolution']}",
         "-s " + f"{dic['showpywarn']}",
-        "-l " + f"{dic['latex']}",
         "-f " + f"{dic['subfolders']}",
         "-t " + f"{dic['time_data']}",
     ]

@@ -45,7 +45,7 @@ install the Python requirements in a virtual environment with the following comm
 
 .. note::
   
-    For not macOS users, to install the dependencies used for the figure's LaTeX formatting, execute 
+    For not macOS users, to install the (optional but recommended) dependencies used for the figure's LaTeX formatting, execute 
     
     **sudo apt-get install texlive-fonts-recommended texlive-fonts-extra dvipng cm-super**
 
@@ -144,5 +144,4 @@ then building OPM Flow can be achieved with the following bash lines:
 
 This builds OPM Flow, and it exports the path to the flow executable (i.e., executing in the terminal **which flow** should print the path).
 
-For macOS, the LaTeX dependency can be installed from https://www.tug.org/mactex/. If after installation you still face an error due to LaTeX 
-when executing pyopmspe11, then add the flag **-l 0** to pyopmspe11.
+For macOS, the LaTeX dependency can be installed from https://www.tug.org/mactex/.

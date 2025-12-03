@@ -8,6 +8,7 @@ Utiliy functions to write necessary files and variables
 
 import os
 import subprocess
+import numpy as np
 from mako.template import Template
 
 
@@ -150,7 +151,7 @@ def write_keywords(dic):
             for i in range(dic["noCells"][2] - 1):
                 dic["dx"].extend(dic["dx"][-dic["noCells"][0] :])
                 dic["dz"] += [d_z[i + 1]] * dic["noCells"][0]
-        elif min(d_x) != max(d_x) and dic["grid"] == "cartesian":
+        elif np.min(d_x) != np.max(d_x) and dic["grid"] == "cartesian":
             keywords += ["dx"]
             dic["dx"] = list(map(str, list((d_x))))
             for _ in range(dic["noCells"][2] - 1):

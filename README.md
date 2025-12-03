@@ -8,8 +8,8 @@
 
 <img src="docs/text/figs/pyopmspe11c100Mcells.gif" width="830" height="462">
 
-This repository contains scripts to set up a workflow using Python for the three cases in the [_SPE11 project_](https://www.spe.org/en/csp/).
-Here we use the [_OPM-Flow_](https://opm-project.org/?page_id=19) simulator.
+This repository contains scripts to set up a workflow using Python for the three cases in the [_SPE11 project_](https://www.spe.org/en/csp/),
+and to reproduce the sumbitted results from the OPM team published in [_the SPE11 benchmark paper_](https://www.sciencedirect.com/science/article/pii/S1750583625002178).
 
 ## Installation
 You will first need to install

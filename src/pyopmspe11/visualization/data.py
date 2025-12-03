@@ -173,14 +173,14 @@ def read_simulations(dig):
         time.append(86400 * dig["unrst"]["DOUBHEAD", i][0])
         if len(dig["times"]) == 0:
             if dig["unrst"].count("RSW", 0):
-                if max(dig["unrst"]["RSW", i]) > 0:
+                if np.max(dig["unrst"]["RSW", i]) > 0:
                     dig["time_initial"] = 86400 * dig["unrst"]["DOUBHEAD", i - 1][0]
                     dig["no_skip_rst"] = i - 1
                     dig["times"].append(0)
                     dig["times"].append(time[-1] - dig["time_initial"])
             else:
                 dig["immiscible"] = True
-                if max(dig["unrst"]["SGAS", i]) > 0:
+                if np.max(dig["unrst"]["SGAS", i]) > 0:
                     dig["time_initial"] = 86400 * dig["unrst"]["DOUBHEAD", i - 1][0]
                     dig["no_skip_rst"] = i - 1
                     dig["times"].append(0)
@@ -258,9 +258,9 @@ def performance(dig):
     dil["detail_info"] = np.array(dil["detail_info"])
     dil["times_det"] = []
     infotimes = np.array(infotimes)
-    for j in range(max(dil["detail_info"]) + 1):
+    for j in range(np.max(dil["detail_info"]) + 1):
         ind = j == dil["detail_info"]
-        dil["times_det"].append(max(infotimes[ind]))
+        dil["times_det"].append(np.max(infotimes[ind]))
     dil["times_det"] = np.array(dil["times_det"])
     dil["fsteps"] = np.array(
         [1.0 * (infostep[tag.index("Conv")] == 0) for infostep in dil["infosteps"]]
@@ -339,7 +339,7 @@ def write_performance(dig, dil, interp_fgmip, tcpu, infotimes):
     freq = [0]
     for j, time in enumerate(dil["times_data"]):
         itd = j == dil["map_sum"]
-        if sum(tcpu[itd]) == 0:
+        if np.sum(tcpu[itd]) == 0:
             freq.append(freq[-1] + 1)
         else:
             freq.append(0)
@@ -385,13 +385,13 @@ def write_performance(dig, dil, interp_fgmip, tcpu, infotimes):
         "# t [s], tstep [s], fsteps [-], mass [kg], dof [-], nliter [-], "
         + "nres [-], liniter [-], runtime [s], tlinsol [s]"
     )
-    for j in range(max(dil["detail_info"]) + 1):
+    for j in range(np.max(dil["detail_info"]) + 1):
         ind = j == dil["detail_info"]
-        time = max(infotimes[ind])
+        time = np.max(infotimes[ind])
         if time >= 0:
             dil["text"].append(
                 f"{time:.3e}, "
-                + f"{max(dil['tsteps'][ind]):.3e}, "
+                + f"{np.max(dil['tsteps'][ind]):.3e}, "
                 + f"{np.sum(dil['fsteps'][ind]):.3e}, "
                 + f"{interp_fgmip(time):.3e}, "
                 + f"{dig['dof'] * dig['nocellsa']:.3e}, "
@@ -554,7 +554,7 @@ def handle_fipnums(dig, dil):
         dil["fip_diss_b"] += [15, 16]
         dil["fip_seal_b"] += [16]
         dil["fip_bound_t"] += [13, 14, 15, 16, 17]
-        if max(dil["fipnum"]) == 18:
+        if np.max(dil["fipnum"]) == 18:
             dil["fip_diss_a"] += [12, 18]
             dil["fip_seal_a"] += [12, 18]
             dil["fip_bound_t"] += [18]
@@ -759,11 +759,11 @@ def dense_data(dig):
     dil["cell_cent"] = np.zeros(dig["noxzr"], dtype=float)
     dx = dig["init"]["DX"][: dig["gxyz"][0]]
     dz = dig["init"]["DZ"]
-    iszunif = min(dz) == max(dz)
+    iszunif = np.min(dz) == np.max(dz)
     if (
         iszunif
         and dig["nxyz"][2] == dig["gxyz"][2]
-        and min(dx) == max(dx)
+        and np.min(dx) == np.max(dx)
         and dig["nxyz"][0] == dig["gxyz"][0]
     ):
         for k in range(dig["nxyz"][2]):
@@ -778,7 +778,7 @@ def dense_data(dig):
     elif (
         iszunif
         and dig["nxyz"][2] == dig["gxyz"][2]
-        and min(dx[2:-2]) == max(dx[2:-2])
+        and np.min(dx[2:-2]) == np.max(dx[2:-2])
         and dig["nxyz"][0] == dig["gxyz"][0] - 2
     ):
         for k in range(dig["nxyz"][2]):
@@ -805,7 +805,7 @@ def dense_data(dig):
     elif (
         iszunif
         and dig["gxyz"][2] % dig["nxyz"][2] == 0
-        and min(dx) == max(dx)
+        and np.min(dx) == np.max(dx)
         and dig["gxyz"][0] % dig["nxyz"][0] == 0
     ):
         x_n = int(dig["gxyz"][0] / dig["nxyz"][0])
@@ -837,7 +837,7 @@ def dense_data(dig):
     elif (
         iszunif
         and dig["gxyz"][2] % dig["nxyz"][2] == 0
-        and min(dx[2:-2]) == max(dx[2:-2])
+        and np.min(dx[2:-2]) == np.max(dx[2:-2])
         and (dig["gxyz"][0] - 2) % dig["nxyz"][0] == 0
     ):
         x_n = int((dig["gxyz"][0] - 2) / dig["nxyz"][0])
@@ -880,7 +880,7 @@ def dense_data(dig):
     else:
         handle_find_cells_ids(dil)
     dig["actindr"] = []
-    if max(dil["satnum"]) < 7 and dig["case"] == "spe11a":
+    if np.max(dil["satnum"]) < 7 and dig["case"] == "spe11a":
         handle_inactive_mapping(dig, dil)
     if dig["case"] == "spe11c":
         handle_yaxis_mapping_intensive(dig, dil)
@@ -1348,7 +1348,7 @@ def generate_arrays(dig, dil, names, t_n):
     dil["tco2_array"] = np.zeros(dig["nocellst"])
     dil["tco2_refg"] = np.zeros(dig["nocellsr"])
     dil["tco2_refg"][dig["actindr"]] = np.nan
-    sgas = abs(np.array(dig["unrst"]["SGAS", t_n]))
+    sgas = np.abs(np.array(dig["unrst"]["SGAS", t_n]))
     rhog = np.array(dig["unrst"]["GAS_DEN", t_n])
     pres = np.array(dig["unrst"]["PRESSURE", t_n]) - np.array(dig["unrst"]["PCGW", t_n])
     rhow = np.array(dig["unrst"]["WAT_DEN", t_n])
