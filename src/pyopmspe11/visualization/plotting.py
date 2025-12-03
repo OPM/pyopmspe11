@@ -6,8 +6,9 @@
 Script to plot the results
 """
 
-import argparse
 import os
+import argparse
+import shutil
 import warnings
 import math as mt
 from io import StringIO
@@ -72,12 +73,6 @@ def main():
         help="If one number, time step for the spatial maps (spe11a [h]; spe11b/c "
         "[y]) ('5' by default); otherwise, times separated by commas.",
     )
-    parser.add_argument(
-        "-l",
-        "--latex",
-        default=1,
-        help="Set to 0 to not use LaTeX formatting ('1' by default).",
-    )
     cmdargs = vars(parser.parse_known_args()[0])
     if int(cmdargs["showpywarn"]) != 1:  # Show or hidde python warnings
         warnings.warn = lambda *args, **kwargs: None
@@ -85,7 +80,6 @@ def main():
     dic["case"] = cmdargs["deck"].strip()
     dic["generate"] = cmdargs["generate"].strip()
     dic["compare"] = cmdargs["compare"]  # No empty, then the create compare folder
-    dic["latex"] = int(cmdargs["latex"])  # LaTeX formatting
     dic["subfolders"] = int(cmdargs["subfolders"]) == 1  # Create subfolders
     dic["time"] = np.genfromtxt(StringIO(cmdargs["time"]), delimiter=",", dtype=int)
     plot_results(dic)
@@ -103,9 +97,16 @@ def plot_results(dic):
         None
 
     """
+    if shutil.which("latex") == "None":
+        print(
+            "\nLaTeX is recommended for the figures to show the "
+            "nice fonts and given formats. You can install it by "
+            "following the instructions in the pyopmspe11's "
+            "documentation."
+        )
     plt.rcParams.update(
         {
-            "text.usetex": dic["latex"] not in [0],
+            "text.usetex": shutil.which("latex") != "None",
             "font.family": "monospace",
             "legend.columnspacing": 0.9,
             "legend.handlelength": 3.5,
@@ -251,15 +252,15 @@ def performance(dic):
                         skip_header=1,
                     )
                 labels = [
-                    f"sum={sum((csv[i][1] for i in range(csv.shape[0]))):.3e}",
-                    f"sum={sum((csv[i][2] for i in range(csv.shape[0]))):.3e}",
-                    f"max={max((csv[i][3] for i in range(csv.shape[0]))):.3e}",
+                    f"sum={np.sum(csv[:,1]):.3e}",
+                    f"sum={np.sum(csv[:,2]):.3e}",
+                    f"max={np.max(csv[:,3]):.3e}",
                     f"max={csv[-1][4]:.3e}",
-                    f"sum={sum((csv[i][5] for i in range(csv.shape[0]))):.3e}",
-                    f"sum={sum((csv[i][6] for i in range(csv.shape[0]))):.3e}",
-                    f"sum={sum((csv[i][7] for i in range(csv.shape[0]))):.3e}",
-                    f"sum={sum((csv[i][8] for i in range(csv.shape[0]))):.3e}",
-                    f"sum={sum((csv[i][9] for i in range(csv.shape[0]))):.3e}",
+                    f"sum={np.sum(csv[:,5]):.3e}",
+                    f"sum={np.sum(csv[:,6]):.3e}",
+                    f"sum={np.sum(csv[:,7]):.3e}",
+                    f"sum={np.sum(csv[:,8]):.3e}",
+                    f"sum={np.sum(csv[:,9]):.3e}",
                 ]
                 times = [csv[i][0] / dic["tscale"] for i in range(csv.shape[0])]
                 labels[k] += f" ({fol.split('/')[-1]})"
@@ -530,17 +531,17 @@ def dense_data(dic):
                 [csvs[0][i][dic["dims"] + k] for i in range(csvs[0].shape[0])]
             )
             dic["minc"], dic["maxc"] = (
-                quan[~np.isnan(quan)].min(),
-                quan[~np.isnan(quan)].max(),
+                np.min(quan[~np.isnan(quan)]),
+                np.max(quan[~np.isnan(quan)]),
             )
             for n, tmap in enumerate(dic["ptimes"]):
                 quan = np.array(
                     [csvs[n][i][dic["dims"] + k] for i in range(csvs[n].shape[0])]
                 )
-                dic["min"].append(quan[~np.isnan(quan)].min())
-                dic["max"].append(quan[~np.isnan(quan)].max())
+                dic["min"].append(np.min(quan[~np.isnan(quan)]))
+                dic["max"].append(np.max(quan[~np.isnan(quan)]))
                 if quantity == "tco2":
-                    dic["sum"].append(quan[quan >= 0].sum())
+                    dic["sum"].append(np.sum(quan[quan >= 0]))
                 dic["minc"] = min(dic["minc"], dic["min"][-1])
                 dic["maxc"] = max(dic["maxc"], dic["max"][-1])
                 dic["plot"].append(np.zeros([len(dic["zmz"]) - 1, len(dic["xmx"]) - 1]))

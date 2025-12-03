@@ -528,10 +528,12 @@ def locate_wells_sensors(dic):
         dic["wellijkf"][0] = [dic["wellijk"][0][0], 1, dic["wellijk"][0][2]]
         dic["wellijkf"][1] = [dic["wellijk"][1][0], 1, dic["wellijk"][1][2]]
         dic["ymy_center"] = (np.array(dic["ymy"][1:]) + np.array(dic["ymy"][:-1])) / 2.0
-        wji = pd.Series(abs(dic["wellCoord"][0][1] - dic["ymy_center"])).argmin() + 1
-        wjf = pd.Series(abs(dic["wellCoordF"][0][1] - dic["ymy_center"])).argmin() + 1
-        sj1 = pd.Series(abs(dic["sensors"][0][1] - dic["ymy_center"])).argmin()
-        sj2 = pd.Series(abs(dic["sensors"][1][1] - dic["ymy_center"])).argmin()
+        wji = pd.Series(np.abs(dic["wellCoord"][0][1] - dic["ymy_center"])).argmin() + 1
+        wjf = (
+            pd.Series(np.abs(dic["wellCoordF"][0][1] - dic["ymy_center"])).argmin() + 1
+        )
+        sj1 = pd.Series(np.abs(dic["sensors"][0][1] - dic["ymy_center"])).argmin()
+        sj2 = pd.Series(np.abs(dic["sensors"][1][1] - dic["ymy_center"])).argmin()
         dic["sensorijk"][0][1] = sj1
         dic["sensorijk"][1][1] = sj2
         dic["wellijk"][0][1] = wji
@@ -545,7 +547,7 @@ def locate_wells_sensors(dic):
         for j in range(dic["wellijk"][0][1], dic["wellijkf"][0][1] + 1):
             midpoints = z_centers - map_z(dic, j - 1) - dic["maxelevation"]
             dic["wellkh"].append(
-                pd.Series(abs(dic["wellCoord"][0][2] - midpoints)).argmin() + 1
+                pd.Series(np.abs(dic["wellCoord"][0][2] - midpoints)).argmin() + 1
             )
     dic["fipnum"][
         dic["sensorijk"][0][0]
@@ -666,12 +668,12 @@ def sensors(dic):
             if axis == "zmz":
                 dic["sensorijk"][j].append(
                     pd.Series(
-                        abs(dic["dims"][2] - sensor_coord - dic[f"{axis}_center"])
+                        np.abs(dic["dims"][2] - sensor_coord - dic[f"{axis}_center"])
                     ).argmin()
                 )
             else:
                 dic["sensorijk"][j].append(
-                    pd.Series(abs(sensor_coord - dic[f"{axis}_center"])).argmin()
+                    pd.Series(np.abs(sensor_coord - dic[f"{axis}_center"])).argmin()
                 )
 
 
@@ -691,7 +693,7 @@ def wells(dic):
         for j, _ in enumerate(dic["wellCoord"]):
             for well_coord, axis in zip(dic["wellCoord"][j], ["xmx", "ymy", "zmz"]):
                 dic["wellijk"][j].append(
-                    pd.Series(abs(well_coord - dic[f"{axis}_center"])).argmin() + 1
+                    pd.Series(np.abs(well_coord - dic[f"{axis}_center"])).argmin() + 1
                 )
     else:
         dic["wellijkf"] = [[] for _ in range(len(dic["wellCoord"]))]
@@ -700,11 +702,11 @@ def wells(dic):
                 zip(dic["wellCoord"][j][:2], ["xmx", "ymy"])
             ):
                 dic["wellijk"][j].append(
-                    pd.Series(abs(well_coord - dic[f"{axis}_center"])).argmin() + 1
+                    pd.Series(np.abs(well_coord - dic[f"{axis}_center"])).argmin() + 1
                 )
                 dic["wellijkf"][j].append(
                     pd.Series(
-                        abs(dic["wellCoordF"][j][k] - dic[f"{axis}_center"])
+                        np.abs(dic["wellCoordF"][j][k] - dic[f"{axis}_center"])
                     ).argmin()
                     + 1
                 )
@@ -712,20 +714,20 @@ def wells(dic):
                 well_coord = dic["wellCoord"][j][2]
                 midpoints = dic["zmz_center"] - map_z(dic, dic["wellijk"][j][1] - 1)
                 dic["wellijk"][j].append(
-                    pd.Series(abs(well_coord - midpoints)).argmin() + 1
+                    pd.Series(np.abs(well_coord - midpoints)).argmin() + 1
                 )
             else:
                 well_coord = dic["wellCoord"][j][2]
                 midpoints = dic["zmz_center"]
                 dic["wellijk"][j].append(
-                    pd.Series(abs(well_coord - midpoints)).argmin() + 1
+                    pd.Series(np.abs(well_coord - midpoints)).argmin() + 1
                 )
     if dic["spe11"] == "spe11c":
         dic["wellkh"] = []
         for j in range(dic["wellijk"][0][1], dic["wellijkf"][0][1] + 1):
             midpoints = dic["zmz_center"] - map_z(dic, j - 1) - dic["maxelevation"]
             dic["wellkh"].append(
-                pd.Series(abs(dic["wellCoord"][0][2] - midpoints)).argmin() + 1
+                pd.Series(np.abs(dic["wellCoord"][0][2] - midpoints)).argmin() + 1
             )
 
 

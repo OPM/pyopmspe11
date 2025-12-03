@@ -31,7 +31,6 @@ def pyopmspe11():
         cmdargs["write"].strip()
     )  # Temporal resolution to write the sparse and performance data
     dic["showpywarn"] = int(cmdargs["showpywarn"])  # Show or hidde python warnings
-    dic["latex"] = int(cmdargs["latex"])  # LaTeX formatting
     dic["subfolders"] = int(cmdargs["subfolders"])  # Create subfolders
     if dic["showpywarn"] != 1:
         warnings.warn = lambda *args, **kwargs: None
@@ -162,12 +161,6 @@ def load_parser():
         "--showpywarn",
         default=0,
         help="Set to 1 to show Python warnings ('0' by default).",
-    )
-    parser.add_argument(
-        "-l",
-        "--latex",
-        default=1,
-        help="Set to 0 to not use LaTeX formatting ('1' by default).",
     )
     parser.add_argument(
         "-f",

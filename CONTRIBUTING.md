@@ -12,7 +12,7 @@ Contributions are more than welcome using the fork and pull request approach ðŸ™
 
 1. Work on your own fork of the main repo
 1. In the main repo execute:
-    1. **pip install -r dev-requirements.txt** (this installs the [_dev-requirements.txt_](https://github.com/cssr-tools/pyopmspe11/blob/main/dev-requirements.txt); in addition, LaTeX is required, then for not macOs users run **sudo apt-get install texlive-fonts-recommended texlive-fonts-extra dvipng cm-super**, or else follow the instructions in [_macOS installation_](https://cssr-tools.github.io/pyopmspe11/installation.html#source-build-in-macos))
+    1. **pip install -r dev-requirements.txt** (this installs the [_dev-requirements.txt_](https://github.com/cssr-tools/pyopmspe11/blob/main/dev-requirements.txt))
     1. **black src/ tests/** (this formats the code)
     1. **pylint src/ tests/** (this analyses the code, and might rise issues that need to be fixed before the pull request)
     1. **mypy --ignore-missing-imports src/ tests/** (this is a static checker, and might rise issues that need to be fixed before the pull request)
