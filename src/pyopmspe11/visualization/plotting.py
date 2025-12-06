@@ -293,7 +293,7 @@ def sparse_data(dic):
     """
     dic["fig"] = plt.figure(figsize=(25, 40))
     plots = ["sensors", "boxA", "boxB", "boxC", "facie 1"]
-    ylabels = ["Presure [Pa]", "Mass [kg]", "Mass [kg]", "Area [m$^2$]", "Mass [kg]"]
+    ylabels = ["Presure [Pa]", "Mass [kg]", "Mass [kg]", "Length [m]", "Mass [kg]"]
     labels = [
         ["p1", "p2"],
         ["mobA", "immA", "dissA", "sealA"],
