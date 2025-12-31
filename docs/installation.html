@@ -49,7 +49,9 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#python-package">Python package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#opm-flow">OPM Flow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#binary-packages">Binary packages</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#source-build-in-linux-windows">Source build in Linux/Windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#brew-formula-for-macos">Brew formula for macOS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#source-build-in-macos">Source build in macOS</a></li>
 </ul>
 </li>
@@ -58,6 +60,7 @@
 <li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convergence.html">Convergence</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
@@ -94,6 +97,15 @@
 <p>The following steps work installing the dependencies in Linux via apt-get or in macOS using brew or macports.
 While using packages managers such as Anaconda, Miniforge, or Mamba might work, these are not tested.
 The supported Python versions are 3.11 to 3.14.</p>
+<p><a class="reference external" href="https://resinsight.org">ResInsight</a> and <a class="reference external" href="https://github.com/cssr-tools/plopm">plopm</a> are used for the visualization of the results.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>There are binary packages for Linux and Windows to install Resinsight, see the <a class="reference external" href="https://resinsight.org/releases/">ResInsight Documentation</a>. For macOS users, you could try to install it using <a class="reference external" href="https://brew.sh">brew</a> by executing:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>brew<span class="w"> </span>install<span class="w"> </span>cssr-tools/opm/resinsight
+</pre></div>
+</div>
+<p>Then, you should be able to open resinsight by typing in the terminal <strong>resinsight</strong>.</p>
+</div>
 <section id="python-package">
 <span id="vpyopmspe11"></span><h2>Python package<a class="headerlink" href="#python-package" title="Link to this heading"></a></h2>
 <p>To install the <strong>pyopmspe11</strong> executable from the development version:</p>
@@ -128,7 +140,7 @@ install the Python requirements in a virtual environment with the following comm
 <p class="admonition-title">Note</p>
 <p>For not macOS users, to install the (optional but recommended) dependencies used for the figure’s LaTeX formatting, execute</p>
 <p><strong>sudo apt-get install texlive-fonts-recommended texlive-fonts-extra dvipng cm-super</strong></p>
-<p>For macOS users, see <a class="reference internal" href="#macos"><span class="std std-ref">Source build in macOS</span></a>.</p>
+<p>For macOS users, see <a class="reference internal" href="#macos"><span class="std std-ref">Brew formula for macOS</span></a>.</p>
 </div>
 </section>
 <section id="opm-flow">
@@ -137,11 +149,17 @@ install the Python requirements in a virtual environment with the following comm
 <ul class="simple">
 <li><p>OPM Flow (<a class="reference external" href="https://opm-project.org">https://opm-project.org</a>, Release 2025.10 or current master branches)</p></li>
 </ul>
+<section id="binary-packages">
+<h3>Binary packages<a class="headerlink" href="#binary-packages" title="Link to this heading"></a></h3>
+<p>See the <a class="reference external" href="https://opm-project.org/?page_id=36">downloading and installing</a> OPM Flow online documentation for
+instructions to install the binary packages in Ubuntu and Red Hat Enterprise Linux, and for other platforms which are
+supported either via source builds or through running a virtual machine.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>See the <a class="reference external" href="https://github.com/opm/pyopmspe11/blob/main/.github/workflows/CI.yml">CI.yml</a> script
 for installation of OPM Flow (binary packages) and the pyopmspe11 package in Ubuntu.</p>
 </div>
+</section>
 <section id="source-build-in-linux-windows">
 <h3>Source build in Linux/Windows<a class="headerlink" href="#source-build-in-linux-windows" title="Link to this heading"></a></h3>
 <p>If you are a Linux user (including the Windows subsystem for Linux, see <a class="reference external" href="https://learn.microsoft.com/en-us/windows/python/web-frameworks">this link</a>
@@ -170,25 +188,34 @@ in the terminal the following lines (which in turn should build flow in the fold
 <p>You can create a .sh file (e.g., build_opm_mpi.sh), copy the previous lines, and run in the terminal <strong>source build_opm_mpi.sh</strong></p>
 </div>
 </section>
+<section id="brew-formula-for-macos">
+<span id="macos"></span><h3>Brew formula for macOS<a class="headerlink" href="#brew-formula-for-macos" title="Link to this heading"></a></h3>
+<p>For macOS, there are no available binary packages, so OPM Flow needs to be built from source. Recently, a formula to build flow using brew has
+been added in <a class="reference external" href="https://github.com/cssr-tools/homebrew-opm">https://github.com/cssr-tools/homebrew-opm</a>.
+Then, you can try to install flow (v2025.10) by simply typing:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">brew install cssr-tools/opm/opm-simulators</span>
+</pre></div>
+</div>
+<p>You can check if the installation of OPM Flow succeded by typing in the terminal <strong>flow --help</strong>.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>See the actions in the <a class="reference external" href="https://github.com/cssr-tools/homebrew-opm/actions">cssr-tools/homebrew-opm</a> repository.</p>
+</div>
+</section>
 <section id="source-build-in-macos">
-<span id="macos"></span><h3>Source build in macOS<a class="headerlink" href="#source-build-in-macos" title="Link to this heading"></a></h3>
-<p>For macOS, there are no available binary packages, so OPM Flow needs to be built from source, in addition to the dune libraries and the OPM Python
-package (see the <a class="reference external" href="https://opm-project.org/?page_id=239">prerequisites</a>, which can be installed using macports or brew).
-For example, with brew the prerequisites can be installed by:</p>
+<h3>Source build in macOS<a class="headerlink" href="#source-build-in-macos" title="Link to this heading"></a></h3>
+<p>If you would like to build the latest OPM Flow from the master branch, then you can first install the prerequisites using brew:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">brew install boost openblas suite-sparse python@3.14 cmake</span>
 </pre></div>
 </div>
 <p>In addition, it is recommended to uprade and update your macOS to the latest available versions (the following steps have
-worked for macOS Tahoe 26.0.1 with Apple clang version 17.0.0).
-After the prerequisites are installed and the vpyopmspe11 Python environment is created (see <a class="reference internal" href="#vpyopmspe11"><span class="std std-ref">Python package</span></a>),
-then building OPM Flow can be achieved with the following bash lines:</p>
+worked for macOS Tahoe 26.2.0 with Apple clang version 17.0.0).
+After the prerequisites are installed, then building OPM Flow can be achieved with the following bash lines:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">CURRENT_DIRECTORY=&quot;$PWD&quot;</span>
 
-<span class="go">deactivate</span>
-<span class="go">source vpyopmspe11/bin/activate</span>
-
 <span class="go">for module in common geometry grid istl</span>
-<span class="go">do   git clone https://gitlab.dune-project.org/core/dune-$module.git --branch v2.9.1</span>
+<span class="go">do  git clone https://gitlab.dune-project.org/core/dune-$module.git</span>
+<span class="go">    cd dune-$module &amp;&amp; git checkout v2.10.0 &amp;&amp; cd ..</span>
 <span class="go">    ./dune-common/bin/dunecontrol --only=dune-$module cmake -DCMAKE_DISABLE_FIND_PACKAGE_MPI=1</span>
 <span class="go">    ./dune-common/bin/dunecontrol --only=dune-$module make -j5</span>
 <span class="go">done</span>
@@ -197,8 +224,7 @@ then building OPM Flow can be achieved with the following bash lines:</p>
 
 <span class="go">for repo in common grid simulators</span>
 <span class="go">do  git clone https://github.com/OPM/opm-$repo.git</span>
-<span class="go">    mkdir build/opm-$repo</span>
-<span class="go">    cd build/opm-$repo</span>
+<span class="go">    mkdir build/opm-$repo &amp;&amp; cd build/opm-$repo</span>
 <span class="go">    cmake -DUSE_MPI=0 -DWITH_NDEBUG=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=&quot;$CURRENT_DIRECTORY/dune-common/build-cmake;$CURRENT_DIRECTORY/dune-grid/build-cmake;$CURRENT_DIRECTORY/dune-geometry/build-cmake;$CURRENT_DIRECTORY/dune-istl/build-cmake;$CURRENT_DIRECTORY/build/opm-common;$CURRENT_DIRECTORY/build/opm-grid&quot; $CURRENT_DIRECTORY/opm-$repo</span>
 <span class="go">    if [[ $repo == simulators ]]; then</span>
 <span class="go">        make -j5 flow</span>
@@ -208,13 +234,11 @@ then building OPM Flow can be achieved with the following bash lines:</p>
 <span class="go">    cd ../..</span>
 <span class="go">done</span>
 
-<span class="go">echo &quot;export PATH=\$PATH:$CURRENT_DIRECTORY/build/opm-simulators/bin&quot; &gt;&gt; $CURRENT_DIRECTORY/vpyopmspe11/bin/activate</span>
-
-<span class="go">deactivate</span>
-<span class="go">source vpyopmspe11/bin/activate</span>
+<span class="go">echo &quot;export PATH=\$PATH:$CURRENT_DIRECTORY/build/opm-simulators/bin&quot; &gt;&gt; ~/.zprofile</span>
+<span class="go">source ~/.zprofile</span>
 </pre></div>
 </div>
-<p>This builds OPM Flow, and it exports the path to the flow executable (i.e., executing in the terminal <strong>which flow</strong> should print the path).</p>
+<p>This builds OPM Flow, and it exports the path to the flow executable. You can check if the installation of OPM Flow succeded by typing in the terminal <strong>flow --help</strong>.</p>
 <p>For macOS, the LaTeX dependency can be installed from <a class="reference external" href="https://www.tug.org/mactex/">https://www.tug.org/mactex/</a>.</p>
 </section>
 </section>

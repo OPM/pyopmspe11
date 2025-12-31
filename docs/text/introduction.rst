@@ -43,3 +43,4 @@ where
 -c  Generate a common plot for the current folders for 'spe11a', 'spe11b', or 'spe11c' ('' by default).
 -s  Set to 1 to show Python warnings ('0' by default).
 -f  Set to 0 to not create the subfolders deck, flow, data, and figures, i.e., to write all generated files in the output directory ('1' by default).
+-n  Region to model; valid options are 'lower' or '' (all reservoir) ('' by default).

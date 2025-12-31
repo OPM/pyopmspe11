@@ -1,0 +1,59 @@
+# Set the full path to the flow executable and flags
+flow = "mpirun -np 8 flow --solver-min-time-step=1e-20 --initial-time-step-in-days=1e-2 --solver-max-time-step-in-days=3650 --enable-opm-rst-file=true --output-extra-convergence-info=steps,iterations --newton-min-iterations=1 --linear-solver=cpr_trueimpes --time-step-control=newtoniterationcount --solver-growth-factor=1.6 --time-step-control-growth-rate=1.1 --solver-restart-factor=0.5 --time-step-control-decay-rate=0.65 --solver-max-restarts=20"
+
+# Set the model parameters
+spe11 = "spe11b" # Name of the spe case (spe11a, spe11b, or spe11c)
+version = "master" # OPM Flow version (release or master)
+model = "complete" # Name of the co2 model (immiscible, convective, or complete)
+grid = "corner-point" # Type of grid (cartesian, tensor, or corner-point)
+dims = [8400.0, 1.0, 1200.0] # Length, width, and depth [m]
+% if domain == "full":
+x_n = [${210*2**i}] # If cartesian, number of x cells [-]; otherwise, variable array of x-refinement
+z_n = [${2*2**i},${2*2**i},${int(1.75*2**i)},${int(1.75*2**i)},${2*2**i},${2*2**i},${2*2**i},${int(3.5*2**i)},${int(4.5*2**i)},${int(4.5*2**i)},${2*2**i}] #If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (18 entries)
+% else:
+x_n = [${int(26.25*2**i)}] # If cartesian, number of x cells [-]; otherwise, variable array of x-refinement
+z_n = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,${int(0.5625*2**i)},${int(0.5625*2**i)},1] #If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (18 entries)
+% endif
+y_n = [1] # If cartesian, number of y cells [-]; otherwise, variable array of y-refinement [-] (for spe11c)
+temperature = [70, 40] # Temperature bottom and top rig [C]
+datum = 300 # Datum [m]
+pressure = 3e7 # Pressure at the datum [Pa]
+kzMult = 0.1 # Multiplier for the permeability in the z direction [-]
+diffusion = [1e-9, 2e-8] # Diffusion (in liquid and gas) [m^2/s]
+rockExtra = [8.5e-1, 2500.0] # Rock specific heat capacity [kJ/(kg K)] and rock density [kg/m^3] (for spe11b/c)
+pvAdded = 5e4  # Extra pore volume per area on lateral boundaries [m] (for spe11b/c)
+widthBuffer = 0.15625 # Width of buffer cells [m] (for spe11b/c)
+dispersion = [10, 10, 10, 10, 10, 10, 0] # Dispersion rock [m], facie 1 to 7
+rockCond = [1.9, 1.25, 1.25, 1.25, 0.92, 0.26, 2.0] # Thermal conductivity rock [W/(m K)], facie 1 to 7
+radius = [0, 0] # Wells radius [m] (0 to use the SOURCE keyword instead of well keywords), well 1 to 2
+wellCoord = [[2700.0, 0.5, 300.0], [5100.0, 0.5, 700.0]] # Well positions: x, y, and z coordinates [m], well 1 to 2
+
+# Set the saturation functions
+krw = "(max(0, (s_w - swi) / (1 - swi))) ** 1.5"                                                         # Wetting rel perm saturation function [-]
+krn = "(max(0, (1 - s_w - sni) / (1 - sni))) ** 1.5"                                                     # Non-wetting rel perm saturation function [-]
+pcap = "penmax * math.erf(pen * ((s_w-swi) / (1.-swi)) ** (-(1.0 / 1.5)) * math.pi**0.5 / (penmax * 2))" # Capillary pressure saturation function [Pa]
+s_w = "(np.exp(np.flip(np.linspace(0, 5.0, npoints))) - 1) / (np.exp(5.0) - 1)"                          # Points to evaluate the saturation functions (s_w) [-]
+
+# Properties sat functions: 1) swi [-], 2) sni [-], 3) pen [Pa], 4) penmax [Pa], and 5) npoints [-], facie 1 to 7
+safu = [[0.32, 0.1, 193531.39, 3e7, 100],
+        [0.14, 0.1,   8654.99, 3e7, 100], 
+        [0.12, 0.1,   6120.00, 3e7, 100], 
+        [0.12, 0.1,   3870.63, 3e7, 100], 
+        [0.12, 0.1,   3060.00, 3e7, 100], 
+        [0.10, 0.1,   2560.18, 3e7, 100], 
+        [0,      0,         0, 3e7,   2]]
+
+# Properties rock: 1) K [mD] and 2) phi [-], facie 1 to 7
+rock = [[0.10132, 0.10],
+        [101.324, 0.20],
+        [202.650, 0.20],
+        [506.625, 0.20],
+        [1013.25, 0.25],
+        [2026.50, 0.35],
+        [1e-5,    1e-6]]
+
+# Define the injection values ([hours] for spe11a; [years] for spe11b/c): 1) injection time, 2) time step size to write results, 3) injected fluid (0 water, 1 co2) (well1), 4) injection rate [kg/s] (well1), 5) temperature [C] (well1), 6) injected fluid (0 water, 1 co2) (well2), 7) injection rate [kg/s] (well2), and 8) temperature [C] (well2). If --enable-tuning=1, then the TUNING values [days] as described in the OPM manual
+inj = [[ 25,  5, 1, 0.035, 10, 1,     0, 10],
+       [ 25,  5, 1, 0.035, 10, 1, 0.035, 10],
+       [ 50, 25, 1,     0, 10, 1,     0, 10],
+       [400, 50, 1,     0, 10, 1,     0, 10]]

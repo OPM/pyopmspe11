@@ -11,6 +11,7 @@ Welcome to pyopmspe11's documentation!
    configuration_file
    examples
    benchmark
+   convergence
    api
    output_folder
    contributing

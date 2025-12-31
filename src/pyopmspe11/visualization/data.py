@@ -70,6 +70,12 @@ def main():
         "'dense_sparse', 'dense_performance_sparse', or 'all'",
     )
     parser.add_argument(
+        "-n",
+        "--neighbourhood",
+        default="",
+        help="Region to model; valid options are 'lower' or '' (all reservoir) ('' by default)",
+    )
+    parser.add_argument(
         "-f",
         "--subfolders",
         default=1,
@@ -88,6 +94,7 @@ def main():
     dig = {"path": cmdargs["path"].strip()}
     dig["case"] = cmdargs["deck"].strip()
     dig["mode"] = cmdargs["generate"].strip()
+    dig["lower"] = bool(cmdargs["neighbourhood"].strip())  # Lower model
     if int(cmdargs["subfolders"]) == 1:
         dig["deckf"] = f"{dig['path']}/deck"
         dig["flowf"] = f"{dig['path']}/flow"
@@ -208,6 +215,7 @@ def read_simulations(dig):
         dig["egrid"].dimension[2],
     ]
     dig["noxz"] = dig["egrid"].dimension[0] * dig["egrid"].dimension[2]
+    dig["cp"] = dig["porv"][-1] == 0
 
 
 def performance(dig):
@@ -438,12 +446,15 @@ def create_from_summary(dig, dil):
         dig["unrst"]["PRESSURE", 0][dil["fipnum"].index(8)]
         - dig["unrst"]["PCGW", 0][dil["fipnum"].index(8)]
     )
-    pop2 = (
-        dig["unrst"]["PRESSURE", 0][dil["fipnum"].index(9)]
-        - dig["unrst"]["PCGW", 0][dil["fipnum"].index(9)]
-    )
     dil["pop1"] = [pop1 * 1.0e5] + list(dig["smspec"][names[sort[0]]] * 1.0e5)  # Pa
-    dil["pop2"] = [pop2 * 1.0e5] + list(dig["smspec"][names[sort[1]]] * 1.0e5)  # Pa
+    if not dig["lower"]:
+        pop2 = (
+            dig["unrst"]["PRESSURE", 0][dil["fipnum"].index(9)]
+            - dig["unrst"]["PCGW", 0][dil["fipnum"].index(9)]
+        )
+        dil["pop2"] = [pop2 * 1.0e5] + list(dig["smspec"][names[sort[1]]] * 1.0e5)  # Pa
+    else:
+        dil["pop2"] = dil["pop1"]
     for i in dil["fip_diss_a"]:
         dil["moba"] += dig["smspec"][f"RGKMO:{i}"]
         dil["imma"] += dig["smspec"][f"RGKTR:{i}"]
@@ -466,21 +477,29 @@ def create_from_summary(dig, dil):
         )
     dil["sealt"] = dil["seala"] + dil["sealb"]
     for name in ["RGMDS", "RGKMO", "RGKTR"]:
-        dil["sealt"] += dig["smspec"][f"{name}:7"] + dig["smspec"][f"{name}:9"]
+        if not dig["lower"]:
+            dil["sealt"] += dig["smspec"][f"{name}:7"] + dig["smspec"][f"{name}:9"]
+        else:
+            if 7 in dil["fipnum"]:
+                dil["sealt"] += dig["smspec"][f"{name}:7"]
     if dig["case"] != "spe11a":
-        sealbound = (
-            dig["smspec"]["RGMDS:10"]
-            + dig["smspec"]["RGKMO:10"]
-            + dig["smspec"]["RGKTR:10"]
-        )
-        dil["sealt"] += sealbound
-        dil["boundtot"] = sealbound
-        for i in dil["fip_bound_t"]:
-            dil["boundtot"] += (
-                dig["smspec"][f"RGMDS:{i}"]
-                + dig["smspec"][f"RGKMO:{i}"]
-                + dig["smspec"][f"RGKTR:{i}"]
+        if 10 in dil["fipnum"]:
+            sealbound = (
+                dig["smspec"]["RGMDS:10"]
+                + dig["smspec"]["RGKMO:10"]
+                + dig["smspec"]["RGKTR:10"]
             )
+            dil["sealt"] += sealbound
+            dil["boundtot"] = sealbound
+        else:
+            dil["boundtot"] = 0
+        for i in dil["fip_bound_t"]:
+            if i in dil["fipnum"]:
+                dil["boundtot"] += (
+                    dig["smspec"][f"RGMDS:{i}"]
+                    + dig["smspec"][f"RGKMO:{i}"]
+                    + dig["smspec"][f"RGKTR:{i}"]
+                )
 
 
 def sparse_data(dig):
@@ -527,6 +546,9 @@ def sparse_data(dig):
         compute_m_c(dig, dil)
     else:
         dil["m_c"] = [0.0] * (dig["norst"] - dig["no_skip_rst"] - 1)
+    if dig["lower"]:
+        for name in ["seala", "mobb", "immb", "dissb", "sealb"]:
+            dil[name] = [0.0] * (len(dig["times_summary"]) - 1)
     write_sparse_data(dig, dil)
 
 
@@ -542,22 +564,34 @@ def handle_fipnums(dig, dil):
         dil (dict): Modified local dictionary
 
     """
-    dil["fip_diss_a"] = [2, 4, 5, 8]
-    dil["fip_seal_a"] = [5, 8]
-    dil["fip_diss_b"] = [3, 6]
-    dil["fip_seal_b"] = [6]
+    if dig["lower"]:
+        dil["fip_diss_a"] = [2, 4, 8]
+        dil["fip_seal_a"] = []
+        dil["fip_diss_b"] = []
+        dil["fip_seal_b"] = []
+    else:
+        dil["fip_diss_a"] = [2, 4, 5, 8]
+        dil["fip_seal_a"] = [5, 8]
+        dil["fip_diss_b"] = [3, 6]
+        dil["fip_seal_b"] = [6]
     if dig["case"] != "spe11a":
         dil["fip_bound_t"] = [11]
     if dig["case"] == "spe11c":
-        dil["fip_diss_a"] += [13, 14, 17]
-        dil["fip_seal_a"] += [14]
-        dil["fip_diss_b"] += [15, 16]
-        dil["fip_seal_b"] += [16]
-        dil["fip_bound_t"] += [13, 14, 15, 16, 17]
-        if np.max(dil["fipnum"]) == 18:
-            dil["fip_diss_a"] += [12, 18]
-            dil["fip_seal_a"] += [12, 18]
+        dil["fip_diss_a"] += [13, 17]
+        dil["fip_bound_t"] += [13, 17]
+        if not dig["lower"]:
+            dil["fip_diss_a"] += [14]
+            dil["fip_seal_a"] += [14]
+            dil["fip_diss_b"] += [15, 16]
+            dil["fip_seal_b"] += [16]
+            dil["fip_bound_t"] += [14, 15, 16]
+        if 18 in dil["fipnum"]:
+            dil["fip_diss_a"] += [18]
+            dil["fip_seal_a"] += [18]
             dil["fip_bound_t"] += [18]
+        if 12 in dil["fipnum"]:
+            dil["fip_diss_a"] += [12]
+            dil["fip_seal_a"] += [12]
 
 
 def compute_m_c(dig, dil):
@@ -643,6 +677,8 @@ def write_sparse_data(dig, dil):
                 fill_value="extrapolate",
             )
         else:
+            if isinstance(dil[f"{name}"], float):
+                dil[f"{name}"] = [0.0] * (len(dig["times_summary"]) - 1)
             interp = interp1d(
                 dig["times_summary"],
                 [0.0] + list(dil[f"{name}"]),
@@ -694,7 +730,7 @@ def get_corners(dig, dil):
         dil[f"sim{i}cent"] = [0.0] * dig["noxz"]
     dil["simycent"] = [0.0] * dig["gxyz"][1]
     dil["simpoly"] = [0.0] * dig["noxz"]
-    z_0 = dig["egrid"].xyz_from_ijk(0, 0, 0)[2][0]
+    z_0 = 155.04166666666666 if dig["case"] == "spe11c" else 0
     dil["satnum"] = list(dig["init"]["SATNUM"])
     for j in range(dig["gxyz"][2]):
         for i in range(dig["gxyz"][0]):
@@ -730,6 +766,14 @@ def get_corners(dig, dil):
         xyz = dig["egrid"].xyz_from_ijk(0, j, 0)
         dil["simycent"][j] = 0.5 * (xyz[1][2] - xyz[1][1]) + xyz[1][1]
     dil["simycent"] = np.array(dil["simycent"])
+    if dig["lower"] and dig["cp"]:
+        dil["simzcent"] = np.array(dil["simzcent"])
+        dil["simxcent"] = np.insert(
+            dil["simxcent"], 0, dil["simxcent"][: dig["gxyz"][0]]
+        )
+        dil["simzcent"] = np.insert(
+            dil["simzcent"], 0, dil["simzcent"][: dig["gxyz"][0]] + 1e-4
+        )
 
 
 def dense_data(dig):
@@ -759,7 +803,7 @@ def dense_data(dig):
     dil["cell_cent"] = np.zeros(dig["noxzr"], dtype=float)
     dx = dig["init"]["DX"][: dig["gxyz"][0]]
     dz = dig["init"]["DZ"]
-    iszunif = np.min(dz) == np.max(dz)
+    iszunif = np.min(dz) == np.max(dz) and not dig["lower"]
     if (
         iszunif
         and dig["nxyz"][2] == dig["gxyz"][2]
@@ -1343,7 +1387,7 @@ def generate_arrays(dig, dil, names, t_n):
     for name in names[:-1]:
         dil[f"{name}_array"] = np.zeros(dig["nocellst"])
         dil[f"{name}_refg"] = np.zeros(dig["nocellsr"])
-        if dig["case"] == "spe11a":
+        if dig["case"] == "spe11a" or (dig["lower"] and not dig["cp"]):
             dil[f"{name}_array"] = np.empty(dig["nocellst"]) * np.nan
     dil["tco2_array"] = np.zeros(dig["nocellst"])
     dil["tco2_refg"] = np.zeros(dig["nocellsr"])
@@ -1359,7 +1403,6 @@ def generate_arrays(dig, dil, names, t_n):
             rvv = np.array(dig["unrst"]["RVW", t_n])
         if dig["case"] != "spe11a":
             dil["temp_array"][dig["actind"]] = np.array(dig["unrst"]["TEMP", t_n])
-    if not dig["immiscible"]:
         x_l_co2 = np.divide(rss, rss + WAT_DEN_REF / GAS_DEN_REF)
         x_g_h2o = np.divide(rvv, rvv + GAS_DEN_REF / WAT_DEN_REF)
         co2_g = (1 - x_g_h2o) * sgas * rhog * dig["porva"]
@@ -1374,6 +1417,14 @@ def generate_arrays(dig, dil, names, t_n):
     dil["xco2_array"][dig["actind"]] = x_l_co2
     dil["xh20_array"][dig["actind"]] = x_g_h2o * (sgas > SGAS_THR)
     dil["tco2_array"][dig["actind"]] = co2_d + co2_g
+    if dig["lower"] and dig["cp"]:
+        for name in ["pressure", "sgas", "gden", "wden", "xco2", "xh20", "temp"]:
+            if f"{name}_array" in dil:
+                dil[f"{name}_array"] = np.insert(
+                    dil[f"{name}_array"],
+                    0,
+                    np.full(shape=dig["gxyz"][0] * dig["gxyz"][1], fill_value=np.nan),
+                )
 
 
 def map_to_report_grid(dig, dil, names):
@@ -1412,15 +1463,21 @@ def write_dense_data(dig, dil, i):
     """
     name_t, text = get_header(dig, i)
     idz = 0
+    if dig["lower"]:
+        dil["tco2_refg"][np.isnan(dil["sgas_refg"])] = np.nan
     for zcord in dil["refzcent"]:
         idxy = 0
         for ycord in dil["refycent"]:
             for xcord in dil["refxcent"]:
                 idc = -dig["nxyz"][0] * dig["nxyz"][1] * (dig["nxyz"][2] - idz) + idxy
-                if np.isnan(dil["tco2_refg"][idc]):
-                    co2 = "n/a"
-                else:
+                co2, xco2, xh20, temp = "n/a", "n/a", "n/a", "n/a"
+                if not np.isnan(dil["tco2_refg"][idc]):
                     co2 = f"{dil['tco2_refg'][idc] :.3e}"
+                if not dig["immiscible"]:
+                    xco2 = f"{dil['xco2_refg'][idc] :.3e}"
+                    xh20 = f"{dil['xh20_refg'][idc] :.3e}"
+                    if dig["case"] != "spe11a":
+                        temp = f"{dil['temp_refg'][idc] :.3e}"
                 if dig["case"] == "spe11a":
                     if np.isnan(dil["pressure_refg"][idc]):
                         text.append(
@@ -1432,8 +1489,8 @@ def write_dense_data(dig, dil, i):
                             f"{xcord:.3e}, {zcord:.3e}, "
                             + f"{dil['pressure_refg'][idc] :.3e}, "
                             + f"{dil['sgas_refg'][idc] :.3e}, "
-                            + f"{dil['xco2_refg'][idc] :.3e}, "
-                            + f"{dil['xh20_refg'][idc] :.3e}, "
+                            + f"{xco2}, "
+                            + f"{xh20}, "
                             + f"{dil['gden_refg'][idc] :.3e}, "
                             + f"{dil['wden_refg'][idc] :.3e}, "
                             + f"{co2}"
@@ -1449,12 +1506,12 @@ def write_dense_data(dig, dil, i):
                             f"{xcord:.3e}, {zcord:.3e}, "
                             + f"{dil['pressure_refg'][idc] :.3e}, "
                             + f"{dil['sgas_refg'][idc] :.3e}, "
-                            + f"{dil['xco2_refg'][idc] :.3e}, "
-                            + f"{dil['xh20_refg'][idc] :.3e}, "
+                            + f"{xco2}, "
+                            + f"{xh20}, "
                             + f"{dil['gden_refg'][idc] :.3e}, "
                             + f"{dil['wden_refg'][idc] :.3e}, "
                             + f"{co2}, "
-                            + f"{dil['temp_refg'][idc] :.3e}"
+                            + f"{temp}"
                         )
                 else:
                     if np.isnan(dil["pressure_refg"][idc]):
@@ -1467,12 +1524,12 @@ def write_dense_data(dig, dil, i):
                             f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, "
                             + f"{dil['pressure_refg'][idc] :.3e}, "
                             + f"{dil['sgas_refg'][idc] :.3e}, "
-                            + f"{dil['xco2_refg'][idc] :.3e}, "
-                            + f"{dil['xh20_refg'][idc] :.3e}, "
+                            + f"{xco2}, "
+                            + f"{xh20}, "
                             + f"{dil['gden_refg'][idc] :.3e}, "
                             + f"{dil['wden_refg'][idc] :.3e}, "
                             + f"{co2}, "
-                            + f"{dil['temp_refg'][idc] :.3e}"
+                            + f"{temp}"
                         )
                 idxy += 1
         idz += 1

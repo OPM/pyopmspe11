@@ -25,22 +25,36 @@ def grid(dic):
         dic (dict): Modified global dictionary
 
     """
+    getpolygons(dic)
+    dic["cut"] = 550.0 * dic["dims"][2] / 1200 if dic["lower"] else 0.0
     if dic["grid"] == "corner-point":
         corner(dic)
     elif dic["grid"] == "cartesian":
         dic["dsize"] = [1.0 * dic["dims"][i] / dic["noCells"][i] for i in range(3)]
         for i, name in enumerate(["xmx", "ymy", "zmz"]):
             dic[f"{name}"] = np.linspace(0, dic["dims"][i], dic["noCells"][i] + 1)
+        if dic["lower"]:
+            dic["zmz"] = np.linspace(
+                dic["dims"][2] - dic["cut"], dic["dims"][2], dic["noCells"][i] + 1
+            )
+            dic["dsize"][2] = 1.0 * dic["cut"] / dic["noCells"][2]
     else:
         for i, (name, arr) in enumerate(
             zip(["xmx", "ymy", "zmz"], ["x_n", "y_n", "z_n"])
         ):
-            dic[f"{name}"] = [0.0]
+            dic[f"{name}"] = [] if dic["lower"] and i == 2 else [0.0]
             for j, num in enumerate(dic[f"{arr}"]):
-                for k in range(num):
-                    dic[f"{name}"].append(
-                        (j + (k + 1.0) / num) * dic["dims"][i] / len(dic[f"{arr}"])
-                    )
+                if i == 2 and dic["lower"]:
+                    for k in range(num):
+                        dic[f"{name}"].append(
+                            (dic["dims"][2] - dic["cut"])
+                            + (j + (k + 1.0) / num) * dic["cut"] / len(dic[f"{arr}"])
+                        )
+                else:
+                    for k in range(num):
+                        dic[f"{name}"].append(
+                            (j + (k + 1.0) / num) * dic["dims"][i] / len(dic[f"{arr}"])
+                        )
             dic[f"{name}"] = np.array(dic[f"{name}"])
             dic["noCells"][i] = len(dic[f"{name}"]) - 1
     if dic["grid"] != "corner-point":
@@ -102,6 +116,10 @@ def structured_handling_spe11a(dic):
                     + (dic["zmz_center"][k] + dic["sensors"][1][2] - dic["dims"][2])
                     ** 2
                 )
+                if dic["lower"] and not dic["lowerpolygon"].contains(
+                    Point(dic["xmx_center"][i], dic["zmz_center"][k])
+                ):
+                    n = 7
                 dic["fluxnum"].append(str(n))
                 boxes(
                     dic,
@@ -111,9 +129,10 @@ def structured_handling_spe11a(dic):
                     dic["fluxnum"][-1],
                 )
     dic["pop1"] = pd.Series(sensor1).argmin()
-    dic["pop2"] = pd.Series(sensor2).argmin()
     dic["fipnum"][dic["pop1"]] = "8"
-    dic["fipnum"][dic["pop2"]] = "9"
+    if not dic["lower"]:
+        dic["pop2"] = pd.Series(sensor2).argmin()
+        dic["fipnum"][dic["pop2"]] = "9"
     sensors(dic)
     wells(dic)
 
@@ -175,6 +194,10 @@ def structured_handling_spe11bc(dic):
                         f"PORV {pv*dic['dy'][0]*dic['dz'][k]} {dic['noCells'][0]} "
                         + f"{dic['noCells'][0]} 1 1 {k+1} {k+1} /"
                     )
+                if dic["lower"] and not dic["lowerpolygon"].contains(
+                    Point(dic["xmx_center"][i], dic["zmz_center"][k])
+                ):
+                    dic["porv"].append(f"PORV 0 {i+1} {i+1} 2* {k+1} {k+1} /")
             for j in range(dic["noCells"][1] - 1):
                 dic["fluxnum"].extend(dic["fluxnum"][-dic["noCells"][0] :])
                 for i_i in range(dic["noCells"][0]):
@@ -200,7 +223,11 @@ def structured_handling_spe11bc(dic):
                         i_i,
                         dic["fluxnum"][-dic["noCells"][0] + i_i],
                     )
-                    if i_i == 0 and (
+                    if dic["lower"] and not dic["lowerpolygon"].contains(
+                        Point(dic["xmx_center"][i], dic["zmz_center"][k])
+                    ):
+                        dic["porv"].append(f"PORV 0 {i+1} {i+1} 2* {k+1} {k+1} /")
+                    elif i_i == 0 and (
                         int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
                         and int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 7
                     ):
@@ -219,9 +246,10 @@ def structured_handling_spe11bc(dic):
     if dic["spe11"] == "spe11c":
         add_pv_fipnum_front_back(dic)
     dic["pop1"] = pd.Series(sensor1).argmin()
-    dic["pop2"] = pd.Series(sensor2).argmin()
     dic["fipnum"][dic["pop1"]] = "8"
-    dic["fipnum"][dic["pop2"]] = "9"
+    if not dic["lower"]:
+        dic["pop2"] = pd.Series(sensor2).argmin()
+        dic["fipnum"][dic["pop2"]] = "9"
     sensors(dic)
     wells(dic)
 
@@ -239,6 +267,11 @@ def add_pv_fipnum_front_back(dic):
     """
     for k in range(dic["noCells"][2]):
         for i in range(dic["noCells"][0] - 2):
+            if dic["grid"] != "corner-point":
+                if dic["lower"] and not dic["lowerpolygon"].contains(
+                    Point(dic["xmx_center"][i], dic["zmz_center"][k])
+                ):
+                    continue
             ind = i + 1 + k * dic["noCells"][0] * dic["noCells"][1]
             if int(dic["fluxnum"][ind]) != 1 and int(dic["fluxnum"][ind]) != 7:
                 pv = dic["rock"][int(dic["fluxnum"][ind]) - 1][1] * (
@@ -345,40 +378,42 @@ def corner_point_handling_spe11a(dic):
                 (dic["wellCoord"][0][0] - dic["xyz"][i][0]) ** 2
                 + (dic["wellCoord"][0][2] - dic["xyz"][i][2]) ** 2
             )
-            well2.append(
-                (dic["wellCoord"][1][0] - dic["xyz"][i][0]) ** 2
-                + (dic["wellCoord"][1][2] - dic["xyz"][i][2]) ** 2
-            )
             sensor1.append(
                 (dic["xyz"][i][0] - dic["sensors"][0][0]) ** 2
                 + (dic["xyz"][i][2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
             )
-            sensor2.append(
-                (dic["xyz"][i][0] - dic["sensors"][1][0]) ** 2
-                + (dic["xyz"][i][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
-            )
             dic["fluxnum"].append(str(n))
+            if not dic["lower"]:
+                well2.append(
+                    (dic["wellCoord"][1][0] - dic["xyz"][i][0]) ** 2
+                    + (dic["wellCoord"][1][2] - dic["xyz"][i][2]) ** 2
+                )
+                sensor2.append(
+                    (dic["xyz"][i][0] - dic["sensors"][1][0]) ** 2
+                    + (dic["xyz"][i][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
+                )
             boxes(dic, dic["xyz"][i][0], dic["xyz"][i][2], i_x, dic["fluxnum"][-1])
     dic["pop1"] = pd.Series(sensor1).argmin()
-    dic["pop2"] = pd.Series(sensor2).argmin()
     dic["fipnum"][dic["pop1"]] = "8"
-    dic["fipnum"][dic["pop2"]] = "9"
     idwell1 = pd.Series(well1).argmin()
-    idwell2 = pd.Series(well2).argmin()
     i_x = int(idwell1 % dic["noCells"][0])
     k_z = int(np.floor(idwell1 / dic["noCells"][0]))
     well1ijk = [i_x, 0, k_z]
-    i_x = int(idwell2 % dic["noCells"][0])
-    k_z = int(np.floor(idwell2 / dic["noCells"][0]))
-    well2ijk = [i_x, 0, k_z]
     i_x = int(dic["pop1"] % dic["noCells"][0])
     k_z = int(np.floor(dic["pop1"] / dic["noCells"][0]))
     dic["sensorijk"][0] = [i_x, 0, k_z]
-    i_x = int(dic["pop2"] % dic["noCells"][0])
-    k_z = int(np.floor(dic["pop2"] / dic["noCells"][0]))
-    dic["sensorijk"][1] = [i_x, 0, k_z]
     dic["wellijk"][0] = [well1ijk[0] + 1, 1, well1ijk[2] + 1]
-    dic["wellijk"][1] = [well2ijk[0] + 1, 1, well2ijk[2] + 1]
+    if not dic["lower"]:
+        dic["pop2"] = pd.Series(sensor2).argmin()
+        dic["fipnum"][dic["pop2"]] = "9"
+        idwell2 = pd.Series(well2).argmin()
+        i_x = int(idwell2 % dic["noCells"][0])
+        k_z = int(np.floor(idwell2 / dic["noCells"][0]))
+        well2ijk = [i_x, 0, k_z]
+        i_x = int(dic["pop2"] % dic["noCells"][0])
+        k_z = int(np.floor(dic["pop2"] / dic["noCells"][0]))
+        dic["sensorijk"][1] = [i_x, 0, k_z]
+        dic["wellijk"][1] = [well2ijk[0] + 1, 1, well2ijk[2] + 1]
 
 
 def corner_point_handling_spe11bc(dic):
@@ -554,11 +589,12 @@ def locate_wells_sensors(dic):
         + dic["sensorijk"][0][1] * dic["noCells"][0]
         + dic["sensorijk"][0][2] * dic["noCells"][0] * dic["noCells"][1]
     ] = "8"
-    dic["fipnum"][
-        dic["sensorijk"][1][0]
-        + dic["sensorijk"][1][1] * dic["noCells"][0]
-        + dic["sensorijk"][1][2] * dic["noCells"][0] * dic["noCells"][1]
-    ] = "9"
+    if not dic["lower"]:
+        dic["fipnum"][
+            dic["sensorijk"][1][0]
+            + dic["sensorijk"][1][1] * dic["noCells"][0]
+            + dic["sensorijk"][1][2] * dic["noCells"][0] * dic["noCells"][1]
+        ] = "9"
 
 
 def boxes(dic, x_c, z_c, idx, fluxnum):
@@ -637,7 +673,6 @@ def positions(dic):
 
     """
     dic["sensorijk"] = [[] for _ in range(len(dic["sensors"]))]
-    getpolygons(dic)
     for names in ["fluxnum", "fipnum", "porv"]:
         dic[f"{names}"] = []
     if dic["grid"] == "corner-point":
@@ -664,6 +699,8 @@ def sensors(dic):
 
     """
     for j, _ in enumerate(dic["sensors"]):
+        if dic["lower"] and j == 1:
+            continue
         for sensor_coord, axis in zip(dic["sensors"][j], ["xmx", "ymy", "zmz"]):
             if axis == "zmz":
                 dic["sensorijk"][j].append(
@@ -691,6 +728,8 @@ def wells(dic):
     dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
     if dic["spe11"] != "spe11c":
         for j, _ in enumerate(dic["wellCoord"]):
+            if dic["lower"] and j == 1:
+                continue
             for well_coord, axis in zip(dic["wellCoord"][j], ["xmx", "ymy", "zmz"]):
                 dic["wellijk"][j].append(
                     pd.Series(np.abs(well_coord - dic[f"{axis}_center"])).argmin() + 1
@@ -698,6 +737,8 @@ def wells(dic):
     else:
         dic["wellijkf"] = [[] for _ in range(len(dic["wellCoord"]))]
         for j, _ in enumerate(dic["wellCoord"]):
+            if dic["lower"] and j == 1:
+                continue
             for k, (well_coord, axis) in enumerate(
                 zip(dic["wellCoord"][j][:2], ["xmx", "ymy"])
             ):
@@ -764,7 +805,7 @@ def getpolygons(dic):
         dic (dict): Modified global dictionary
 
     """
-    points = []
+    dic["points"] = []
     lines = []
     curves = []
     dic["polygons"] = []
@@ -781,21 +822,29 @@ def getpolygons(dic):
         dic["ztopbot"] = dic["dims"][2] - 0.644 * 1200.0 / 1.2
         dic["zmidbot"] = dic["dims"][2] - 0.265 * 1200.0 / 1.2
     with open(
-        f"{dic['pat']}/reference_mesh/facies_coordinates.geo",
+        f"{dic['pat']}/reference_mesh/points.geo",
         "r",
         encoding="utf8",
     ) as file:
         for row in csv.reader(file, delimiter=" "):
-            if row[0] == "//" and not points:
+            if row[0] == "//" and not dic["points"]:
                 continue
             if row[0][:5] == "Point":
-                points.append(
+                dic["points"].append(
                     [
                         l_ref * float(row[2][1:-1]),
                         dic["dims"][2] - h_ref * float(row[3][:-1]),
                     ]
                 )
-            elif row[0][:4] == "Line":
+    with open(
+        f"{dic['pat']}/reference_mesh/facies_coordinates.geo",
+        "r",
+        encoding="utf8",
+    ) as file:
+        for row in csv.reader(file, delimiter=" "):
+            if row[0] in ["//", "Include"] and not lines:
+                continue
+            if row[0][:4] == "Line":
                 lines.append([int(row[2][1:-1]), int(row[3][:-2])])
             elif row[0] == "Curve":
                 dic["facies"].append(facie)
@@ -811,29 +860,29 @@ def getpolygons(dic):
         tmp = []
         tmp.append(
             [
-                points[lines[curve[0] - 1][0] - 1][0],
-                points[lines[curve[0] - 1][0] - 1][1],
+                dic["points"][lines[curve[0] - 1][0] - 1][0],
+                dic["points"][lines[curve[0] - 1][0] - 1][1],
             ]
         )
         tmp.append(
             [
-                points[lines[curve[0] - 1][1] - 1][0],
-                points[lines[curve[0] - 1][1] - 1][1],
+                dic["points"][lines[curve[0] - 1][1] - 1][0],
+                dic["points"][lines[curve[0] - 1][1] - 1][1],
             ]
         )
         for line in curve[1:]:
             if line < 0:
                 tmp.append(
                     [
-                        points[lines[abs(line) - 1][0] - 1][0],
-                        points[lines[abs(line) - 1][0] - 1][1],
+                        dic["points"][lines[abs(line) - 1][0] - 1][0],
+                        dic["points"][lines[abs(line) - 1][0] - 1][1],
                     ]
                 )
             else:
                 tmp.append(
                     [
-                        points[lines[line - 1][1] - 1][0],
-                        points[lines[line - 1][1] - 1][1],
+                        dic["points"][lines[line - 1][1] - 1][0],
+                        dic["points"][lines[line - 1][1] - 1][1],
                     ]
                 )
         tmp.append(tmp[0])
@@ -941,26 +990,28 @@ def getpolygons(dic):
         7,
         13,
     ]
+    if dic["lower"]:
+        get_lower_polygon(dic)
 
 
-def get_lines(dic):
+def get_lower_polygon(dic):
     """
-    Read the points in the z-surface lines
+    Get the polygon for the lower active cells
 
      Args:
         dic (dict): Global dictionary
 
      Returns:
-        lines (list): List with the coordinates of the geological lines
+        dic (dict): Modified global dictionary
 
     """
+    lines = []
     with open(
-        f"{dic['pat']}/reference_mesh/lines_coordinates.geo",
+        f"{dic['pat']}/reference_mesh/horizonts_18.geo",
         "r",
         encoding="utf8",
     ) as file:
         lol = file.readlines()
-    lines = []
     newline = False
     for row in lol:
         if row[0] == "P":
@@ -981,6 +1032,76 @@ def get_lines(dic):
                     break
         else:
             newline = True
+    lines[-4].append(lines[-1][-1])
+    lines[-4].append(lines[-1][0])
+    lines[-4].append(lines[-4][0])
+    dic["lowerpolygon"] = Polygon(lines[-4])
+
+
+def get_lines(dic):
+    """
+    Read the points in the z-surface lines
+
+     Args:
+        dic (dict): Global dictionary
+
+     Returns:
+        lines (list): List with the coordinates of the geological lines
+
+    """
+    lines = []
+    if len(dic["z_n"]) == 18:  # old formart
+        with open(
+            f"{dic['pat']}/reference_mesh/horizonts_18.geo",
+            "r",
+            encoding="utf8",
+        ) as file:
+            lol = file.readlines()
+        newline = False
+        for row in lol:
+            if row[0] == "P":
+                if newline:
+                    lines.append([])
+                    newline = False
+                for i, column in enumerate(row):
+                    if column == "{":
+                        points = row[i + 1 :].split(",")
+                        lines[-1].append(
+                            [
+                                float(points[0]) * dic["dims"][0] / 2.8,
+                                (1.2 - float(points[1]) - float(points[2][:-3]))
+                                * dic["dims"][2]
+                                / 1.2,
+                            ]
+                        )
+                        break
+            else:
+                newline = True
+    else:  # simplified format
+        with open(
+            f"{dic['pat']}/reference_mesh/horizonts_12.geo",
+            "r",
+            encoding="utf8",
+        ) as file:
+            for row in csv.reader(file, delimiter=" "):
+                if row[0][:4] == "Line":
+                    if not lines[-1]:
+                        lines[-1].append(
+                            [
+                                dic["points"][int(row[2][1:-1]) - 1][0],
+                                dic["points"][int(row[2][1:-1]) - 1][1],
+                            ]
+                        )
+                    lines[-1].append(
+                        [
+                            dic["points"][int(row[3][:-2]) - 1][0],
+                            dic["points"][int(row[3][:-2]) - 1][1],
+                        ]
+                    )
+                if len(row) > 1:
+                    if row[1] == "Horizont":
+                        lines.append([])
+        lines = lines[::-1]
     return lines
 
 
@@ -1019,8 +1140,15 @@ def corner(dic):
             dic["ymy"], len(dic["ymy"]) - 1, dic["ymy"][-1] - dic["widthBuffer"]
         )
     dic["noCells"][1] = len(dic["ymy"]) - 1
+    shf = 15 if len(dic["z_n"]) == 18 else 8
+    shf = shf if dic["lower"] else 0
+    rmline = [i for i, value in enumerate(dic["z_n"]) if value == 0]
+    if rmline:
+        lines.pop(rmline[-1])
+        dic["z_n"].pop(rmline[0])
+        dic["z_n"][rmline[0]] = 1
     for xcor in dic["xmx"]:
-        for _, lcor in enumerate(lines):
+        for _, lcor in enumerate(lines[shf:]):
             xcoord.append(xcor)
             idx = pd.Series([abs(ii[0] - xcor) for ii in lcor]).argmin()
             if lcor[idx][0] < xcor:
@@ -1048,7 +1176,7 @@ def corner(dic):
     dic["noCells"][0], dic["noCells"][2] = n_x, n_z
     # Refine the grid
     xcoord, zcoord, dic["noCells"][0], dic["noCells"][2] = refinement_z(
-        xcoord, zcoord, dic["noCells"][0], dic["noCells"][2], dic["z_n"]
+        xcoord, zcoord, dic["noCells"][0], dic["noCells"][2], dic["z_n"][shf:]
     )
     dic["xmx"] = np.array(dic["xmx"])
     dic["ymy_center"] = 0.5 * (np.array(dic["ymy"])[1:] + np.array(dic["ymy"])[:-1])
