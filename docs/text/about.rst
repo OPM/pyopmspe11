@@ -8,7 +8,7 @@ About pyopmspe11
 This **pyopmspe11** package is being funded by the `HPC Simulation Software for the Gigatonne Storage Challenge project <https://www.norceresearch.no/en/projects/hpc-simulation-software-for-the-gigatonne-storage-challenge>`_ 
 [project number 622059] and `Center for Sustainable Subsurface Resources (CSSR) <https://cssr.no>`_ [project no. 331841].
 
-`Here <https://www.spe.org/en/csp/>`_ is the link to the spe11 details and `pyopmspe11 paper <https://joss.theoj.org/papers/10.21105/joss.07357>`_.
+`Here <https://www.spe.org/en/csp/>`_ is the link to the spe11 details, `the SPE11 benchmark paper <https://www.sciencedirect.com/science/article/pii/S1750583625002178>`_, and `pyopmspe11 paper <https://joss.theoj.org/papers/10.21105/joss.07357>`_.
 
 Contributions are more than welcome using the fork and pull request approach.
 

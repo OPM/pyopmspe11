@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 NORCE
+# SPDX-FileCopyrightText: 2023-2026 NORCE Research AS
 # SPDX-License-Identifier: MIT
 
 """Test the spe11a case"""
@@ -6,18 +6,24 @@
 import os
 import pathlib
 import subprocess
+from opm.io.ecl import ESmry as OpmSummary
+from opm.io.ecl import EclFile as OpmFile
 
-dirname: pathlib.Path = pathlib.Path(__file__).parent
+testpth: pathlib.Path = pathlib.Path(__file__).parent
 
 
 def test_spe11a():
-    """See configs/spe11a_data_format.txt"""
-    os.chdir(f"{dirname}/configs")
+    """See configs/spe11a_data_format.toml"""
+    if not os.path.exists(f"{testpth}/output"):
+        os.mkdir(f"{testpth}/output")
+    if not os.path.exists(f"{testpth}/output/benchmark"):
+        os.mkdir(f"{testpth}/output/benchmark")
+    os.chdir(f"{testpth}/output/benchmark")
     subprocess.run(
         [
             "pyopmspe11",
             "-i",
-            "spe11a_data_format.txt",
+            f"{testpth}/configs/spe11a_data_format.toml",
             "-o",
             "spe11a",
             "-m",
@@ -33,4 +39,8 @@ def test_spe11a():
         ],
         check=True,
     )
-    assert os.path.exists(f"{dirname}/configs/spe11a/data/spe11a_time_series.csv")
+    file = f"{testpth}/output/benchmark/spe11a/data/spe11a_time_series.csv"
+    assert os.path.exists(file)
+    case = f"{testpth}/output/benchmark/spe11a/flow/SPE11A"
+    assert abs(OpmSummary(f"{case}.SMSPEC")["FGMIP"][-1] - 0.0046843435) < 1e-6
+    assert abs(sum(OpmFile(f"{case}.INIT")["PORV"]) - 0.013631029) < 1e-6

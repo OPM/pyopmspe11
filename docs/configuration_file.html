@@ -98,9 +98,9 @@
 <h1>Configuration file<a class="headerlink" href="#configuration-file" title="Link to this heading"></a></h1>
 <p>In the initial development of <strong>pyopmspe11</strong>, the adopted configuration file format was the
 one described below, i.e., via <a class="reference internal" href="#txt"><span class="std std-ref">txt</span></a> files. The current development of <strong>pyopmspe11</strong> considers
-<a class="reference internal" href="#toml"><span class="std std-ref">toml</span></a> files. To keep compatibility with previous configuration files and Python versions of at least 3.9,
+<a class="reference internal" href="#toml"><span class="std std-ref">toml</span></a> files. To keep compatibility with previous configuration files,
 then support for <a class="reference internal" href="#txt"><span class="std std-ref">txt</span></a> files will be kept, while new features will by added using <a class="reference internal" href="#toml"><span class="std std-ref">toml</span></a> configuration
-files (which requires at least Python3.11).</p>
+files.</p>
 <section id="txt">
 <span id="id1"></span><h2>txt<a class="headerlink" href="#txt" title="Link to this heading"></a></h2>
 <p>The first input parameter in the configuration file is:</p>
@@ -127,31 +127,31 @@ by tightening the cnv tolerances (--tolerance-cnv), etc.).</p>
 <p>The following input lines in the configuration file are:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 4</span><span class="sd">&quot;&quot;&quot;Set the model parameters&quot;&quot;&quot;</span>
 <span class="linenos"> 5</span><span class="n">spe11c</span> <span class="n">master</span>     <span class="c1">#Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)</span>
-<span class="linenos"> 6</span><span class="n">complete</span>          <span class="c1">#Name of the co2 model (immiscible, convective, or complete)</span>
+<span class="linenos"> 6</span><span class="n">complete</span>          <span class="c1">#Name of the co2 model (immiscible, isothermal, convective, or complete)</span>
 <span class="linenos"> 7</span><span class="n">corner</span><span class="o">-</span><span class="n">point</span>      <span class="c1">#Type of grid (cartesian, tensor, or corner-point)</span>
 <span class="linenos"> 8</span><span class="mi">8400</span> <span class="mi">5000</span> <span class="mi">1200</span>    <span class="c1">#Length, width, and depth [m]</span>
 <span class="linenos"> 9</span><span class="mi">420</span>               <span class="c1">#If cartesian, number of x cells [-]; otherwise, variable array of x-refinement</span>
 <span class="linenos">10</span><span class="mi">30</span><span class="p">,</span><span class="mi">40</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">40</span><span class="p">,</span><span class="mi">30</span>    <span class="c1">#If cartesian, number of y cells [-]; otherwise, variable array of y-refinement [-] (for spe11c)</span>
-<span class="linenos">11</span><span class="mi">5</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">30</span><span class="p">,</span><span class="mi">9</span> <span class="c1">#If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (18 entries)</span>
+<span class="linenos">11</span><span class="mi">5</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">30</span><span class="p">,</span><span class="mi">9</span> <span class="c1">#If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (11 or 18 entries)</span>
 <span class="linenos">12</span><span class="mi">70</span> <span class="mf">36.12</span>          <span class="c1">#Temperature bottom and top rig [C]</span>
 <span class="linenos">13</span><span class="mi">300</span> <span class="mf">3e7</span> <span class="mf">0.1</span>       <span class="c1">#Datum [m], pressure at the datum [Pa], and multiplier for the permeability in the z direction [-]</span>
 <span class="linenos">14</span><span class="mf">1e-9</span> <span class="mf">2e-8</span>         <span class="c1">#Diffusion (in liquid and gas) [m^2/s]</span>
 <span class="linenos">15</span><span class="mf">8.5e-1</span> <span class="mi">2500</span>       <span class="c1">#Rock specific heat and density (for spe11b/c)</span>
 <span class="linenos">16</span><span class="mi">0</span> <span class="mf">5e4</span> <span class="mi">1</span>           <span class="c1">#Added pore volume on top boundary (for spe11a [if 0, free flow bc]), pore volume on lateral boundaries, and width of buffer cell [m] (for spe11b/c)</span>
-<span class="linenos">17</span><span class="mi">150</span> <span class="mi">10</span>            <span class="c1">#Elevation of the parabola and back [m] (for spe11c)</span>
+<span class="linenos">17</span><span class="mi">150</span> <span class="mi">10</span>            <span class="c1">#Maximum elevation difference (relative to the baseline gradient) of the arch in the y direction [m] and back boundary elevation [m] (for spe11c)</span>
 </pre></div>
 </div>
 <p>In line 5 you specify if you are using OPM Flow from the master branch or from the latest stable release (OPM-flow 2025.10 release).
 This since there are continuous changues in the OPM master branch. Then we
 will keep updating the decks for using Flow from master and also we will keep the framework to produce decks compatible for the latest OPM stable release.
 The immiscible model allows for faster prototyping while the complete model includes dissolution of the components in the
-gas and liquid phases, in addition to thermal effects. Details on the convective model can be found in <a class="reference external" href="https://link.springer.com/article/10.1007/s11242-024-02141-5">Mykkeltvedt et al. (2025)</a>.
+gas and liquid phases, in addition to thermal effects (the isothermal model neglects the thermal effects). Details on the convective model can be found in <a class="reference external" href="https://link.springer.com/article/10.1007/s11242-024-02141-5">Mykkeltvedt et al. (2025)</a>.
 Regarding the grid type, the cartesian mode generates an uniform grid
 with the defined number of elements in lines 9 to 11. The tensor grid allows to define arrays in each direction where the grid
 is first divided with the number of entries in the array, and after it divides each of these elements by the assigned number in
 the array entry. The corner-point mode generates a grid where the x and y direction are defined as in the array mode, but the
-cell faces in the z-direction follows the lines as defined in the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/src/pyopmspe11/reference_mesh/lines_coordinates.geo">lines_coordinates.geo</a> script,
-resulting in 18 levels. Then, the z-refinement in each of these levels is set. See the configuration files in the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/tests">tests</a> and
+cell faces in the z-direction follows the lines as defined in either the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/src/pyopmspe11/reference_mesh/horizonts_11.geo">horizonts_11.geo</a> or <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/src/pyopmspe11/reference_mesh/horizonts_18.geo">horizonts_18.geo</a> script,
+resulting in 11 or 18 levels respectively. Then, the z-refinement in each of these levels is set. See the configuration files in the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/tests">tests</a> and
 <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/benchmark">benchmark</a> folder for the setting of these grids.</p>
 <figure class="align-default">
 <img alt="_images/satnum.png" src="_images/satnum.png" />
@@ -233,7 +233,7 @@ maximum time step of 10 days at the beginning og the injection:</p>
 </pre></div>
 </div>
 <p>The first value is defaulted (1*), and the second entry corresponds to TSMAXZ. Note that the TUNING units for the time quantites are in days, for the three SPE cases. See
-<a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/spe11c.txt">this configuration file</a> for an example setting more TUNING values, where entries are given for the three
+<a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/spe11c.toml">this configuration file</a> for an example setting more TUNING values, where entries are given for the three
 different records (lines) of the TUNING keyword.</p>
 </div>
 <div class="admonition warning">
@@ -251,12 +251,12 @@ different records (lines) of the TUNING keyword.</p>
 <span class="linenos"> 4</span><span class="c1"># Set the model parameters</span>
 <span class="linenos"> 5</span><span class="n">spe11</span> <span class="o">=</span> <span class="s2">&quot;spe11c&quot;</span> <span class="c1"># Name of the spe case (spe11a, spe11b, or spe11c)</span>
 <span class="linenos"> 6</span><span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;release&quot;</span> <span class="c1"># OPM Flow version (release or master)</span>
-<span class="linenos"> 7</span><span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;complete&quot;</span> <span class="c1"># Name of the co2 model (immiscible, convective, or complete)</span>
+<span class="linenos"> 7</span><span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;complete&quot;</span> <span class="c1"># Name of the co2 model (immiscible, isothermal, convective, or complete)</span>
 <span class="linenos"> 8</span><span class="n">grid</span> <span class="o">=</span> <span class="s2">&quot;corner-point&quot;</span> <span class="c1"># Type of grid (cartesian, tensor, or corner-point)</span>
 <span class="linenos"> 9</span><span class="n">dims</span> <span class="o">=</span> <span class="p">[</span><span class="mf">8400.0</span><span class="p">,</span> <span class="mf">5000.0</span><span class="p">,</span> <span class="mf">1200.0</span><span class="p">]</span> <span class="c1"># Length, width, and depth [m]</span>
 <span class="linenos">10</span><span class="n">x_n</span> <span class="o">=</span> <span class="p">[</span><span class="mi">420</span><span class="p">]</span> <span class="c1"># If cartesian, number of x cells [-]; otherwise, variable array of x-refinement</span>
 <span class="linenos">11</span><span class="n">y_n</span> <span class="o">=</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">30</span><span class="p">]</span> <span class="c1"># If cartesian, number of y cells [-]; otherwise, variable array of y-refinement [-] (for spe11c)</span>
-<span class="linenos">12</span><span class="n">z_n</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">9</span><span class="p">]</span> <span class="c1"># If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (18 entries)</span>
+<span class="linenos">12</span><span class="n">z_n</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">9</span><span class="p">]</span> <span class="c1"># If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (11 or 18 entries)</span>
 <span class="linenos">13</span><span class="n">temperature</span> <span class="o">=</span> <span class="p">[</span><span class="mf">70.0</span><span class="p">,</span> <span class="mf">36.12</span><span class="p">]</span> <span class="c1"># Temperature bottom and top rig [C]</span>
 <span class="linenos">14</span><span class="n">datum</span> <span class="o">=</span> <span class="mi">300</span> <span class="c1"># Datum [m]</span>
 <span class="linenos">15</span><span class="n">pressure</span> <span class="o">=</span> <span class="mf">3e7</span> <span class="c1"># Pressure at the datum [Pa]</span>
@@ -309,10 +309,6 @@ different records (lines) of the TUNING keyword.</p>
 </div>
 <p>For additional examples of configuration files using toml, see the
 <a class="reference external" href="https://github.com/OPM/pyopmspe11/tree/main/examples">examples</a> and <a class="reference external" href="https://github.com/OPM/pyopmspe11/tree/main/tests/configs">configs</a> folders.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>A Python version of at least 3.11 is requiered to use the toml format. For older Python versions, then use the <a class="reference internal" href="#txt"><span class="std std-ref">txt</span></a> configuration files.</p>
-</div>
 <section id="additional-definitions">
 <h3>Additional definitions<a class="headerlink" href="#additional-definitions" title="Link to this heading"></a></h3>
 <p>New features are being added using the toml format, while trying to keep the back compatibility to the <a class="reference internal" href="#txt"><span class="std std-ref">txt</span></a> configuration files.</p>
@@ -360,7 +356,7 @@ See the <a class="reference external" href="https://opm-project.org/?page_id=955
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023-2025, NORCE Research AS.</p>
+    <p>&#169; Copyright 2023-2026, NORCE Research AS.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

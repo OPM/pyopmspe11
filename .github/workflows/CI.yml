@@ -9,23 +9,17 @@ on:
 jobs:
   run-pyopmspe11-local:
     timeout-minutes: 60
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ['3.11']
-        os: [ubuntu-latest]
-        
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
 
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python 3.11
       uses: actions/setup-python@v2
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: 3.11
     
     - name: Install Flow Simulator
       run: |
@@ -54,7 +48,7 @@ jobs:
       
     - name: Run the tests
       run: |
-        pytest --cov=pyopmspe11 --cov-report term-missing tests/
+        pytest -x --cov=pyopmspe11 --cov-report term-missing tests/
         
     - name: Build documentation
       run: |

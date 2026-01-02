@@ -23,11 +23,11 @@ To run the cases in the terminal:
 
 .. code-block:: bash
 
-    pyopmspe11 -i r1_Cart_1cm.txt -o r1_Cart_1cm -m all -g all -t 1 -r 280,1,120 -w 0.16666666666666666
-    pyopmspe11 -i r2_Cart_1cm_capmax2500Pa.txt -o r2_Cart_1cm_capmax2500Pa -m all -g all -t 1 -r 280,1,120 -w 0.16666666666666666
-    pyopmspe11 -i r3_cp_1cmish_capmax2500Pa.txt -o r3_cp_1cmish_capmax2500Pa -m all -g all -t 1 -r 280,1,120 -w 0.16666666666666666
-    pyopmspe11 -i r4_Cart_1mm_capmax2500Pa.txt -o r4_Cart_1mm_capmax2500Pa -m all -g all -t 1 -r 280,1,120 -w 0.16666666666666666
-    pyopmspe11 -i r5_Cart_1mm_capmax2500Pa_strictol.txt -o r5_Cart_1mm_capmax2500Pa_strictol -m all -g all -t 1 -r 280,1,120 -w 0.16666666666666666
+    pyopmspe11 -i r1_Cart_1cm.toml -o r1_Cart_1cm -m all -g all -t 1 -r 280,1,120 -w 0.16666666666666666
+    pyopmspe11 -i r2_Cart_1cm_capmax2500Pa.toml -o r2_Cart_1cm_capmax2500Pa -m all -g all -t 1 -r 280,1,120 -w 0.16666666666666666
+    pyopmspe11 -i r3_cp_1cmish_capmax2500Pa.toml -o r3_cp_1cmish_capmax2500Pa -m all -g all -t 1 -r 280,1,120 -w 0.16666666666666666
+    pyopmspe11 -i r4_Cart_1mm_capmax2500Pa.toml -o r4_Cart_1mm_capmax2500Pa -m all -g all -t 1 -r 280,1,120 -w 0.16666666666666666
+    pyopmspe11 -i r5_Cart_1mm_capmax2500Pa_strictol.toml -o r5_Cart_1mm_capmax2500Pa_strictol -m all -g all -t 1 -r 280,1,120 -w 0.16666666666666666
 
 As mentioned in the `CSP description <https://onepetro.org/SJ/article/29/05/2507/540636/The-11th-Society-of-Petroleum-Engineers>`_, using the maximum value of 2500 Pa instead of
 95000 Pa does not significantly impact the results (comparing r1 and r2), and this choice also reduces the simulation time. In addition, the corner-point grid results (r3) compare 
@@ -70,10 +70,10 @@ To run the cases in the terminal:
 
 .. code-block:: bash
 
-    pyopmspe11 -i r1_Cart_10m.txt -o r1_Cart_10m -m all -g all -r 840,1,120 -t 5 -w 0.1
-    pyopmspe11 -i r2_cp_10mish.txt -o r2_cp_10mish -m all -g all -r 840,1,120 -t 5 -w 0.1
-    pyopmspe11 -i r3_cp_10mish_convective.txt -o r3_cp_10mish_convective -m all -g all -r 840,1,120 -t 5 -w 0.1
-    pyopmspe11 -i r4_Cart_1m.txt -o r4_Cart_1m -m all -g all -r 840,1,120 -t 5 -w 0.1
+    pyopmspe11 -i r1_Cart_10m.toml -o r1_Cart_10m -m all -g all -r 840,1,120 -t 5 -w 0.1
+    pyopmspe11 -i r2_cp_10mish.toml -o r2_cp_10mish -m all -g all -r 840,1,120 -t 5 -w 0.1
+    pyopmspe11 -i r3_cp_10mish_convective.toml -o r3_cp_10mish_convective -m all -g all -r 840,1,120 -t 5 -w 0.1
+    pyopmspe11 -i r4_Cart_1m.toml -o r4_Cart_1m -m all -g all -r 840,1,120 -t 5 -w 0.1
 
 For the box A quantities, the convective model results (r3) compare very well to the fine-scale simulations (r4), which runs ca. 500 times faster. Details on the convective model
 can be found in `Mykkeltvedt et al. (2025) <https://link.springer.com/article/10.1007/s11242-024-02141-5>`_. For the implementation in OPM Flow of this model, it is work in progress to handle better the zones in the geological model where 
@@ -114,10 +114,10 @@ To run the cases in the terminal:
 
 .. code-block:: bash
 
-    pyopmspe11 -i r1_Cart_50m-50m-10m.txt -o r1_Cart_50m-50m-10m -m all -g all -r 168,100,120 -t 0,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000 -w 0.1
-    pyopmspe11 -i r2_cp_50m-50m-8mish.txt -o r2_cp_50m-50m-8mish -m all -g all -r 168,100,120 -t 0,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000 -w 0.1
-    pyopmspe11 -i r3_cp_50m-50m-8mish_convective.txt -o r3_cp_50m-50m-8mish_convective -m all -g all -r 168,100,120 -t 0,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000 -w 0.1
-    pyopmspe11 -i r4_cp_8m-8mish-8mish.txt -o r4_cp_8m-8mish-8mish -m all -g all -r 168,100,120 -t 0,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000 -w 0.1
+    pyopmspe11 -i r1_Cart_50m-50m-10m.toml -o r1_Cart_50m-50m-10m -m all -g all -r 168,100,120 -t 0,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000 -w 0.1
+    pyopmspe11 -i r2_cp_50m-50m-8mish.toml -o r2_cp_50m-50m-8mish -m all -g all -r 168,100,120 -t 0,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000 -w 0.1
+    pyopmspe11 -i r3_cp_50m-50m-8mish_convective.toml -o r3_cp_50m-50m-8mish_convective -m all -g all -r 168,100,120 -t 0,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000 -w 0.1
+    pyopmspe11 -i r4_cp_8m-8mish-8mish.toml -o r4_cp_8m-8mish-8mish -m all -g all -r 168,100,120 -t 0,5,10,15,20,25,30,35,40,45,50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000 -w 0.1
 
 To run the case with more than 100 million cells (r4), it required improvements in the OPM Flow simulator (e.g., `METIS support <https://github.com/OPM/opm-grid/pull/738>`_), as well as in the **pyopmspe11** pre- and postprocessing functionality
 (and of course a big computer, the `NORCE <https://www.norceresearch.no>`_ HPC cluster). See `this gif <https://github.com/OPM/pyopmspe11/blob/main/docs/text/figs/pyopmspe11c100Mcells.gif>`_ for visualization in `ParaView <https://www.paraview.org>`_ of the CO2 molar fraction (liquid phase) over time.

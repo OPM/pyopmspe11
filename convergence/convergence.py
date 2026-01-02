@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 NORCE Research AS
+# SPDX-License-Identifier: MIT
+
 import os
 import csv
 import numpy as np

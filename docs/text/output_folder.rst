@@ -10,10 +10,10 @@ executing **pyopmspe11**.
     Generated files in the :doc:`hello world <./examples>` example.
 
 The simulation results are saved in the **flow** folder, and
-`ResInsight <https://resinsight.org>`_ can be used for the visualization.
+`ResInsight <https://resinsight.org>`_ and `plopm <https://github.com/cssr-tools/plopm>`_ can be used for the visualization.
 In addition, some figures are plotted in png format in the **figures** folder.
 Then after running **pyopmspe11**, one could modify the generated OPM related files and 
-run directly the simulations calling the Flow solvers, e.g., to add tracers 
+run directly the simulations calling the Flow solvers, e.g., to add tracers, salinity, rock compressibility, etc. 
 (see the OPM Flow documentation `here <https://opm-project.org/?page_id=955>`_).
 
 .. tip::

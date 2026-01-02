@@ -1,0 +1,50 @@
+# Set the full path to the flow executable and flags
+flow = "flow --enable-opm-rst-file=true --newton-min-iterations=1 --output-extra-convergence-info=steps,iterations"
+
+# Set the model parameters
+spe11 = "spe11a" # Name of the spe case (spe11a, spe11b, or spe11c)
+version = "release" # OPM Flow version (release or master)
+model = "${model}" # Name of the co2 model (immiscible, isothermal, convective, or complete)
+grid = "corner-point" # Type of grid (cartesian, tensor, or corner-point)
+dims = [2.8, 0.01, 1.2] # Length, width, and depth [m]
+x_n = [70] # If cartesian, number of x cells [-]; otherwise, variable array of x-refinement
+y_n = [1] # If cartesian, number of y cells [-]; otherwise, variable array of y-refinement [-] (for spe11c)
+z_n = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (11 or 18 entries)
+temperature = [20, 20] # Temperature bottom and top rig [C]
+datum = 1.2 # Datum [m]
+pressure = 1.1e5 # Pressure at the datum [Pa]
+kzMult = 1 # Multiplier for the permeability in the z direction [-] 
+diffusion = [1e-9, 1.6e-5] # Diffusion (in liquid and gas) [m^2/s]
+spe11aBC = 0 # Added pore volume on top boundary [m^3] (for spe11a [if 0, free flow bc])
+dispersion = [1e-2, 1e-2, 1e-2, 1e-2, 1e-2, 1e-2, 0] # Dispersion rock [m], facie 1 to 7
+rockCond = [1.9e-4, 1.25e-4, 1.25e-4, 1.25e-4, 0.92e-4, 0.26e-4, 2.0e-4] # Thermal conductivity rock [W/(m K)], facie 1 to 7
+rockExtra = [8.5e-5, 2500.0] # Rock specific heat capacity [kJ/(kg K)] and rock density [kg/m^3] (for spe11b/c)
+radius = [0, 0] # Wells radius [m] (0 to use the SOURCE keyword instead of well keywords), well 1 to 2
+wellCoord = [[0.9, 0.005, 0.3], [1.7, 0.005, 0.7]] # Well positions: x, y, and z coordinates [m], well 1 to 2
+
+# Set the saturation functions
+krw = "(max(0, (s_w - swi) / (1 - swi))) ** 2"                                                         # Wetting rel perm saturation function [-]
+krn = "(max(0, (1 - s_w - sni) / (1 - sni))) ** 2"                                                     # Non-wetting rel perm saturation function [-]
+pcap = "penmax * math.erf(pen * ((s_w-swi) / (1.-swi)) ** (-(1.0 / 2)) * math.pi**0.5 / (penmax * 2))" # Capillary pressure saturation function [Pa]
+s_w = "np.flip(np.linspace(0, 1.0, npoints))"                                                          # Points to evaluate the saturation functions (s_w) [-]
+
+# Properties sat functions: 1) swi [-], 2) sni [-], 3) pen [Pa], 4) penmax [Pa], and 5) npoints [-], facie 1 to 7
+safu = [[0.32, 0.1, 1500, 2500, 100],
+        [0.14, 0.1,  300, 2500, 100], 
+        [0.12, 0.1,  100, 2500, 100], 
+        [0.12, 0.1,   25, 2500, 100], 
+        [0.12, 0.1,   10, 2500, 100], 
+        [0.10, 0.1,    1, 2500, 100], 
+        [0,      0,    0, 2500,   2]]
+
+# Properties rock: 1) K [mD] and 2) phi [-], facie 1 to 7
+rock = [[44529.9988, 0.44],
+        [506624.985, 0.43],
+        [1013249.97, 0.44],
+        [2026499.95, 0.45],
+        [4052999.88, 0.43],
+        [10132499.7, 0.46],
+        [         0,    0]]
+
+# Define the injection values ([hours] for spe11a; [years] for spe11b/c): 1) injection time, 2) time step size to write results, 3) injected fluid (0 water, 1 co2) (well1), 4) injection rate [kg/s] (well1), 5) temperature [C] (well1), 6) injected fluid (0 water, 1 co2) (well2), 7) injection rate [kg/s] (well2), and 8) temperature [C] (well2). If --enable-tuning=1, then the TUNING values [days] as described in the OPM manual
+inj = [[1, 1, 1, 1.7e-7, 10, 1, 0, 10]]

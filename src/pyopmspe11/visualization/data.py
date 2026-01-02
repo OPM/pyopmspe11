@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 NORCE
+# SPDX-FileCopyrightText: 2023-2026 NORCE Research AS
 # SPDX-License-Identifier: MIT
 # pylint: disable=C0302, R0912, R0914, R0801, R0915, E1102, C0325
 
@@ -113,7 +113,7 @@ def main():
         )
         dig["sparse_t"] = 1.0 * round(float(cmdargs["write"].strip()) * 3600)
         dig["dims"] = [2.8, 1.0, 1.2]
-        dig["dof"], dig["nxyz"][1] = 2, 1
+        dig["nxyz"][1] = 1
     else:
         dig["dense_t"] = (
             np.genfromtxt(StringIO(cmdargs["time"]), delimiter=",", dtype=float)
@@ -121,13 +121,11 @@ def main():
         )
         dig["sparse_t"] = float(cmdargs["write"].strip()) * SECONDS_IN_YEAR
         dig["dims"] = [8400.0, 1.0, 1200.0]
-        dig["dof"] = 3
     if dig["case"] == "spe11c":
         dig["dims"][1] = 5000.0
     dig["nocellsr"] = dig["nxyz"][0] * dig["nxyz"][1] * dig["nxyz"][2]
     dig["noxzr"] = dig["nxyz"][0] * dig["nxyz"][2]
     dig["time_initial"], dig["no_skip_rst"], dig["times"] = 0, 0, []
-    dig["immiscible"] = False
     read_simulations(dig)
     if dig["mode"] in [
         "performance",
@@ -175,18 +173,20 @@ def read_simulations(dig):
 
     """
     dig["unrst"] = OpmRestart(f"{dig['sim']}.UNRST")
+    dig["immiscible"] = dig["unrst"].count("RSW", 0) == 0
+    dig["isothermal"] = dig["unrst"].count("TEMP", 0) == 0
+    dig["dof"] = 2 if dig["isothermal"] else 3
     time = []
     for i in range(len(dig["unrst"].report_steps)):
         time.append(86400 * dig["unrst"]["DOUBHEAD", i][0])
         if len(dig["times"]) == 0:
-            if dig["unrst"].count("RSW", 0):
+            if not dig["immiscible"]:
                 if np.max(dig["unrst"]["RSW", i]) > 0:
                     dig["time_initial"] = 86400 * dig["unrst"]["DOUBHEAD", i - 1][0]
                     dig["no_skip_rst"] = i - 1
                     dig["times"].append(0)
                     dig["times"].append(time[-1] - dig["time_initial"])
             else:
-                dig["immiscible"] = True
                 if np.max(dig["unrst"]["SGAS", i]) > 0:
                     dig["time_initial"] = 86400 * dig["unrst"]["DOUBHEAD", i - 1][0]
                     dig["no_skip_rst"] = i - 1
@@ -931,7 +931,7 @@ def dense_data(dig):
         handle_yaxis_mapping_extensive(dig, dil)
     if dig["mode"] == "all" or dig["mode"][:5] == "dense":
         names = ["pressure", "sgas", "xco2", "xh20", "gden", "wden", "tco2"]
-        if dig["case"] != "spe11a":
+        if not dig["isothermal"]:
             names = ["temp"] + names
         for i, rst in enumerate(dil["rstno"]):
             if i + 1 < dil["nrstno"]:
@@ -1401,7 +1401,7 @@ def generate_arrays(dig, dil, names, t_n):
         rss = np.array(dig["unrst"]["RSW", t_n])
         if dig["unrst"].count("RVW", t_n):
             rvv = np.array(dig["unrst"]["RVW", t_n])
-        if dig["case"] != "spe11a":
+        if not dig["isothermal"]:
             dil["temp_array"][dig["actind"]] = np.array(dig["unrst"]["TEMP", t_n])
         x_l_co2 = np.divide(rss, rss + WAT_DEN_REF / GAS_DEN_REF)
         x_g_h2o = np.divide(rvv, rvv + GAS_DEN_REF / WAT_DEN_REF)
@@ -1476,13 +1476,14 @@ def write_dense_data(dig, dil, i):
                 if not dig["immiscible"]:
                     xco2 = f"{dil['xco2_refg'][idc] :.3e}"
                     xh20 = f"{dil['xh20_refg'][idc] :.3e}"
-                    if dig["case"] != "spe11a":
+                    if not dig["isothermal"]:
                         temp = f"{dil['temp_refg'][idc] :.3e}"
                 if dig["case"] == "spe11a":
                     if np.isnan(dil["pressure_refg"][idc]):
                         text.append(
                             f"{xcord:.3e}, {zcord:.3e}, n/a, n/a, n/a, n/a, n/a, "
                             + f"n/a, {co2}"
+                            + f"{', n/a' if not dig['isothermal'] else ''}"
                         )
                     else:
                         text.append(
@@ -1494,6 +1495,7 @@ def write_dense_data(dig, dil, i):
                             + f"{dil['gden_refg'][idc] :.3e}, "
                             + f"{dil['wden_refg'][idc] :.3e}, "
                             + f"{co2}"
+                            + f"{', ' + temp if not dig['isothermal'] else ''}"
                         )
                 elif dig["case"] == "spe11b":
                     if np.isnan(dil["pressure_refg"][idc]):
@@ -1559,6 +1561,7 @@ def get_header(dig, i):
             + "mass fraction of CO2 in liquid [-], mass fraction of H20 in vapor [-], "
             + "phase mass density gas [kg/m3], phase mass density water [kg/m3], "
             + "total mass CO2 [kg]"
+            + f"{', temperature [C]' if not dig['isothermal'] else ''}"
         ]
     elif dig["case"] == "spe11b":
         name_t = f"{round(dig['dense_t'][i]/SECONDS_IN_YEAR)}y"

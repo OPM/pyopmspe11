@@ -50,6 +50,8 @@
 <li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#hello-world">Hello world</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cp-grids-11-and-18-levels">Cp grids (11 and 18 levels)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#localized-lower-domain">Localized lower domain</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a></li>
@@ -91,7 +93,7 @@
 <h2>Hello world<a class="headerlink" href="#hello-world" title="Link to this heading"></a></h2>
 <p>The <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples">examples</a> folder contains configuration files
 with low grid resolution and shorter injection times (for initial testing of the framework). For example, by executing:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.txt<span class="w"> </span>-o<span class="w"> </span>spe11b<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-r<span class="w"> </span><span class="m">50</span>,1,15<span class="w"> </span>-w<span class="w"> </span><span class="m">1</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.toml<span class="w"> </span>-o<span class="w"> </span>spe11b<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-r<span class="w"> </span><span class="m">50</span>,1,15<span class="w"> </span>-w<span class="w"> </span><span class="m">1</span>
 </pre></div>
 </div>
 <p>The following is the figure <cite>spe11b_tco2_2Dmaps</cite>, which shows the CO2 mass in the domain over time (i.e., the simulations results from
@@ -103,39 +105,68 @@ compare your example results to this figure to evaluate if your example ran corr
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>To generate only the input files, this can be achieved by executing:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.txt<span class="w"> </span>-o<span class="w"> </span>spe11b<span class="w"> </span>-m<span class="w"> </span>deck
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.toml<span class="w"> </span>-o<span class="w"> </span>spe11b<span class="w"> </span>-m<span class="w"> </span>deck
 </pre></div>
 </div>
 <p>This does not required to have OPM Flow installed, and in principle should work in Windows without using the subsystem for Linux.
 Then, one could always generate a deck with the grid and all include files, and modify them in order to use other simulators different than OPM Flow.</p>
 </div>
-<p>Using the <a class="reference internal" href="configuration_file.html#toml"><span class="std std-ref">toml</span></a> format, the previous run is equivalent to (this requires a Python version of at least 3.11 [due to <a class="reference external" href="https://toml.io/en/">tomllib</a>]):</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.toml<span class="w"> </span>-o<span class="w"> </span>spe11b<span class="w"> </span>-m<span class="w"> </span>all<span class="w"> </span>-g<span class="w"> </span>all<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-r<span class="w"> </span><span class="m">50</span>,1,15<span class="w"> </span>-w<span class="w"> </span><span class="m">1</span>
+<p>Let us now change the model type from complete to immiscible, isothermal, and convective in line 7 of the configuration file, saving the toml file to these three model respectively.
+Then, we run the simulations:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>immiscible.toml<span class="w"> </span>-o<span class="w"> </span>immiscible<span class="w"> </span>-m<span class="w"> </span>deck_flow_data<span class="w"> </span>-w<span class="w"> </span><span class="m">1</span>
+pyopmspe11<span class="w"> </span>-i<span class="w"> </span>isothermal.toml<span class="w"> </span>-o<span class="w"> </span>isothermal<span class="w"> </span>-m<span class="w"> </span>deck_flow_data<span class="w"> </span>-w<span class="w"> </span><span class="m">1</span>
+pyopmspe11<span class="w"> </span>-i<span class="w"> </span>convective.toml<span class="w"> </span>-o<span class="w"> </span>convective<span class="w"> </span>-m<span class="w"> </span>deck_flow_data<span class="w"> </span>-w<span class="w"> </span><span class="m">1</span>
 </pre></div>
 </div>
-<p>Let us now change the grid type from corner-point to tensor in line 7 of the configuration file.
-Then, we run the simulations and we save the results in a different output folder:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.txt<span class="w"> </span>-o<span class="w"> </span>spe11b_tensor_grid<span class="w"> </span>-m<span class="w"> </span>deck_flow_data<span class="w"> </span>-g<span class="w"> </span>performance_sparse<span class="w"> </span>-t<span class="w"> </span><span class="m">5</span><span class="w"> </span>-r<span class="w"> </span><span class="m">50</span>,1,15<span class="w"> </span>-w<span class="w"> </span><span class="m">1</span>
-</pre></div>
-</div>
-<p>Here we have just set the framework to generate the deck, run the simulations, and generate the performance and sparse data.
+<p>Here we have just set the framework to generate the deck, run the simulations, and generate the performance and sparse data (default value for <strong>-g</strong>).
 Then, to visualize the comparison between both runs, this can be achived by executing:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-c<span class="w"> </span>spe11b
 </pre></div>
 </div>
 <p>The following are some of the figures generated in the compare folder:</p>
 <figure class="align-default">
-<img alt="_images/spe11b_performance.png" src="_images/spe11b_performance.png" />
-</figure>
-<figure class="align-default">
 <img alt="_images/spe11b_sparse_data.png" src="_images/spe11b_sparse_data.png" />
+</figure>
+<figure class="align-default" id="id2">
+<img alt="_images/spe11b_performance.png" src="_images/spe11b_performance.png" />
+<figcaption>
+<p><span class="caption-text">The immiscible and isothermal simulations run faster since they have less dof.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
 </figure>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p><a class="reference external" href="https://cssr-tools.github.io/plopm/examples.html#reading-from-csv-files">This example</a> shows how to use <a class="reference external" href="https://github.com/cssr-tools/plopm">plopm</a> to
-generate nice figures to compare simulation results (both from csv files (e.g., using the <a class="reference external" href="https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4750">benchmark data set</a> ) and from OPM Flow output files).</p>
+generate nice figures to compare simulation results (both from csv files (e.g., using the <a class="reference external" href="https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4750">benchmark data set</a> ) and from OPM Flow output files).
+You can install it by typing in the terminal:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/cssr-tools/plopm.git
+</pre></div>
+</div>
 </div>
 <p>This example uses a very coarser grid to run fast. See the <a class="reference internal" href="benchmark.html"><span class="doc">benchmark</span></a> section for finer grids.</p>
+</section>
+<section id="cp-grids-11-and-18-levels">
+<h2>Cp grids (11 and 18 levels)<a class="headerlink" href="#cp-grids-11-and-18-levels" title="Link to this heading"></a></h2>
+<p>In a <a class="reference external" href="https://arxiv.org/abs/2510.20614">recent paper</a> to history match the FluidFlower data using the laboratory images, a more regular coner-point grid
+was used consisting in 11 levels instead of 18 as the submitted results for the SPE11 benchmark. Then, the corner-point grid from that paper has been included in the
+<strong>pyopmspe11</strong> tool. To use this corner-point grid, then one needs to give an array of size 11 for the variable “z_n” in the toml files. For example, in the
+<a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/spe11b.toml">spe11b.toml</a> in the examples folder, setting z_n to [3, 2, 2, 2, 3, 2, 2, 8, 4, 8, 8, 1] and
+saving the configuration file as spe11b_11-levels.toml, running them (we add the flag <strong>-f 0</strong> to generate the deck and simulation files in the output folder, i.e., no subfolders deck and flow), and using <strong>plopm</strong> to generate the figure:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.toml<span class="w"> </span>-o<span class="w"> </span>18_levels<span class="w"> </span>-f<span class="w"> </span><span class="m">0</span>
+pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b_11-levels.toml<span class="w"> </span>-o<span class="w"> </span>11_levels<span class="w"> </span>-f<span class="w"> </span><span class="m">0</span>
+plopm<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;18_levels/18_LEVELS 11_levels/11_LEVELS&#39;</span><span class="w"> </span>-v<span class="w"> </span>dz<span class="w"> </span>-subfigs<span class="w"> </span><span class="m">2</span>,1<span class="w"> </span>-delax<span class="w"> </span><span class="m">1</span><span class="w"> </span>-z<span class="w"> </span><span class="m">0</span><span class="w"> </span>-suptitle<span class="w"> </span><span class="m">0</span><span class="w"> </span>-grid<span class="w"> </span><span class="s1">&#39;black,1e-2&#39;</span><span class="w"> </span>-cbsfax<span class="w"> </span><span class="m">0</span>.35,0.97,0.3,0.02
+</pre></div>
+</div>
+<img alt="_images/11_levels_dz_i%2C1%2Ck_t5.png" src="_images/11_levels_dz_i%2C1%2Ck_t5.png" />
+</section>
+<section id="localized-lower-domain">
+<h2>Localized lower domain<a class="headerlink" href="#localized-lower-domain" title="Link to this heading"></a></h2>
+<p>The flag <strong>-n lower</strong> results in the generation of files for the lower part (lower facie 5, removing the sealing facie 1) of the models. For example, using the <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/spe11c.toml">spe11c.toml</a> configuration file in the examples folder:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11c.toml<span class="w"> </span>-o<span class="w"> </span>lower_domain<span class="w"> </span>-f<span class="w"> </span><span class="m">0</span><span class="w"> </span>-n<span class="w"> </span>lower
+plopm<span class="w"> </span>-i<span class="w"> </span>lower_domain/LOWER_DOMAIN<span class="w"> </span>-s<span class="w"> </span>,14,<span class="w"> </span>-y<span class="w"> </span><span class="s1">&#39;[1200,700]&#39;</span><span class="w"> </span>-z<span class="w"> </span><span class="m">0</span><span class="w"> </span>-grid<span class="w"> </span><span class="s1">&#39;black,1e-2&#39;</span><span class="w"> </span>-t<span class="w"> </span><span class="s2">&quot;SPE11C Cartesian lower domain (y = 2500 m)&quot;</span><span class="w"> </span>-clabel<span class="w"> </span><span class="s2">&quot;Facies&quot;</span><span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;161;163;160 101;64;147 81;124;66 181;73;57 193;127;97 127;148;191 193;147;56&#39;</span><span class="w"> </span>-cticks<span class="w"> </span><span class="s1">&#39;[7, 6, 5, 4, 3, 2, 1]&#39;</span><span class="w"> </span>-v<span class="w"> </span><span class="s1">&#39;pvtnum - 1 - satnum&#39;</span>
+</pre></div>
+</div>
+<img alt="_images/lower_domain_pvtnum-1-satnum_i%2C14%2Ck_t5.png" src="_images/lower_domain_pvtnum-1-satnum_i%2C14%2Ck_t5.png" />
+<p>See the <a class="reference internal" href="convergence.html"><span class="doc">convergence</span></a> for using the localized domain in the SPE11B corner-point grid case.</p>
 </section>
 </section>
 
@@ -150,7 +181,7 @@ generate nice figures to compare simulation results (both from csv files (e.g., 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023-2025, NORCE Research AS.</p>
+    <p>&#169; Copyright 2023-2026, NORCE Research AS.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

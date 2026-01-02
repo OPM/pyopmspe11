@@ -40,6 +40,22 @@ For example, executing the following line generates the figure below, where the 
 
 .. image:: figs/spe11b_spatial_map_500y_csv_csv_t-1.png
 
+To compare the mobB quantity for these results:
+
+.. code-block:: bash
+    
+    plopm -i "spe11b/ifpen1/spe11b_time_series spe11b/opm4/spe11b_time_series spe11b/sintef2/spe11b_time_series spe11b/stuttgart1/spe11b_time_series full_cp0-z40mish-x40m/spe11b_time_series"  -csv "1,9" -labels "IFPEN1  OPM4  SINTEF2  Stuttgart1  5 m" -ylabel "mobB [kg]" -tunits y -xformat .0f -x '[0,1000]' -lw 5 -e solid
+
+.. image:: figs/spe11b_time_series_csv.png
+
+In general to generate a GIF and compare results, **plopm** can also be used. For example here we compare OPM4 and CAU-KIEL1 every 25 years (note that 'PLOPM' is written in the csv file name to read the values to plot given by the flag **-r**, in this example every 25 years):
+
+.. code-block:: bash
+    
+    plopm -i 'spe11b/opm4/spe11b_spatial_map_PLOPMy spe11b/cau-kiel1/spe11b_spatial_map_PLOPMy' -r 0:1000:25 -csv '1,2,5' -m gif -interval 1000 -loop 1 -subfigs 2,1 -tunits years -t 'OPM4  CAU-KIEL1' -c cet_CET_CBTL1_r -clabel 'CO$_2$ mass fraction in liquid [-]' -cbsfax 0.35,0.87,0.3,0.02 -delax 1
+
+.. image:: figs/csv.gif
+
 .. tip::
 
     See the `plopm online docmunetation <https://cssr-tools.github.io/plopm/>`_ for additional information of supported flag parameters to generate customized PNGs and GIFs.
@@ -49,6 +65,6 @@ Lower domain
 ============
 
 These cases are run in the grid sizes of 320, 160, 80, 40, 20, 10, and 5 meters. Here a different colormap than the paper is used, given as
-a command flag parameter to **plopm** ('-c cet_CET_L19' in line 39 of convergence.py instead of '-c cet_CET_CBTL1_r'). 
+a command flag parameter to **plopm** ('-c cet_CET_L19' in line 42 of convergence.py instead of '-c cet_CET_CBTL1_r'). 
 
 .. figure:: figs/lower_spatial_map_all.png

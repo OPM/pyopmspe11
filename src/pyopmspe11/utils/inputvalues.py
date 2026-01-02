@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 NORCE
+# SPDX-FileCopyrightText: 2023-2026 NORCE Research AS
 # SPDX-License-Identifier: MIT
 
 """
@@ -85,8 +85,11 @@ def postprocesstoml(dic):
     if dic["spe11"] == "spe11c":
         dic["wellCoordF"][0][-1] = dic["dims"][2] - dic["wellCoordF"][0][-1]
         dic["wellCoordF"][1][-1] = dic["dims"][2] - dic["wellCoordF"][1][-1]
-    if dic["spe11"] in ["spe11b", "spe11c"]:
-        dic["rockCond"] = np.array(dic["rockCond"]) * 86400.0 / 1e3  # To [kJ/(m day K)]
+    if "rockCond" not in dic:
+        dic["rockCond"] = [0.0] * 7
+    if "rockExtra" not in dic:
+        dic["rockExtra"] = [0.0, 0.0]
+    dic["rockCond"] = np.array(dic["rockCond"]) * 86400.0 / 1e3  # To [kJ/(m day K)]
     if "co2store" in dic:
         if dic["co2store"] == "gasoil":
             print(dic["msg1"])
