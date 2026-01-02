@@ -4,12 +4,12 @@ flow = "flow --relaxed-max-pv-fraction=0 --newton-min-iterations=1 --enable-tuni
 # Set the model parameters
 spe11 = "spe11a" # Name of the spe case (spe11a, spe11b, or spe11c)
 version = "release" # OPM Flow version (release or master)
-model = "complete" # Name of the co2 model (immiscible, convective, or complete)
+model = "isothermal" # Name of the co2 model (immiscible, isothermal, convective, or complete)
 grid = "tensor" # Type of grid (cartesian, tensor, or corner-point)
 dims = [2.8, 0.01, 1.2] # Length, width, and depth [m]
 x_n = [4, 15, 10, 10, 9, 7] # If cartesian, number of x cells [-]; otherwise, variable array of x-refinement
 y_n = [1] # If cartesian, number of y cells [-]; otherwise, variable array of y-refinement [-] (for spe11c)
-z_n = [5, 9, 13, 20, 13, 9, 5] # If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (18 entries)
+z_n = [5, 9, 13, 20, 13, 9, 5] # If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (11 or 18 entries)
 temperature = [20, 20] # Temperature bottom and top rig [C]
 datum = 1.2 # Datum [m]
 pressure = 1.1e5 # Pressure at the datum [Pa]

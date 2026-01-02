@@ -33,7 +33,7 @@ The current implementation supports the following executable with the argument o
 
 where 
 
--i  The base name of the :doc:`configuration file <./configuration_file>` ('input.txt' by default).
+-i  The base name of the :doc:`configuration file <./configuration_file>` ('input.toml' by default).
 -o  The base name of the :doc:`output folder <./output_folder>` ('output' by default).
 -m  Run the whole framework ('all'), only create decks ('deck'), only run flow ('flow'), only write benchmark data ('data'), only create plots ('plot'), deck and run ('deck_flow'), data and plot ('data_plot'), run and data ('flow_data'), deck, run, and data ('deck_flow_data'), or flow, data, and plot ('flow_data_plot') ('deck_flow' by default).
 -g  Write only the 'dense', 'sparse', 'performance', 'performance-spatial', 'dense_performance', 'dense_sparse', 'performance_sparse', 'dense_performance-spatial', 'dense_performance_sparse', or 'all' ('performance_sparse') by default.

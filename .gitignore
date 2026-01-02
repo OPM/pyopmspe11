@@ -176,10 +176,6 @@ debugging
 developing
 playground
 examples/spe11b
-examples/spe11b_tensor_grid
 
 # Tests
-tests/configs/check_format.py
-tests/configs/is_notebook.py
-**/tests/configs/*/
-**/tests/decks/*/
+tests/output

@@ -4,9 +4,9 @@ Configuration file
 
 In the initial development of **pyopmspe11**, the adopted configuration file format was the
 one described below, i.e., via :ref:`txt` files. The current development of **pyopmspe11** considers
-:ref:`toml` files. To keep compatibility with previous configuration files and Python versions of at least 3.9, 
+:ref:`toml` files. To keep compatibility with previous configuration files, 
 then support for :ref:`txt` files will be kept, while new features will by added using :ref:`toml` configuration 
-files (which requires at least Python3.11).
+files.
 
 .. _txt:
 
@@ -47,30 +47,30 @@ The following input lines in the configuration file are:
 
     """Set the model parameters"""
     spe11c master     #Name of the spe case (spe11a, spe11b, or spe11c) and OPM Flow version (master or release)
-    complete          #Name of the co2 model (immiscible, convective, or complete)
+    complete          #Name of the co2 model (immiscible, isothermal, convective, or complete)
     corner-point      #Type of grid (cartesian, tensor, or corner-point)
     8400 5000 1200    #Length, width, and depth [m]
     420               #If cartesian, number of x cells [-]; otherwise, variable array of x-refinement
     30,40,50,40,30    #If cartesian, number of y cells [-]; otherwise, variable array of y-refinement [-] (for spe11c)
-    5,3,1,2,3,2,4,4,10,4,6,6,4,8,4,15,30,9 #If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (18 entries)
+    5,3,1,2,3,2,4,4,10,4,6,6,4,8,4,15,30,9 #If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (11 or 18 entries)
     70 36.12          #Temperature bottom and top rig [C]            
     300 3e7 0.1       #Datum [m], pressure at the datum [Pa], and multiplier for the permeability in the z direction [-] 
     1e-9 2e-8         #Diffusion (in liquid and gas) [m^2/s]
     8.5e-1 2500       #Rock specific heat and density (for spe11b/c)
     0 5e4 1           #Added pore volume on top boundary (for spe11a [if 0, free flow bc]), pore volume on lateral boundaries, and width of buffer cell [m] (for spe11b/c)
-    150 10            #Elevation of the parabola and back [m] (for spe11c) 
+    150 10            #Maximum elevation difference (relative to the baseline gradient) of the arch in the y direction [m] and back boundary elevation [m] (for spe11c) 
 
 In line 5 you specify if you are using OPM Flow from the master branch or from the latest stable release (OPM-flow 2025.10 release).
 This since there are continuous changues in the OPM master branch. Then we 
 will keep updating the decks for using Flow from master and also we will keep the framework to produce decks compatible for the latest OPM stable release.
 The immiscible model allows for faster prototyping while the complete model includes dissolution of the components in the
-gas and liquid phases, in addition to thermal effects. Details on the convective model can be found in `Mykkeltvedt et al. (2025) <https://link.springer.com/article/10.1007/s11242-024-02141-5>`_. 
+gas and liquid phases, in addition to thermal effects (the isothermal model neglects the thermal effects). Details on the convective model can be found in `Mykkeltvedt et al. (2025) <https://link.springer.com/article/10.1007/s11242-024-02141-5>`_. 
 Regarding the grid type, the cartesian mode generates an uniform grid
 with the defined number of elements in lines 9 to 11. The tensor grid allows to define arrays in each direction where the grid
 is first divided with the number of entries in the array, and after it divides each of these elements by the assigned number in 
 the array entry. The corner-point mode generates a grid where the x and y direction are defined as in the array mode, but the 
-cell faces in the z-direction follows the lines as defined in the `lines_coordinates.geo <https://github.com/OPM/pyopmspe11/blob/main/src/pyopmspe11/reference_mesh/lines_coordinates.geo>`_ script,
-resulting in 18 levels. Then, the z-refinement in each of these levels is set. See the configuration files in the `tests <https://github.com/OPM/pyopmspe11/blob/main/tests>`_ and 
+cell faces in the z-direction follows the lines as defined in either the `horizonts_11.geo <https://github.com/OPM/pyopmspe11/blob/main/src/pyopmspe11/reference_mesh/horizonts_11.geo>`_ or `horizonts_18.geo <https://github.com/OPM/pyopmspe11/blob/main/src/pyopmspe11/reference_mesh/horizonts_18.geo>`_ script,
+resulting in 11 or 18 levels respectively. Then, the z-refinement in each of these levels is set. See the configuration files in the `tests <https://github.com/OPM/pyopmspe11/blob/main/tests>`_ and 
 `benchmark <https://github.com/OPM/pyopmspe11/blob/main/benchmark>`_ folder for the setting of these grids.
 
 .. figure:: figs/satnum.png
@@ -154,7 +154,7 @@ The last part of the configuration file sets the wells radius, location, and the
         25 5 1 50 10 1 0 10 '1* 10'
 
     The first value is defaulted (1*), and the second entry corresponds to TSMAXZ. Note that the TUNING units for the time quantites are in days, for the three SPE cases. See
-    `this configuration file <https://github.com/OPM/pyopmspe11/blob/main/examples/spe11c.txt>`_ for an example setting more TUNING values, where entries are given for the three 
+    `this configuration file <https://github.com/OPM/pyopmspe11/blob/main/examples/spe11c.toml>`_ for an example setting more TUNING values, where entries are given for the three 
     different records (lines) of the TUNING keyword. 
     
 .. warning::
@@ -177,12 +177,12 @@ The previous configuration file can be written using the widely in-use `toml for
     # Set the model parameters
     spe11 = "spe11c" # Name of the spe case (spe11a, spe11b, or spe11c)
     version = "release" # OPM Flow version (release or master)
-    model = "complete" # Name of the co2 model (immiscible, convective, or complete)
+    model = "complete" # Name of the co2 model (immiscible, isothermal, convective, or complete)
     grid = "corner-point" # Type of grid (cartesian, tensor, or corner-point)
     dims = [8400.0, 5000.0, 1200.0] # Length, width, and depth [m]
     x_n = [420] # If cartesian, number of x cells [-]; otherwise, variable array of x-refinement
     y_n = [30, 40, 50, 40, 30] # If cartesian, number of y cells [-]; otherwise, variable array of y-refinement [-] (for spe11c)
-    z_n = [5, 3, 1, 2, 3, 2, 4, 4, 10, 4, 6, 6, 4, 8, 4, 15, 30, 9] # If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (18 entries)
+    z_n = [5, 3, 1, 2, 3, 2, 4, 4, 10, 4, 6, 6, 4, 8, 4, 15, 30, 9] # If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (11 or 18 entries)
     temperature = [70.0, 36.12] # Temperature bottom and top rig [C]
     datum = 300 # Datum [m]
     pressure = 3e7 # Pressure at the datum [Pa]
@@ -235,9 +235,6 @@ The previous configuration file can be written using the widely in-use `toml for
 
 For additional examples of configuration files using toml, see the 
 `examples <https://github.com/OPM/pyopmspe11/tree/main/examples>`_ and `configs <https://github.com/OPM/pyopmspe11/tree/main/tests/configs>`_ folders.
-
-.. note::
-    A Python version of at least 3.11 is requiered to use the toml format. For older Python versions, then use the :ref:`txt` configuration files.
 
 ----------------------
 Additional definitions  

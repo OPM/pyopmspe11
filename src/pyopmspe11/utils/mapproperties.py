@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 NORCE
+# SPDX-FileCopyrightText: 2023-2026 NORCE Research AS
 # SPDX-License-Identifier: MIT
 # pylint: disable=C0302, R0912, R0914, R0915, E1102
 
@@ -1079,7 +1079,7 @@ def get_lines(dic):
                 newline = True
     else:  # simplified format
         with open(
-            f"{dic['pat']}/reference_mesh/horizonts_12.geo",
+            f"{dic['pat']}/reference_mesh/horizonts_11.geo",
             "r",
             encoding="utf8",
         ) as file:

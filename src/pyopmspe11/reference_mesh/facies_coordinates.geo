@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2023 Dennis Gläser <dennis.glaeser@iws.uni-stuttgart.de>
-// SPDX-FileCopyrightText: 2023 NORCE
+// SPDX-FileCopyrightText: 2023-2026 NORCE Research AS
 //
 // SPDX-License-Identifier: MIT
 //

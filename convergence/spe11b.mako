@@ -9,10 +9,10 @@ grid = "corner-point" # Type of grid (cartesian, tensor, or corner-point)
 dims = [8400.0, 1.0, 1200.0] # Length, width, and depth [m]
 % if domain == "full":
 x_n = [${210*2**i}] # If cartesian, number of x cells [-]; otherwise, variable array of x-refinement
-z_n = [${2*2**i},${2*2**i},${int(1.75*2**i)},${int(1.75*2**i)},${2*2**i},${2*2**i},${2*2**i},${int(3.5*2**i)},${int(4.5*2**i)},${int(4.5*2**i)},${2*2**i}] #If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (18 entries)
+z_n = [${2*2**i},${2*2**i},${int(1.75*2**i)},${int(1.75*2**i)},${2*2**i},${2*2**i},${2*2**i},${int(3.5*2**i)},${int(4.5*2**i)},${int(4.5*2**i)},${2*2**i}] #If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (11 or 18 entries)
 % else:
 x_n = [${int(26.25*2**i)}] # If cartesian, number of x cells [-]; otherwise, variable array of x-refinement
-z_n = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,${int(0.5625*2**i)},${int(0.5625*2**i)},1] #If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (18 entries)
+z_n = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,${int(0.5625*2**i)},${int(0.5625*2**i)},1] #If cartesian, number of z cells [-]; if tensor, variable array of z-refinement; if corner-point, fix array of z-refinement (11 or 18 entries)
 % endif
 y_n = [1] # If cartesian, number of y cells [-]; otherwise, variable array of y-refinement [-] (for spe11c)
 temperature = [70, 40] # Temperature bottom and top rig [C]

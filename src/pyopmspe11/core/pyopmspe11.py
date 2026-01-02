@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 NORCE
+# SPDX-FileCopyrightText: 2023-2026 NORCE Research AS
 # SPDX-License-Identifier: MIT
 # pylint: disable=R0912, R0915
 
@@ -101,8 +101,8 @@ def load_parser():
     parser.add_argument(
         "-i",
         "--input",
-        default="input.txt",
-        help="The base name of the input file ('input.txt' by default).",
+        default="input.toml",
+        help="The base name of the input file ('input.toml' by default).",
     )
     parser.add_argument(
         "-m",

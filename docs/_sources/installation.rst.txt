@@ -61,7 +61,7 @@ install the Python requirements in a virtual environment with the following comm
     
     **sudo apt-get install texlive-fonts-recommended texlive-fonts-extra dvipng cm-super**
 
-    For macOS users, see :ref:`macOS`.
+    For macOS users, the LaTeX dependency can be installed from https://www.tug.org/mactex/.
 
 OPM Flow
 --------
@@ -79,7 +79,7 @@ supported either via source builds or through running a virtual machine.
 .. tip::
 
     See the `CI.yml <https://github.com/opm/pyopmspe11/blob/main/.github/workflows/CI.yml>`_ script 
-    for installation of OPM Flow (binary packages) and the pyopmspe11 package in Ubuntu.
+    for installation of OPM Flow (binary packages), LaTeX (optional) libraries, and the pyopmspe11 package in Ubuntu.
 
 Source build in Linux/Windows
 +++++++++++++++++++++++++++++
@@ -170,4 +170,6 @@ After the prerequisites are installed, then building OPM Flow can be achieved wi
 
 This builds OPM Flow, and it exports the path to the flow executable. You can check if the installation of OPM Flow succeded by typing in the terminal **flow \-\-help**.
 
-For macOS, the LaTeX dependency can be installed from https://www.tug.org/mactex/.
+.. tip::
+    See `this repository <https://github.com/daavid00/OPM-Flow_macOS>`_ dedicated to build OPM Flow from source in the latest macOS (GitHub actions).
+    If you still face problems, raise an issue in the GitHub repository, or you could also send an email to the maintainers.

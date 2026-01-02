@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 NORCE
+# SPDX-FileCopyrightText: 2023-2026 NORCE Research AS
 # SPDX-License-Identifier: MIT
 # pylint: disable=R0912, R0801, R0914, R0915
 
@@ -15,6 +15,7 @@ from io import StringIO
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib import colors
 from matplotlib import ticker
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -258,6 +259,8 @@ def performance(dic):
                         delimiter=",",
                         skip_header=1,
                     )
+                if len(csv.flatten()) < 12:
+                    csv = np.array([csv])
                 labels = [
                     f"sum={np.sum(csv[:,1]):.3e}",
                     f"sum={np.sum(csv[:,2]):.3e}",
@@ -460,6 +463,7 @@ def handle_kind(dic, kind):
             "gden",
             "wden",
             "tco2",
+            "temp",
         ]
         dic["units"] = [
             "[Pa]",
@@ -469,12 +473,9 @@ def handle_kind(dic, kind):
             r"[kg/m$^3$]",
             r"[kg/m$^3$]",
             "[kg]",
+            "C",
         ]
-        dic["allplots"] = [-1, -1, -1, -1, -1, -1, -1]
-        if dic["case"] != "spe11a":
-            dic["quantities"] += ["temp"]
-            dic["units"] += ["C"]
-            dic["allplots"] += [-1]
+        dic["allplots"] = [-1, -1, -1, -1, -1, -1, -1, -1]
     else:
         dic["quantities"] = [
             "cvol",
@@ -534,6 +535,8 @@ def dense_data(dic):
                 )
             )
         for k, quantity in enumerate(dic["quantities"]):
+            if k == csvs[0].shape[1] - dic["dims"]:
+                break
             quan = np.array(
                 [csvs[0][i][dic["dims"] + k] for i in range(csvs[0].shape[0])]
             )
@@ -583,12 +586,17 @@ def dense_data(dic):
                         f"Plotting {quantity}, time {j+1} out of {len(dic['ptimes'])}"
                     )
                 axis = dic["fig"].add_subplot(len(dic["ptimes"]), 3, j + 1)
+
                 imag = axis.pcolormesh(
                     dic["xmsh"],
                     dic["zmsh"],
                     dic["plot"][j],
                     shading="flat",
-                    cmap=dic["cmaps"][k],
+                    cmap=(
+                        dic["cmaps"][k]
+                        if dic["min"] != dic["max"]
+                        else colors.ListedColormap(["#1319bf"])
+                    ),
                 )
                 if quantity == "tco2":
                     axis.set_title(
