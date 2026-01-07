@@ -48,7 +48,7 @@ jobs:
       
     - name: Run the tests
       run: |
-        pytest -x --cov=pyopmspe11 --cov-report term-missing tests/
+        pytest --cov=pyopmspe11 --exitfirst --cov-report term-missing tests/
         
     - name: Build documentation
       run: |
