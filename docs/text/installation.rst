@@ -97,7 +97,7 @@ in the terminal the following lines (which in turn should build flow in the fold
     do  git clone https://github.com/OPM/opm-$repo.git
         mkdir build/opm-$repo
         cd build/opm-$repo
-        cmake -DUSE_MPI=1 -DWITH_NDEBUG=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$CURRENT_DIRECTORY/build/opm-common;$CURRENT_DIRECTORY/build/opm-grid" $CURRENT_DIRECTORY/opm-$repo
+        cmake -DWITH_NDEBUG=1 -DCMAKE_BUILD_TYPE=Release $CURRENT_DIRECTORY/opm-$repo
         if [[ $repo == simulators ]]; then
             make -j5 flow
         else
@@ -117,7 +117,7 @@ Brew formula for macOS
 ++++++++++++++++++++++
 For macOS, there are no available binary packages, so OPM Flow needs to be built from source. Recently, a formula to build flow using brew has
 been added in `https://github.com/cssr-tools/homebrew-opm <https://github.com/cssr-tools/homebrew-opm>`_. 
-Then, you can try to install flow (v2025.10) by simply typing:
+Then, you can try to install flow (v2026.02) by simply typing:
 
 .. code-block:: console
 
@@ -130,46 +130,4 @@ You can check if the installation of OPM Flow succeded by typing in the terminal
 
 Source build in macOS
 +++++++++++++++++++++
-If you would like to build the latest OPM Flow from the master branch, then you can first install the prerequisites using brew:
-
-.. code-block:: console
-
-    brew install cjson boost openblas suite-sparse python@3.14 cmake
-
-In addition, it is recommended to uprade and update your macOS to the latest available versions (the following steps have 
-worked for macOS Tahoe 26.2.0 with Apple clang version 17.0.0).
-After the prerequisites are installed, then building OPM Flow can be achieved with the following bash lines:
-
-.. code-block:: console
-
-    CURRENT_DIRECTORY="$PWD"
-
-    for module in common geometry grid istl
-    do  git clone https://gitlab.dune-project.org/core/dune-$module.git
-        cd dune-$module && git checkout v2.10.0 && cd ..
-        ./dune-common/bin/dunecontrol --only=dune-$module cmake -DCMAKE_DISABLE_FIND_PACKAGE_MPI=1
-        ./dune-common/bin/dunecontrol --only=dune-$module make -j5
-    done
-
-    mkdir build
-
-    for repo in common grid simulators
-    do  git clone https://github.com/OPM/opm-$repo.git
-        mkdir build/opm-$repo && cd build/opm-$repo
-        cmake -DUSE_MPI=0 -DWITH_NDEBUG=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$CURRENT_DIRECTORY/dune-common/build-cmake;$CURRENT_DIRECTORY/dune-grid/build-cmake;$CURRENT_DIRECTORY/dune-geometry/build-cmake;$CURRENT_DIRECTORY/dune-istl/build-cmake;$CURRENT_DIRECTORY/build/opm-common;$CURRENT_DIRECTORY/build/opm-grid" $CURRENT_DIRECTORY/opm-$repo
-        if [[ $repo == simulators ]]; then
-            make -j5 flow
-        else
-            make -j5 opm$repo
-        fi
-        cd ../..
-    done
-
-    echo "export PATH=\$PATH:$CURRENT_DIRECTORY/build/opm-simulators/bin" >> ~/.zprofile
-    source ~/.zprofile
-
-This builds OPM Flow, and it exports the path to the flow executable. You can check if the installation of OPM Flow succeded by typing in the terminal **flow \-\-help**.
-
-.. tip::
-    See `this repository <https://github.com/daavid00/OPM-Flow_macOS>`_ dedicated to build OPM Flow from source in the latest macOS (GitHub actions).
-    If you still face problems, raise an issue in the GitHub repository, or you could also send an email to the maintainers.
+See `this repository <https://github.com/daavid00/OPM-Flow_macOS>`_ dedicated to build OPM Flow from source in the latest macOS (GitHub actions), and tested with **pycopm**, a repository in cssr-tools.

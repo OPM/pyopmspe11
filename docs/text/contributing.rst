@@ -22,14 +22,14 @@ Contribute to the software
 #. In the main repo execute:
 
     #. **pip install -r dev-requirements.txt** (this installs the `dev-requirements.txt <https://github.com/cssr-tools/pyopmspe11/blob/main/dev-requirements.txt>`_)
-    #. **black src/ tests/** (this formats the code)
+    #. **black --target-version py312 src/ tests/** (this formats the code)
     #. **pylint src/ tests/** (this analyses the code, and might rise issues that need to be fixed before the pull request)
     #. **mypy \-\-ignore-missing-imports src/ tests/** (this is a static checker, and might rise issues that need to be fixed before the pull request)
     #. **pytest \-\-cov=pyopmspe11 \-\-cov-report term-missing tests/** (this runs locally the tests in ca. 30 minutes, and might rise issues that need to be fixed before the pull request)
     #. **pushd docs & make html** (this generates the documentation, and might rise issues that need to be fixed before the pull request; if the build succeeds and if the contribution changes the documentation, then delete all content from the `docs <https://github.com/cssr-tools/pyopmspe11/tree/main/docs>`_ folder except `Makefile <https://github.com/OPM/pyopmspe11/blob/main/docs/Makefile>`_, `text <https://github.com/OPM/pyopmspe11/blob/main/docs/text>`_, and `.nojekyll <https://github.com/OPM/pyopmspe11/blob/main/docs/.nojekyll>`_, after copy all contents from the docs/_build/html/ folder, and finally paste them in the `docs <https://github.com/cssr-tools/pyopmspe11/tree/main/docs>`_ folder)
     
     .. tip::
-        See the `CI.yml <https://github.com/cssr-tools/pyopmspe11/blob/main/.github/workflows/CI.yml>`_ script and the `Actions <https://github.com/cssr-tools/pyopmspe11/actions>`_ for installation of pyopmspe11, OPM Flow (binary packages), and dependencies, as well as the execution of the six previous steps in Ubuntu 24.04 using Python 3.11.
+        See the `CI.yml <https://github.com/cssr-tools/pyopmspe11/blob/main/.github/workflows/CI.yml>`_ script and the `Actions <https://github.com/cssr-tools/pyopmspe11/actions>`_ for installation of pyopmspe11, OPM Flow (binary packages), and dependencies, as well as the execution of the six previous steps in Ubuntu 24.04 using Python 3.12.
         For macOS users, see the `ci_pycopm_macos.yml <https://github.com/daavid00/OPM-Flow_macOS/blob/main/.github/workflows/ci_pycopm_macos.yml>`_ script and the `OPM-Flow_macOS Actions <https://github.com/cssr-tools/pycopm/actions>`_ for installation of pycopm (a related tool to pyopmspe11), OPM Flow (source build), and dependencies in macOS 26 using Python 3.13.
         In addition for macOS, you need to add the directory containing the OPM Flow executable to your system's PATH environment variable (e.g., export PATH=$PATH:/Users/yourname/pyopmspe11/build/opm-simulators/bin).
 
