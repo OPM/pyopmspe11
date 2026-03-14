@@ -13,7 +13,7 @@ Contributions are more than welcome using the fork and pull request approach ðŸ™
 1. Work on your own fork of the main repo
 1. In the main repo execute:
     1. **pip install -r dev-requirements.txt** (this installs the [_dev-requirements.txt_](https://github.com/cssr-tools/pyopmspe11/blob/main/dev-requirements.txt))
-    1. **black src/ tests/** (this formats the code)
+    1. **black --target-version py312 src/ tests/** (this formats the code)
     1. **pylint src/ tests/** (this analyses the code, and might rise issues that need to be fixed before the pull request)
     1. **mypy --ignore-missing-imports src/ tests/** (this is a static checker, and might rise issues that need to be fixed before the pull request)
     1. **pytest --cov=pyopmspe11 --cov-report term-missing tests/** (this runs locally the tests in ca. 30 minutes, and might rise issues that need to be fixed before the pull request)

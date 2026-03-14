@@ -16,10 +16,10 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Set up Python 3.11
+    - name: Set up Python 3.12
       uses: actions/setup-python@v2
       with:
-        python-version: 3.11
+        python-version: 3.12
     
     - name: Install Flow Simulator
       run: |
@@ -42,7 +42,7 @@ jobs:
         
     - name: Check code style and linting 
       run: |
-        black --check src/ tests/
+        black --target-version py312 --check src/ tests/
         pylint src/ tests/
         mypy --ignore-missing-imports src/ tests/
       
