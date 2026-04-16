@@ -181,5 +181,4 @@ playground
 examples/spe11b
 
 # Tests
-tests/output
 test_outputs

@@ -7,7 +7,6 @@ Script to write the benchmark data
 """
 
 import argparse
-import warnings
 import csv
 from io import StringIO
 from shapely.geometry import Polygon
@@ -82,15 +81,7 @@ def main():
         help="Set to 0 to not create the subfolders deck, flow, data, and figures, i.e., to "
         "write all generated files in the output directory ('1' by default).",
     )
-    parser.add_argument(
-        "-s",
-        "--showpywarn",
-        default=0,
-        help="Set to 1 to show Python warnings ('0' by default).",
-    )
     cmdargs = vars(parser.parse_known_args()[0])
-    if int(cmdargs["showpywarn"]) != 1:  # Show or hidde python warnings
-        warnings.warn = lambda *args, **kwargs: None
     dig = {"path": cmdargs["path"].strip()}
     dig["case"] = cmdargs["deck"].strip()
     dig["mode"] = cmdargs["generate"].strip()
