@@ -8,6 +8,9 @@ on:
    
 jobs:
   run-pyopmspe11-local:
+    permissions:
+      contents: read
+      pull-requests: write
     timeout-minutes: 60
     runs-on: ubuntu-latest
 
@@ -44,11 +47,12 @@ jobs:
       run: |
         black --target-version py312 --check src/ tests/
         pylint src/ tests/
+        ruff check src/ tests/
         mypy --ignore-missing-imports src/ tests/
       
     - name: Run the tests
       run: |
-        pytest --cov=pyopmspe11 --exitfirst --cov-report term-missing tests/
+        pytest tests/ --cov=pyopmspe11 --exitfirst --cov-report term-missing --basetemp=test_outputs
         
     - name: Build documentation
       run: |
