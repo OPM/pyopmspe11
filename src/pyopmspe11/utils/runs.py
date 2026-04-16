@@ -44,7 +44,6 @@ def plotting(dic):
         "-d " + f"{dic['spe11']}",
         "-g " + f"{dic['generate']}",
         "-r " + f"{dic['resolution']}",
-        "-s " + f"{dic['showpywarn']}",
         "-f " + f"{dic['subfolders']}",
         "-t " + f"{dic['time_data']}",
         "-n " + f"{'lower' if dic['lower'] else ''}",
@@ -76,7 +75,6 @@ def data(dic):
         "-t " + f"{dic['time_data']}",
         "-w " + f"{dic['dt_data']}",
         "-f " + f"{dic['subfolders']}",
-        "-s " + f"{dic['showpywarn']}",
         "-n " + f"{'lower' if dic['lower'] else ''}",
     ]
     print(

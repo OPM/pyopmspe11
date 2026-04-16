@@ -1,117 +1,72 @@
 # SPDX-FileCopyrightText: 2023-2026 NORCE Research AS
 # SPDX-License-Identifier: MIT
-# pylint: disable=R0912, R0801, R0914, R0915
+# pylint: disable=R0902,R0912,R0801,R0913,R0914,R0915,R0917
 
-"""
-Script to plot the results
-"""
+"""Script to plot the results"""
 
 import os
 import argparse
 import shutil
-import warnings
 import math as mt
+import subprocess
 from io import StringIO
+from dataclasses import dataclass
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib import colors
-from matplotlib import ticker
+from matplotlib import colors, ticker
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+SECONDS_IN_YEAR = 31536000.0
 
 font = {"family": "normal", "weight": "normal", "size": 20}
 matplotlib.rc("font", **font)
 
-SECONDS_IN_YEAR = 31536000.0
+
+@dataclass(frozen=True)
+class CaseConfig:
+    """Case configuration"""
+
+    case: str
+    tlabel: str
+    dims: int
+    tscale: float
+    lower: bool
 
 
-def main():
-    """Generate figures"""
-    parser = argparse.ArgumentParser(description="Main script to plot the results")
-    parser.add_argument(
-        "-p",
-        "--folder",
-        default="output",
-        help="The folder to the opm simulations.",
-    )
-    parser.add_argument(
-        "-c",
-        "--compare",
-        default="",
-        help="Generate a common plot for the current folders.",
-    )
-    parser.add_argument(
-        "-d",
-        "--deck",
-        default="spe11b",
-        help="The simulated spe case.",
-    )
-    parser.add_argument(
-        "-g",
-        "--generate",
-        default="sparse",
-        help="Plot only the 'dense', 'sparse', 'performance', 'performance-spatial', "
-        "'dense_performance', 'dense_sparse', 'performance_sparse', "
-        "'dense_performance-spatial', 'dense_performance_sparse', or 'all'",
-    )
-    parser.add_argument(
-        "-s",
-        "--showpywarn",
-        default=0,
-        help="Set to 1 to show Python warnings ('0' by default).",
-    )
-    parser.add_argument(
-        "-f",
-        "--subfolders",
-        default=1,
-        help="Set to 0 to not create the subfolders deck, flow, data, and figures, i.e., to "
-        "write all generated files in the output directory ('1' by default).",
-    )
-    parser.add_argument(
-        "-t",
-        "--time",
-        default="5",
-        help="If one number, time step for the spatial maps (spe11a [h]; spe11b/c "
-        "[y]) ('5' by default); otherwise, times separated by commas.",
-    )
-    parser.add_argument(
-        "-n",
-        "--neighbourhood",
-        default="",
-        help="Region to model; valid options are 'lower' or '' (all reservoir) ('' by default)",
-    )
-    cmdargs = vars(parser.parse_known_args()[0])
-    if int(cmdargs["showpywarn"]) != 1:  # Show or hidde python warnings
-        warnings.warn = lambda *args, **kwargs: None
-    dic = {"folders": [cmdargs["folder"].strip()]}
-    dic["case"] = cmdargs["deck"].strip()
-    dic["generate"] = cmdargs["generate"].strip()
-    dic["compare"] = cmdargs["compare"]  # No empty, then the create compare folder
-    dic["subfolders"] = int(cmdargs["subfolders"]) == 1  # Create subfolders
-    dic["time"] = np.genfromtxt(StringIO(cmdargs["time"]), delimiter=",", dtype=int)
-    dic["lower"] = bool(cmdargs["neighbourhood"].strip())  # Lower model
-    plot_results(dic)
-    print(f"The png figures have been saved on {dic['where']}")
+@dataclass(frozen=True)
+class RunConfig:
+    """Runtime configuration"""
+
+    folders: list
+    generate: str
+    compare: str
+    where: str
+    dataf: str
+    colors: list
+    linestyles: list
+    props: dict
 
 
-def plot_results(dic):
-    """
-    Make some figures using the csv files from the benchmark data
+@dataclass(frozen=True)
+class GridState:
+    """Grid configuration"""
 
-    Args:
-        dic (dict): Global dictionary
+    times: list
+    xmsh: np.ndarray
+    zmsh: np.ndarray
+    xmx: list
+    ymy: list
+    zmz: list
+    kinds: list
+    cmaps: list
+    dims: int
 
-    Returns:
-        None
 
-    """
+def configure_matplotlib():
+    """Parameters for the figures"""
     if shutil.which("latex") == "None":
-        print(
-            "\nLaTeX is recommended for the figures to show the "
-            "nice fonts and given formats. You can install it by "
-            "following the instructions in the pyopmspe11's "
-            "documentation."
-        )
+        print("\nLaTeX is recommended for the figures.")
     plt.rcParams.update(
         {
             "text.usetex": shutil.which("latex") != "None",
@@ -125,111 +80,79 @@ def plot_results(dic):
             "figure.figsize": (10, 5),
         }
     )
-    dic["colors"] = [
-        "#1f77b4",
-        "#ff7f0e",
-        "#2ca02c",
-        "#d62728",
-        "#9467bd",
-        "#8c564b",
-        "#e377c2",
-        "#7f7f7f",
-        "#bcbd22",
-        "#17becf",
-        "r",
-        "k",
+
+
+def load_csv(path):
+    """Load the csv"""
+    return np.genfromtxt(path, delimiter=",", skip_header=1)
+
+
+def load_time_series(folder, case):
+    """Read the time_series.csv"""
+    path = f"{folder}/data/{case}_time_series.csv"
+    if not os.path.isfile(path):
+        path = f"{folder}/{case}_time_series.csv"
+    return load_csv(path)
+
+
+def load_performance(folder, case, kind):
+    """Read the performance_time_series*.csv"""
+    path = f"{folder}/data/{case}_performance_time_series{kind}.csv"
+    if not os.path.isfile(path):
+        path = f"{folder}/{case}_performance_time_series{kind}.csv"
+    return load_csv(path)
+
+
+def load_spatial(folder, dataf, case, kind, time, tlabel):
+    """Read the spatial_map_*.csv"""
+    return load_csv(f"{folder}{dataf}/{case}{kind}_spatial_map_{time}{tlabel}.csv")
+
+
+def performance_label(csv, index, folder):
+    """Set the metrics in the labels for the performance plots"""
+    stats = [
+        f"sum={np.sum(csv[:,1]):.3e}",
+        f"sum={np.sum(csv[:,2]):.3e}",
+        f"max={np.max(csv[:,3]):.3e}",
+        f"max={csv[-1,4]:.3e}",
+        f"sum={np.sum(csv[:,5]):.3e}",
+        f"sum={np.sum(csv[:,6]):.3e}",
+        f"sum={np.sum(csv[:,7]):.3e}",
+        f"sum={np.sum(csv[:,8]):.3e}",
+        f"sum={np.sum(csv[:,9]):.3e}",
     ]
-    dic["linestyle"] = [
-        "--",
-        (0, (1, 1)),
-        "-.",
-        (0, (1, 10)),
-        (0, (1, 1)),
-        (5, (10, 3)),
-        (0, (5, 10)),
-        (0, (5, 5)),
-        (0, (5, 1)),
-        (0, (3, 10, 1, 10)),
-        (0, (3, 5, 1, 5)),
-        (0, (3, 1, 1, 1)),
-        (0, (3, 5, 1, 5, 1, 5)),
-        (0, (3, 10, 1, 10, 1, 10)),
-        (0, (3, 1, 1, 1, 1, 1)),
-        (0, ()),
-        "-",
-    ]
-    dic["props"] = {"boxstyle": "round", "facecolor": "wheat", "alpha": 0.1}
-    if dic["compare"]:
-        dic["case"] = dic["compare"]
-        dic["where"] = "compare/"
-        dic["folders"] = sorted(
-            [name for name in os.listdir(".") if os.path.isdir(name)]
-        )
-        if "compare" not in dic["folders"]:
-            os.system("mkdir compare")
+    return f"{stats[index]} ({folder})"
+
+
+def generate_grid(folder, dataf, tlabel, dims, time):
+    """Create the meshgrid"""
+    files = [f for f in os.listdir(f"{folder}{dataf}") if f.endswith(f"{tlabel}.csv")]
+    times = np.array([int(f[19:-5]) for f in files if len(f) < 30])
+    if times.size == 0:
+        times = np.array([int(f[31:-5]) for f in files])
+    times = list(times[np.argsort(times)])
+    if time.size == 1:
+        if time > 0:
+            times = list(range(0, times[-1] + 1, time))
         else:
-            dic["folders"].remove("compare")
+            times = [time]
     else:
-        if dic["subfolders"]:
-            dic["dataf"] = "/data"
-            dic["where"] = f"{dic['folders'][0]}/figures"
-        else:
-            dic["dataf"] = ""
-            dic["where"] = dic["folders"][0]
-    if dic["case"] == "spe11a":
-        dic["tlabel"] = "h"
-        dic["dims"] = 2
-        dic["tscale"] = 3600.0
-    else:
-        dic["tlabel"] = "y"
-        dic["dims"] = 2
-        dic["tscale"] = SECONDS_IN_YEAR
-    if dic["case"] == "spe11c":
-        dic["dims"] = 3
-    if dic["generate"] in [
-        "all",
-        "performance",
-        "dense_performance",
-        "performance_sparse",
-        "dense_performance_sparse",
-    ]:
-        performance(dic)
-    if dic["generate"] in [
-        "all",
-        "sparse",
-        "dense_sparse",
-        "performance_sparse",
-        "dense_performance_sparse",
-    ]:
-        sparse_data(dic)
-    if dic["compare"]:
-        return
-    plt.rcParams.update({"axes.grid": False})
-    if dic["generate"] in [
-        "all",
-        "dense",
-        "performance-spatial",
-        "dense_performance",
-        "dense_sparse",
-        "dense_performance-spatial",
-        "dense_performance_sparse",
-    ]:
-        dense_data(dic)
+        times = list(time)
+    csv = load_csv(f"{folder}{dataf}/{files[0]}")
+    length = csv[-1][0] + csv[0][0]
+    width = csv[-1][dims - 2] + csv[0][dims - 2]
+    height = csv[-1][dims - 1] + csv[0][dims - 1]
+    xmx = np.linspace(0, length, round(length / (2.0 * csv[0][0])) + 1)
+    ymy = np.linspace(0, width, round(width / (2.0 * csv[0][dims - 2])) + 1)
+    zmz = np.linspace(0, height, round(height / (2.0 * csv[0][dims - 1])) + 1)
+    xmsh, zmsh = np.meshgrid(xmx, zmz[::-1])
+    return times, xmsh, zmsh, xmx, ymy, zmz
 
 
-def performance(dic):
-    """
-    Make the plots related to the performance data (e.g., number of Newton iterations)
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        None
-
-    """
+def performance(case_cfg, run_cfg):
+    """Plot the performance"""
     for kind in ["", "_detailed"]:
-        dic["fig"] = plt.figure(figsize=(40, 75))
+        fig = plt.figure(figsize=(40, 75))
         plots = [
             "tstep",
             "fsteps",
@@ -242,66 +165,34 @@ def performance(dic):
             "tlinsol",
         ]
         ylabels = ["s", "\\#", "kg", "\\#", "\\#", "\\#", "\\#", "s", "s"]
-        for k, (plot, ylabel) in enumerate(zip(plots, ylabels)):
-            axis = dic["fig"].add_subplot(9, 5, k + 1)
-            for nfol, fol in enumerate(dic["folders"]):
-                if os.path.isfile(
-                    f"{fol}/data/{dic['case']}_performance_time_series{kind}.csv"
-                ):
-                    csv = np.genfromtxt(
-                        f"{fol}/data/{dic['case']}_performance_time_series{kind}.csv",
-                        delimiter=",",
-                        skip_header=1,
-                    )
-                else:
-                    csv = np.genfromtxt(
-                        f"{fol}/{dic['case']}_performance_time_series{kind}.csv",
-                        delimiter=",",
-                        skip_header=1,
-                    )
+        for i, (plot, ylabel) in enumerate(zip(plots, ylabels)):
+            axis = fig.add_subplot(9, 5, i + 1)
+            for folder_index, folder in enumerate(run_cfg.folders):
+                csv = load_performance(folder, case_cfg.case, kind)
                 if len(csv.flatten()) < 12:
                     csv = np.array([csv])
-                labels = [
-                    f"sum={np.sum(csv[:,1]):.3e}",
-                    f"sum={np.sum(csv[:,2]):.3e}",
-                    f"max={np.max(csv[:,3]):.3e}",
-                    f"max={csv[-1][4]:.3e}",
-                    f"sum={np.sum(csv[:,5]):.3e}",
-                    f"sum={np.sum(csv[:,6]):.3e}",
-                    f"sum={np.sum(csv[:,7]):.3e}",
-                    f"sum={np.sum(csv[:,8]):.3e}",
-                    f"sum={np.sum(csv[:,9]):.3e}",
-                ]
-                times = [csv[i][0] / dic["tscale"] for i in range(csv.shape[0])]
-                labels[k] += f" ({fol.split('/')[-1]})"
+                times = csv[:, 0] / case_cfg.tscale
+                label = performance_label(csv, i, folder.split("/")[-1])
                 axis.step(
                     times,
-                    [csv[i][k + 1] for i in range(csv.shape[0])],
+                    csv[:, i + 1],
                     lw=2,
-                    color=dic["colors"][nfol],
-                    label=labels[k],
+                    color=run_cfg.colors[folder_index],
+                    label=label,
                 )
-                axis.set_title(plot + f", {dic['case']}")
-                axis.set_ylabel(ylabel)
-                axis.set_xlabel(f"Time [{dic['tlabel']}]")
-                axis.legend()
-        dic["fig"].savefig(
-            f"{dic['where']}/{dic['case']}_performance{kind}.png", bbox_inches="tight"
+            axis.set_title(f"{plot}, {case_cfg.case}")
+            axis.set_ylabel(ylabel)
+            axis.set_xlabel(f"Time [{case_cfg.tlabel}]")
+            axis.legend()
+        fig.savefig(
+            f"{run_cfg.where}/{case_cfg.case}_performance{kind}.png",
+            bbox_inches="tight",
         )
 
 
-def sparse_data(dic):
-    """
-    Make the plots related to the sparse data (e.g., pressure in sensors over time)
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        None
-
-    """
-    dic["fig"] = plt.figure(figsize=(25, 40))
+def sparse_data(case_cfg, run_cfg):
+    """Plot the sparse data"""
+    fig = plt.figure(figsize=(25, 40))
     plots = ["sensors", "boxA", "boxB", "boxC", "facie 1"]
     ylabels = ["Presure [Pa]", "Mass [kg]", "Mass [kg]", "Length [m]", "Mass [kg]"]
     labels = [
@@ -311,358 +202,345 @@ def sparse_data(dic):
         ["MC"],
         ["sealTot"],
     ]
-    dic["nfigs"] = 5
-    if dic["case"] != "spe11a":
-        plots += ["boundaries"]
-        ylabels += ["Mass [kg]"]
+    nfigs = 5
+    if case_cfg.case != "spe11a":
+        plots.append("boundaries")
+        ylabels.append("Mass [kg]")
         labels.append(["boundTot"])
-        dic["nfigs"] += 1
+        nfigs += 1
     for k, (plot, ylabel) in enumerate(zip(plots, ylabels)):
-        axis = dic["fig"].add_subplot(dic["nfigs"], 3, k + 1)
-        for nfol, fol in enumerate(dic["folders"]):
-            ncol = sum(len(labels[i]) for i in range(k)) + 1
+        axis = fig.add_subplot(nfigs, 3, k + 1)
+        for folder_index, folder in enumerate(run_cfg.folders):
+            column = sum(len(labels[i]) for i in range(k)) + 1
             axis.text(
                 0.7,
-                0.15 + nfol * 0.05,
-                dic["folders"][-1 - nfol].split("/")[-1],
+                0.15 + folder_index * 0.05,
+                run_cfg.folders[-1 - folder_index].split("/")[-1],
                 transform=axis.transAxes,
                 verticalalignment="top",
-                bbox=dic["props"],
-                color=dic["colors"][len(dic["folders"]) - nfol - 1],
+                bbox=run_cfg.props,
+                color=run_cfg.colors[len(run_cfg.folders) - folder_index - 1],
             )
-            if os.path.isfile(f"{fol}/data/{dic['case']}_time_series.csv"):
-                csv = np.genfromtxt(
-                    f"{fol}/data/{dic['case']}_time_series.csv",
-                    delimiter=",",
-                    skip_header=1,
-                )
-            else:
-                csv = np.genfromtxt(
-                    f"{fol}/{dic['case']}_time_series.csv",
-                    delimiter=",",
-                    skip_header=1,
-                )
-            times = [csv[i][0] / dic["tscale"] for i in range(csv.shape[0])]
+            csv = load_time_series(folder, case_cfg.case)
+            times = csv[:, 0] / case_cfg.tscale
             for j, label in enumerate(labels[k]):
-                if nfol == 0:
+                if folder_index == 0:
                     axis.plot(
                         times,
-                        [csv[i][ncol] for i in range(csv.shape[0])],
+                        csv[:, column],
                         label=label,
                         color="k",
-                        linestyle=dic["linestyle"][-1 + j],
+                        linestyle=run_cfg.linestyles[-1 + j],
                     )
                 if label == "MC":
                     axis.plot(
                         times,
-                        [csv[i][ncol] for i in range(csv.shape[0])],
-                        color=dic["colors"][nfol],
-                        linestyle=dic["linestyle"][-1 + j + nfol],
+                        csv[:, column],
+                        color=run_cfg.colors[folder_index],
+                        linestyle=run_cfg.linestyles[-1 + j + folder_index],
                     )
                 else:
                     axis.plot(
                         times,
-                        [csv[i][ncol] for i in range(csv.shape[0])],
-                        color=dic["colors"][nfol],
-                        linestyle=dic["linestyle"][-1 + j],
+                        csv[:, column],
+                        color=run_cfg.colors[folder_index],
+                        linestyle=run_cfg.linestyles[-1 + j],
                     )
-                ncol += 1
-        axis.set_title(plot + f", {dic['case']}")
+                column += 1
+        axis.set_title(f"{plot}, {case_cfg.case}")
         axis.set_ylabel(ylabel)
-        axis.set_xlabel(f"Time [{dic['tlabel']}]")
+        axis.set_xlabel(f"Time [{case_cfg.tlabel}]")
         axis.legend()
-    dic["fig"].savefig(
-        f"{dic['where']}/{dic['case']}_sparse_data.png", bbox_inches="tight"
-    )
+    fig.savefig(f"{run_cfg.where}/{case_cfg.case}_sparse_data.png", bbox_inches="tight")
 
 
-def generate_grid(dic):
-    """
-    Create the plotting grid and load the times
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    dic["files"] = [
-        f
-        for f in os.listdir(f"{dic['folders'][0]}{dic['dataf']}")
-        if f.endswith(f"{dic['tlabel']}.csv")
-    ]
-    dic["times"] = np.array(
-        [int(file[19:-5]) for file in dic["files"] if len(file) < 30]
-    )
-    if dic["times"].size == 0:
-        dic["times"] = np.array([int(file[31:-5]) for file in dic["files"]])
-    dic["sort_ind"] = np.argsort(dic["times"])
-    dic["times"] = [dic["times"][i] for i in dic["sort_ind"]]
-    if dic["time"].size == 1:
-        if dic["time"] > 0:
-            dic["times"] = list(range(0, dic["times"][-1] + 1, dic["time"]))
+def dense_data(case_cfg, run_cfg, grid):
+    """Plot the dense data"""
+    for kind in grid.kinds:
+        if kind == "":
+            quantities = [
+                "pressure",
+                "sgas",
+                "xco2",
+                "xh20",
+                "gden",
+                "wden",
+                "tco2",
+                "temp",
+            ]
+            units = [
+                "[Pa]",
+                "[-]",
+                "[-]",
+                "[-]",
+                r"[kg/m$^3$]",
+                r"[kg/m$^3$]",
+                "[kg]",
+                "C",
+            ]
+            allplots = [-1] * 8
         else:
-            dic["times"] = [dic["time"]]
-    else:
-        dic["times"] = list(dic["time"])
-    csv = np.genfromtxt(
-        f"{dic['folders'][0]}{dic['dataf']}/{dic['files'][0]}",
-        delimiter=",",
-        skip_header=1,
-    )
-    dic["length"] = csv[-1][0] + csv[0][0]
-    dic["width"] = csv[-1][dic["dims"] - 2] + csv[0][dic["dims"] - 2]
-    dic["height"] = csv[-1][dic["dims"] - 1] + csv[0][dic["dims"] - 1]
-    dic["xmx"] = np.linspace(
-        0, dic["length"], round(dic["length"] / (2.0 * csv[0][0])) + 1
-    )
-    dic["ymy"] = np.linspace(
-        0, dic["width"], round(dic["width"] / (2.0 * csv[0][dic["dims"] - 2])) + 1
-    )
-    dic["zmz"] = np.linspace(
-        0, dic["height"], round(dic["height"] / (2.0 * csv[0][dic["dims"] - 1])) + 1
-    )
-    dic["xmsh"], dic["zmsh"] = np.meshgrid(dic["xmx"], dic["zmz"][::-1])
-    if dic["generate"] in ["all", "dense_performance-spatial"]:
-        dic["kinds"] = ["", "_performance"]
-    elif dic["generate"][:5] == "dense":
-        dic["kinds"] = [""]
-    else:
-        dic["kinds"] = ["_performance"]
-    dic["cmaps"] = [
-        "seismic",
-        "jet",
-        "viridis",
-        "viridis_r",
-        "PuOr",
-        "PuOr_r",
-        "turbo",
-        "coolwarm",
-    ]
-
-
-def handle_kind(dic, kind):
-    """
-    Identify between dense and performance-spatial
-
-    Args:
-        dic (dict): Global dictionary\n
-        kind (list): Strings with the type of data to generate
-
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    if kind == "":
-        dic["quantities"] = [
-            "pressure",
-            "sgas",
-            "xco2",
-            "xh20",
-            "gden",
-            "wden",
-            "tco2",
-            "temp",
-        ]
-        dic["units"] = [
-            "[Pa]",
-            "[-]",
-            "[-]",
-            "[-]",
-            r"[kg/m$^3$]",
-            r"[kg/m$^3$]",
-            "[kg]",
-            "C",
-        ]
-        dic["allplots"] = [-1, -1, -1, -1, -1, -1, -1, -1]
-    else:
-        dic["quantities"] = [
-            "cvol",
-            "arat",
-            "CO2 max_norm_res",
-            "H2O max_norm_res",
-            "CO2 mb_error",
-            "H2O mb_error",
-        ]
-        dic["units"] = [r"[m$^3$]", "[-]", "[-]", "[-]", "[-]", "[-]"]
-        dic["allplots"] = [0, 0, -1, -1, -1, -1]
-
-
-def ini_quantity_plot(dic):
-    """
-    Initialized the size of the Figure according to the spe case
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    if dic["case"] != "spe11a":
-        dic["fig"] = plt.figure(figsize=(50, 3 * len(dic["ptimes"])))
-        if dic["lower"]:
-            dic["fig"] = plt.figure(figsize=(100, 3 * len(dic["ptimes"])))
-    else:
-        dic["fig"] = plt.figure(figsize=(45, 6.5 * len(dic["ptimes"])), dpi=80)
-    for name in ["plot", "min", "max", "sum"]:
-        dic[f"{name}"] = []
-
-
-def dense_data(dic):
-    """
-    Make the plots related to the dense data (e.g., saturation maps)
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        None
-
-    """
-    generate_grid(dic)
-    for kind in dic["kinds"]:
-        handle_kind(dic, kind)
-        csvs = []
-        for tmap in dic["times"]:
-            csvs.append(
-                np.genfromtxt(
-                    f"{dic['folders'][0]}{dic['dataf']}/{dic['case']}{kind}_spatial_map_"
-                    + f"{tmap}{dic['tlabel']}.csv",
-                    delimiter=",",
-                    skip_header=1,
+            quantities = [
+                "cvol",
+                "arat",
+                "CO2 max_norm_res",
+                "H2O max_norm_res",
+                "CO2 mb_error",
+                "H2O mb_error",
+            ]
+            units = [r"[m$^3$]", "[-]", "[-]", "[-]", "[-]", "[-]"]
+            allplots = [0, 0, -1, -1, -1, -1]
+        for qi, quantity in enumerate(quantities):
+            csvs = [
+                load_spatial(
+                    run_cfg.folders[0],
+                    run_cfg.dataf,
+                    case_cfg.case,
+                    kind,
+                    t,
+                    case_cfg.tlabel,
                 )
-            )
-        for k, quantity in enumerate(dic["quantities"]):
-            if k == csvs[0].shape[1] - dic["dims"]:
+                for t in grid.times
+            ]
+            if qi == csvs[0].shape[1] - grid.dims:
                 break
-            quan = np.array(
-                [csvs[0][i][dic["dims"] + k] for i in range(csvs[0].shape[0])]
-            )
-            if np.isnan(quan).all():
+            first = csvs[0][:, grid.dims + qi]
+            if np.isnan(first).all():
                 continue
-            dic["minc"], dic["maxc"] = (
-                np.min(quan[~np.isnan(quan)]),
-                np.max(quan[~np.isnan(quan)]),
-            )
-            dic["ptimes"] = dic["times"][: dic["allplots"][k]] + [dic["times"][-1]]
-            ini_quantity_plot(dic)
-            for n, tmap in enumerate(dic["ptimes"]):
-                quan = np.array(
-                    [csvs[n][i][dic["dims"] + k] for i in range(csvs[n].shape[0])]
-                )
-                dic["min"].append(np.min(quan[~np.isnan(quan)]))
-                dic["max"].append(np.max(quan[~np.isnan(quan)]))
+            minc, maxc = np.nanmin(first), np.nanmax(first)
+            ptimes = grid.times[: allplots[qi]] + [grid.times[-1]]
+            if case_cfg.case != "spe11a":
+                fig = plt.figure(figsize=(50, 3 * len(ptimes)))
+                if case_cfg.lower:
+                    fig = plt.figure(figsize=(100, 3 * len(ptimes)))
+            else:
+                fig = plt.figure(figsize=(45, 6.5 * len(ptimes)), dpi=80)
+            plots = []
+            mins = []
+            maxs = []
+            sums = []
+            for ti, time in enumerate(ptimes):
+                values = csvs[ti][:, grid.dims + qi]
+                mins.append(np.nanmin(values))
+                maxs.append(np.nanmax(values))
                 if quantity == "tco2":
-                    dic["sum"].append(np.sum(quan[quan >= 0]))
-                dic["minc"] = min(dic["minc"], dic["min"][-1])
-                dic["maxc"] = max(dic["maxc"], dic["max"][-1])
-                dic["plot"].append(np.zeros([len(dic["zmz"]) - 1, len(dic["xmx"]) - 1]))
-                for i in np.arange(0, len(dic["zmz"]) - 1):
-                    if dic["case"] != "spe11c":
-                        dic["plot"][-1][-1 - i, :] = quan[
-                            i * (len(dic["xmx"]) - 1) : (i + 1) * (len(dic["xmx"]) - 1)
-                        ]
+                    sums.append(np.sum(values[values >= 0]))
+                minc = min(minc, mins[-1])
+                maxc = max(maxc, maxs[-1])
+                arr = np.zeros((len(grid.zmz) - 1, len(grid.xmx) - 1))
+                for zi in range(len(grid.zmz) - 1):
+                    if case_cfg.case != "spe11c":
+                        start = zi * (len(grid.xmx) - 1)
+                        arr[-1 - zi, :] = values[start : start + (len(grid.xmx) - 1)]
                     else:
-                        dic["plot"][-1][-1 - i, :] = quan[
-                            (i * (len(dic["ymy"]) - 1) * (len(dic["xmx"]) - 1))
-                            + mt.floor((len(dic["ymy"]) - 1) / 2)
-                            * (len(dic["xmx"]) - 1) : (
-                                (len(dic["xmx"]) - 1)
-                                + i * (len(dic["ymy"]) - 1) * (len(dic["xmx"]) - 1)
-                                + mt.floor((len(dic["ymy"]) - 1) / 2)
-                                * (len(dic["xmx"]) - 1)
-                            )
-                        ]
-            for j, time in enumerate(dic["ptimes"]):
-                if j + 1 < len(dic["ptimes"]):
-                    print(
-                        f"Plotting {quantity}, time {j+1} out of {len(dic['ptimes'])}",
-                        end="\r",
-                    )
-                else:
-                    print(
-                        f"Plotting {quantity}, time {j+1} out of {len(dic['ptimes'])}"
-                    )
-                axis = dic["fig"].add_subplot(len(dic["ptimes"]), 3, j + 1)
-
+                        mid = mt.floor((len(grid.ymy) - 1) / 2)
+                        slice_size = len(grid.xmx) - 1
+                        offset = (zi * (len(grid.ymy) - 1) + mid) * slice_size
+                        arr[-1 - zi, :] = values[offset : offset + slice_size]
+                plots.append(arr)
+            for j, time in enumerate(ptimes):
+                axis = fig.add_subplot(len(ptimes), 3, j + 1)
                 imag = axis.pcolormesh(
-                    dic["xmsh"],
-                    dic["zmsh"],
-                    dic["plot"][j],
+                    grid.xmsh,
+                    grid.zmsh,
+                    plots[j],
                     shading="flat",
                     cmap=(
-                        dic["cmaps"][k]
-                        if dic["min"] != dic["max"]
+                        grid.cmaps[qi]
+                        if mins != maxs
                         else colors.ListedColormap(["#1319bf"])
                     ),
                 )
                 if quantity == "tco2":
-                    axis.set_title(
-                        f"{time}{dic['tlabel']}, {quantity} "
-                        + dic["units"][k]
-                        + f"(sum={dic['sum'][j]:.1E})"
-                        + f", {dic['case']} ({dic['folders'][0].split('/')[-1]})"
-                    )
+                    title = f"{time}{case_cfg.tlabel}, {quantity} {units[qi]}(sum={sums[j]:.1E})"
                 else:
-                    if dic["allplots"][k] == -1:
-                        timet = f"{time}{dic['tlabel']}, "
-                    else:
-                        timet = ""
-                    axis.set_title(
-                        timet
-                        + f"{quantity} "
-                        + dic["units"][k]
-                        + f"(min={dic['min'][j]:.1E}, max={dic['max'][j]:.1E})"
-                        + f", {dic['case']} ({dic['folders'][0].split('/')[-1]})"
-                    )
+                    prefix = f"{time}{case_cfg.tlabel}, " if allplots[qi] == -1 else ""
+                    title = f"{prefix}{quantity} {units[qi]}(min={mins[j]:.1E}, max={maxs[j]:.1E})"
+                axis.set_title(
+                    f"{title}, {case_cfg.case} ({run_cfg.folders[0].split('/')[-1]})"
+                )
                 axis.axis("scaled")
                 axis.xaxis.set_major_locator(ticker.MaxNLocator(14))
                 axis.yaxis.set_major_locator(ticker.MaxNLocator(4))
-                imag.set_clim(
-                    dic["minc"],
-                    dic["maxc"],
-                )
+                imag.set_clim(minc, maxc)
                 if j % 3 != 0:
                     axis.set_yticks([])
                 if (
                     j
-                    < ((len(dic["ptimes"]) - len(dic["ptimes"]) % 3) / 3) * 3
-                    - (3 - len(dic["ptimes"]) % 3)
-                    or (len(dic["ptimes"]) % 3 == 1 and j == len(dic["ptimes"]) - 4)
-                    or (len(dic["ptimes"]) % 3 == 2 and j == len(dic["ptimes"]) - 5)
+                    < ((len(ptimes) - len(ptimes) % 3) / 3) * 3 - (3 - len(ptimes) % 3)
+                    or (len(ptimes) % 3 == 1 and j == len(ptimes) - 4)
+                    or (len(ptimes) % 3 == 2 and j == len(ptimes) - 5)
                 ):
                     axis.set_xticks([])
                 if (
                     (j + 1) % 3 == 0
-                    or len(dic["ptimes"]) == 1
-                    or (len(dic["ptimes"]) == 2 and j == 1)
+                    or len(ptimes) == 1
+                    or (len(ptimes) == 2 and j == 1)
                 ):
                     divider = make_axes_locatable(axis)
-                    vect = np.linspace(
-                        dic["minc"],
-                        dic["maxc"],
-                        5,
-                        endpoint=True,
-                    )
-                    dic["fig"].colorbar(
+                    fig.colorbar(
                         imag,
                         cax=divider.append_axes("right", size="5%", pad=0.05),
-                        orientation="vertical",
-                        ticks=vect,
+                        ticks=np.linspace(minc, maxc, 5),
                         format=lambda x, _: f"{x:.2e}",
                     )
-                if dic["lower"]:
-                    if dic["case"] == "spe11a":
-                        axis.set_ylim([0, 0.55])
-                    else:
-                        axis.set_ylim([0, 550])
-            dic["fig"].savefig(
-                f"{dic['where']}/{dic['case']}_{quantity}_2Dmaps.png",
+                if case_cfg.lower:
+                    axis.set_ylim([0, 0.55] if case_cfg.case == "spe11a" else [0, 550])
+            fig.savefig(
+                f"{run_cfg.where}/{case_cfg.case}_{quantity}_2Dmaps.png",
                 bbox_inches="tight",
             )
-            plt.close()
+            plt.close(fig)
+
+
+def plot_results(args):
+    """Orchestrate the plotting"""
+    configure_matplotlib()
+    where = ""
+    dataf = ""
+    if args["compare"]:
+        args["deck"] = args["compare"]
+        args["neighbourhood"] = ""
+        where = "compare/"
+        folders = sorted(
+            [n for n in os.listdir(".") if os.path.isdir(n) and n != "compare"]
+        )
+        if not os.path.isdir("compare"):
+            subprocess.run(["mkdir", "compare"], check=False)
+    else:
+        folders = [args["folder"].strip()]
+        if int(args["subfolders"]) == 1:
+            dataf = "/data"
+            where = f"{folders[0]}/figures"
+        else:
+            where = folders[0]
+    if args["deck"] == "spe11a":
+        case_cfg = CaseConfig(args["deck"], "h", 2, 3600.0, bool(args["neighbourhood"]))
+    else:
+        case_cfg = CaseConfig(
+            args["deck"], "y", 2, SECONDS_IN_YEAR, bool(args["neighbourhood"])
+        )
+    if args["deck"] == "spe11c":
+        case_cfg = CaseConfig(
+            args["deck"], "y", 3, SECONDS_IN_YEAR, bool(args["neighbourhood"])
+        )
+    run_cfg = RunConfig(
+        folders,
+        args["generate"],
+        args["compare"],
+        where,
+        dataf,
+        [
+            "#1f77b4",
+            "#ff7f0e",
+            "#2ca02c",
+            "#d62728",
+            "#9467bd",
+            "#8c564b",
+            "#e377c2",
+            "#7f7f7f",
+            "#bcbd22",
+            "#17becf",
+            "r",
+            "k",
+        ],
+        [
+            "--",
+            (0, (1, 1)),
+            "-.",
+            (0, (1, 10)),
+            (0, (1, 1)),
+            (5, (10, 3)),
+            (0, (5, 10)),
+            (0, (5, 5)),
+            (0, (5, 1)),
+            (0, (3, 10, 1, 10)),
+            (0, (3, 5, 1, 5)),
+            (0, (3, 1, 1, 1)),
+            (0, (3, 5, 1, 5, 1, 5)),
+            (0, (3, 10, 1, 10, 1, 10)),
+            (0, (3, 1, 1, 1, 1, 1)),
+            (0, ()),
+            "-",
+        ],
+        {"boxstyle": "round", "facecolor": "wheat", "alpha": 0.1},
+    )
+    if args["generate"] in [
+        "all",
+        "performance",
+        "dense_performance",
+        "performance_sparse",
+        "dense_performance_sparse",
+    ]:
+        performance(case_cfg, run_cfg)
+    if args["generate"] in [
+        "all",
+        "sparse",
+        "dense_sparse",
+        "performance_sparse",
+        "dense_performance_sparse",
+    ]:
+        sparse_data(case_cfg, run_cfg)
+    if args["compare"]:
+        return
+    plt.rcParams.update({"axes.grid": False})
+    if args["generate"] in [
+        "all",
+        "dense",
+        "performance-spatial",
+        "dense_performance",
+        "dense_sparse",
+        "dense_performance-spatial",
+        "dense_performance_sparse",
+    ]:
+        time = np.genfromtxt(StringIO(args["time"]), delimiter=",", dtype=int)
+        times, xmsh, zmsh, xmx, ymy, zmz = generate_grid(
+            run_cfg.folders[0], run_cfg.dataf, case_cfg.tlabel, case_cfg.dims, time
+        )
+        kinds = (
+            ["", "_performance"]
+            if args["generate"] in ["all", "dense_performance-spatial"]
+            else [""] if args["generate"].startswith("dense") else ["_performance"]
+        )
+        grid = GridState(
+            times,
+            xmsh,
+            zmsh,
+            xmx,
+            ymy,
+            zmz,
+            kinds,
+            [
+                "seismic",
+                "jet",
+                "viridis",
+                "viridis_r",
+                "PuOr",
+                "PuOr_r",
+                "turbo",
+                "coolwarm",
+            ],
+            case_cfg.dims,
+        )
+        dense_data(case_cfg, run_cfg, grid)
+
+
+def main():
+    """Entry point"""
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description="Main script to plot the results",
+    )
+    parser.add_argument("-p", "--folder", default="output", type=str.strip)
+    parser.add_argument("-c", "--compare", default="", type=str.strip)
+    parser.add_argument("-d", "--deck", default="spe11b", type=str.strip)
+    parser.add_argument("-g", "--generate", default="sparse", type=str.strip)
+    parser.add_argument("-f", "--subfolders", default="1", type=str.strip)
+    parser.add_argument("-t", "--time", default="5", type=str.strip)
+    parser.add_argument("-n", "--neighbourhood", default="", type=str.strip)
+    args = vars(parser.parse_known_args()[0])
+    plot_results(args)
+    print(f"The png figures have been saved on {args['folder']}")
 
 
 if __name__ == "__main__":
