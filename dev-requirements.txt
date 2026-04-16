@@ -3,5 +3,6 @@ numpydoc
 mypy
 pylint
 pytest-cov
+ruff
 sphinx
 sphinx-rtd-theme

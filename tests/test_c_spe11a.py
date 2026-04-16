@@ -3,7 +3,6 @@
 
 """Test the spe11a case"""
 
-import os
 import pathlib
 import subprocess
 from opm.io.ecl import ESmry as OpmSummary
@@ -12,13 +11,9 @@ from opm.io.ecl import EclFile as OpmFile
 testpth: pathlib.Path = pathlib.Path(__file__).parent
 
 
-def test_spe11a():
-    """See configs/spe11a_data_format.toml"""
-    if not os.path.exists(f"{testpth}/output"):
-        os.mkdir(f"{testpth}/output")
-    if not os.path.exists(f"{testpth}/output/benchmark"):
-        os.mkdir(f"{testpth}/output/benchmark")
-    os.chdir(f"{testpth}/output/benchmark")
+def test_c_spe11a(test_c_i_workdir, monkeypatch):
+    """Run spe11a and validate outputs"""
+    monkeypatch.chdir(test_c_i_workdir)
     subprocess.run(
         [
             "pyopmspe11",
@@ -39,8 +34,8 @@ def test_spe11a():
         ],
         check=True,
     )
-    file = f"{testpth}/output/benchmark/spe11a/data/spe11a_time_series.csv"
-    assert os.path.exists(file)
-    case = f"{testpth}/output/benchmark/spe11a/flow/SPE11A"
+    csv = test_c_i_workdir / "spe11a/data/spe11a_time_series.csv"
+    assert csv.exists()
+    case = test_c_i_workdir / "spe11a/flow/SPE11A"
     assert abs(OpmSummary(f"{case}.SMSPEC")["FGMIP"][-1] - 0.0046843435) < 1e-6
     assert abs(sum(OpmFile(f"{case}.INIT")["PORV"]) - 0.013631029) < 1e-6

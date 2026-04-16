@@ -4,9 +4,9 @@ Contributions are more than welcome using the fork and pull request approach ðŸ™
 
 ## Ground Rules
 
-- We use Black code formatting
-- We use Pylint
-- We document our code
+- We use [_Black code formatting_](https://black.readthedocs.io/en/stable/)
+- We use [_Pylint_](https://pylint.readthedocs.io/en/stable/)
+- We use [_Ruff_](https://docs.astral.sh/ruff/)
 
 ## Contribute to the software
 
@@ -15,6 +15,7 @@ Contributions are more than welcome using the fork and pull request approach ðŸ™
     1. **pip install -r dev-requirements.txt** (this installs the [_dev-requirements.txt_](https://github.com/cssr-tools/pyopmspe11/blob/main/dev-requirements.txt))
     1. **black --target-version py312 src/ tests/** (this formats the code)
     1. **pylint src/ tests/** (this analyses the code, and might rise issues that need to be fixed before the pull request)
+    1. **ruff check src/ tests/ publication/** (this also analyses the code, and might rise issues that need to be fixed before the pull request)
     1. **mypy --ignore-missing-imports src/ tests/** (this is a static checker, and might rise issues that need to be fixed before the pull request)
     1. **pytest --cov=pyopmspe11 --cov-report term-missing tests/** (this runs locally the tests in ca. 30 minutes, and might rise issues that need to be fixed before the pull request)
     1. **pushd docs & make html** (this generates the documentation, and might rise issues that need to be fixed before the pull request; if the build succeeds and if the contribution changes the documentation, then delete all content from the [_docs_](https://github.com/cssr-tools/pyopmspe11/tree/main/docs) folder except [_Makefile_](https://github.com/OPM/pyopmspe11/blob/main/docs/Makefile), [_text_](https://github.com/OPM/pyopmspe11/blob/main/docs/text), and [_.nojekyll_](https://github.com/OPM/pyopmspe11/blob/main/docs/.nojekyll), after copy all contents from the docs/_build/html/ folder, and finally paste them in the [_docs_](https://github.com/cssr-tools/pyopmspe11/tree/main/docs) folder)

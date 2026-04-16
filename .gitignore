@@ -143,6 +143,9 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+# ruff
+.ruff_cache/
+
 # Pyre type checker
 .pyre/
 
@@ -179,3 +182,4 @@ examples/spe11b
 
 # Tests
 tests/output
+test_outputs
