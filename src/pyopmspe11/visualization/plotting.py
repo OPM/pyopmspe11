@@ -92,7 +92,9 @@ def load_time_series(folder, case):
     path = f"{folder}/data/{case}_time_series.csv"
     if not os.path.isfile(path):
         path = f"{folder}/{case}_time_series.csv"
-    return load_csv(path)
+    if not os.path.isfile(path):
+        return None, False
+    return load_csv(path), True
 
 
 def load_performance(folder, case, kind):
@@ -100,7 +102,9 @@ def load_performance(folder, case, kind):
     path = f"{folder}/data/{case}_performance_time_series{kind}.csv"
     if not os.path.isfile(path):
         path = f"{folder}/{case}_performance_time_series{kind}.csv"
-    return load_csv(path)
+    if not os.path.isfile(path):
+        return None, True
+    return load_csv(path), True
 
 
 def load_spatial(folder, dataf, case, kind, time, tlabel):
@@ -168,7 +172,11 @@ def performance(case_cfg, run_cfg):
         for i, (plot, ylabel) in enumerate(zip(plots, ylabels)):
             axis = fig.add_subplot(9, 5, i + 1)
             for folder_index, folder in enumerate(run_cfg.folders):
-                csv = load_performance(folder, case_cfg.case, kind)
+                csv, has_performance_series = load_performance(
+                    folder, case_cfg.case, kind
+                )
+                if not has_performance_series:
+                    return
                 if len(csv.flatten()) < 12:
                     csv = np.array([csv])
                 times = csv[:, 0] / case_cfg.tscale
@@ -221,7 +229,9 @@ def sparse_data(case_cfg, run_cfg):
                 bbox=run_cfg.props,
                 color=run_cfg.colors[len(run_cfg.folders) - folder_index - 1],
             )
-            csv = load_time_series(folder, case_cfg.case)
+            csv, has_time_series = load_time_series(folder, case_cfg.case)
+            if not has_time_series:
+                return
             times = csv[:, 0] / case_cfg.tscale
             for j, label in enumerate(labels[k]):
                 if folder_index == 0:
@@ -290,7 +300,13 @@ def dense_data(case_cfg, run_cfg, grid):
             ]
             units = [r"[m$^3$]", "[-]", "[-]", "[-]", "[-]", "[-]"]
             allplots = [0, 0, -1, -1, -1, -1]
+        nplots = len(quantities)
+
         for qi, quantity in enumerate(quantities):
+            if qi + 1 < nplots:
+                print(f"Processing dense{kind} data {qi+1} out of {nplots}", end="\r")
+            else:
+                print(f"Processing dense{kind} data {qi+1} out of {nplots}")
             csvs = [
                 load_spatial(
                     run_cfg.folders[0],

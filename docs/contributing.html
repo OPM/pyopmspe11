@@ -109,10 +109,10 @@ documentation about collaborating with pull request; also, looking at previous m
 <blockquote>
 <div><ol class="arabic simple">
 <li><p><strong>pip install -r dev-requirements.txt</strong> (this installs the <a class="reference external" href="https://github.com/cssr-tools/pyopmspe11/blob/main/dev-requirements.txt">dev-requirements.txt</a>)</p></li>
-<li><p><strong>black –target-version py312 src/ tests/</strong> (this formats the code)</p></li>
-<li><p><strong>pylint src/ tests/</strong> (this analyses the code, and might rise issues that need to be fixed before the pull request)</p></li>
-<li><p><strong>ruff check src/ tests/ publication/</strong> (this also analyses the code, and might rise issues that need to be fixed before the pull request)</p></li>
-<li><p><strong>mypy --ignore-missing-imports src/ tests/</strong> (this is a static checker, and might rise issues that need to be fixed before the pull request)</p></li>
+<li><p><strong>black –target-version py312 src/ tests/ convergence/</strong> (this formats the code)</p></li>
+<li><p><strong>pylint src/ tests/ convergence/</strong> (this analyses the code, and might rise issues that need to be fixed before the pull request)</p></li>
+<li><p><strong>ruff check src/ tests/ convergence/</strong> (this also analyses the code, and might rise issues that need to be fixed before the pull request)</p></li>
+<li><p><strong>mypy --ignore-missing-imports src/ tests/ convergence/</strong> (this is a static checker, and might rise issues that need to be fixed before the pull request)</p></li>
 <li><p><strong>pytest --cov=pyopmspe11 --cov-report term-missing tests/</strong> (this runs locally the tests in ca. 30 minutes, and might rise issues that need to be fixed before the pull request)</p></li>
 <li><p><strong>pushd docs &amp; make html</strong> (this generates the documentation, and might rise issues that need to be fixed before the pull request; if the build succeeds and if the contribution changes the documentation, then delete all content from the <a class="reference external" href="https://github.com/cssr-tools/pyopmspe11/tree/main/docs">docs</a> folder except <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/docs/Makefile">Makefile</a>, <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/docs/text">text</a>, and <a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/docs/.nojekyll">.nojekyll</a>, after copy all contents from the docs/_build/html/ folder, and finally paste them in the <a class="reference external" href="https://github.com/cssr-tools/pyopmspe11/tree/main/docs">docs</a> folder)</p></li>
 </ol>

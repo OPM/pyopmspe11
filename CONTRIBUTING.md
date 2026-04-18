@@ -13,10 +13,10 @@ Contributions are more than welcome using the fork and pull request approach ðŸ™
 1. Work on your own fork of the main repo
 1. In the main repo execute:
     1. **pip install -r dev-requirements.txt** (this installs the [_dev-requirements.txt_](https://github.com/cssr-tools/pyopmspe11/blob/main/dev-requirements.txt))
-    1. **black --target-version py312 src/ tests/** (this formats the code)
-    1. **pylint src/ tests/** (this analyses the code, and might rise issues that need to be fixed before the pull request)
-    1. **ruff check src/ tests/ publication/** (this also analyses the code, and might rise issues that need to be fixed before the pull request)
-    1. **mypy --ignore-missing-imports src/ tests/** (this is a static checker, and might rise issues that need to be fixed before the pull request)
+    1. **black --target-version py312 src/ tests/ convergence/** (this formats the code)
+    1. **pylint src/ tests/ convergence/** (this analyses the code, and might rise issues that need to be fixed before the pull request)
+    1. **ruff check src/ tests/ convergence/** (this also analyses the code, and might rise issues that need to be fixed before the pull request)
+    1. **mypy --ignore-missing-imports src/ tests/ convergence/** (this is a static checker, and might rise issues that need to be fixed before the pull request)
     1. **pytest --cov=pyopmspe11 --cov-report term-missing tests/** (this runs locally the tests in ca. 30 minutes, and might rise issues that need to be fixed before the pull request)
     1. **pushd docs & make html** (this generates the documentation, and might rise issues that need to be fixed before the pull request; if the build succeeds and if the contribution changes the documentation, then delete all content from the [_docs_](https://github.com/cssr-tools/pyopmspe11/tree/main/docs) folder except [_Makefile_](https://github.com/OPM/pyopmspe11/blob/main/docs/Makefile), [_text_](https://github.com/OPM/pyopmspe11/blob/main/docs/text), and [_.nojekyll_](https://github.com/OPM/pyopmspe11/blob/main/docs/.nojekyll), after copy all contents from the docs/_build/html/ folder, and finally paste them in the [_docs_](https://github.com/cssr-tools/pyopmspe11/tree/main/docs) folder)
     * Tip for Linux users: See the [_CI.yml_](https://github.com/cssr-tools/pyopmspe11/blob/main/.github/workflows/CI.yml) script and the [_Actions_](https://github.com/cssr-tools/pyopmspe11/actions) for installation of pyopmspe11, OPM Flow (binary packages), and dependencies, as well as the execution of the six previous steps in Ubuntu 24.04 using Python 3.11.
