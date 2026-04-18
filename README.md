@@ -12,9 +12,6 @@ This repository contains scripts to set up a workflow using Python for the three
 and to reproduce the sumbitted results from the OPM team published in [_the SPE11 benchmark paper_](https://www.sciencedirect.com/science/article/pii/S1750583625002178).
 
 ## Installation
-You will first need to install
-* Flow (https://opm-project.org, Release 2025.10 or current master branches)
-
 To install the _pyopmspe11_ executable from the development version: 
 
 ```bash
@@ -40,7 +37,12 @@ pip install --upgrade pip setuptools wheel
 pip install -e .
 # For contributions/testing/linting, install the dev-requirements
 pip install -r dev-requirements.txt
-``` 
+```
+
+To generate only the input files (e.g., .DATA, .GRID, .INC), this does not required to have OPM Flow installed, and in principle should work in Windows without using the subsystem for Linux. Then, one could always generate a deck with the grid and all include files, and modify them in order to use other simulators different than OPM Flow.
+
+If you are insterested in running the cases via ***pyopmspe11*** and generating the CSV files with the benchmark format, then you will first need to install
+* Flow (https://opm-project.org, Release 2025.10 or current master branches)
 
 See the [_installation_](https://OPM.github.io/pyopmspe11/installation.html) for further details on building OPM Flow from the master branches in Linux, Windows (via [_WSL_](https://learn.microsoft.com/en-us/windows/wsl/)), and macOS, as well as the LaTeX (optional) dependency.
 

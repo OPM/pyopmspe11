@@ -45,10 +45,10 @@ jobs:
         
     - name: Check code style and linting 
       run: |
-        black --target-version py312 --check src/ tests/
-        pylint src/ tests/
-        ruff check src/ tests/
-        mypy --ignore-missing-imports src/ tests/
+        black --target-version py312 --check src/ tests/ convergence/
+        pylint src/ tests/ convergence/
+        ruff check src/ tests/ convergence/
+        mypy --ignore-missing-imports src/ tests/ convergence/
       
     - name: Run the tests
       run: |
