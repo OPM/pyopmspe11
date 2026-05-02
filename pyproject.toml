@@ -30,7 +30,6 @@ dependencies = [
     "mako",
     "matplotlib",
     "opm",
-    "pandas",
     "pyarrow",
     "rtree",
     "scipy",

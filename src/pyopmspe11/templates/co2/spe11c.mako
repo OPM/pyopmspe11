@@ -4,16 +4,16 @@
 RUNSPEC
 ----------------------------------------------------------------------------
 DIMENS 
-${dic['noCells'][0]} ${dic['noCells'][1]} ${dic['noCells'][2]} /
+${dic['nxyz'][0]} ${dic['nxyz'][1]} ${dic['nxyz'][2]} /
 
 EQLDIMS
 /
 
 TABDIMS
 % if dic['model'] != 'convective':
-${dic['noSands']} /
+7 /
 % else:
-${dic['noSands']} ${dic['noSands']} /
+7 7 /
 % endif
 
 WATER
@@ -54,29 +54,29 @@ FLUXNUM.INC /
 % if dic['model'] != 'immiscible' and sum(dic["dispersion"]) > 0:
 
 DISPERC
-${dic['noCells'][0]*dic['noCells'][1]*dic['noCells'][2]}*0 /
+${dic['nxyz'][0]*dic['nxyz'][1]*dic['nxyz'][2]}*0 /
 % endif
 
 EQUALREG
-% for i in range(dic['noSands']):
+% for i in range(7):
 PORO    ${f"{dic['rock'][i][1]:E}"} ${i+1} F /
 % endfor
-% for i in range(dic['noSands']):
+% for i in range(7):
 PERMX   ${f"{dic['rock'][i][0]:E}"} ${i+1} F /
 % endfor
-% for i in range(dic['noSands']):
+% for i in range(7):
 PERMY   ${f"{dic['rock'][i][0]:E}"} ${i+1} F /
 % endfor
-% for i in range(dic['noSands']):
+% for i in range(7):
 PERMZ   ${f"{dic['rock'][i][0]*dic['kzMult']:E}"} ${i+1} F /
 % endfor
 % if dic['model'] in ["complete", "convective"]:
-% for i in range(dic['noSands']):
+% for i in range(7):
 THCONR  ${f"{dic['rockCond'][i]:E}"} ${i+1} F /
 % endfor
 % endif
 % if dic['model'] != 'immiscible' and sum(dic["dispersion"]) > 0:
-% for i in range(dic['noSands']):
+% for i in range(7):
 DISPERC ${f"{dic['dispersion'][i]:E}"} ${i+1} F /
 % endfor
 % endif
@@ -84,8 +84,8 @@ DISPERC ${f"{dic['dispersion'][i]:E}"} ${i+1} F /
 % if dic['model'] in ["complete", "convective"]:
 
 BCCON 
-1 1 ${dic['noCells'][0]} 1 ${dic['noCells'][1]} 1 1 Z- /
-2 1 ${dic['noCells'][0]} 1 ${dic['noCells'][1]} ${dic['noCells'][2]} ${dic['noCells'][2]} Z /
+1 1 ${dic['nxyz'][0]} 1 ${dic['nxyz'][1]} 1 1 Z- /
+2 1 ${dic['nxyz'][0]} 1 ${dic['nxyz'][1]} ${dic['nxyz'][2]} ${dic['nxyz'][2]} Z /
 /
 % endif
 ----------------------------------------------------------------------------
@@ -104,7 +104,7 @@ TABLES.INC /
 DIFFAWAT
 ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
 % if dic['model'] == 'convective':
-% for i in range(dic['noSands']-1):
+% for i in range(6):
 /
 % endfor
 % endif
@@ -112,7 +112,7 @@ ${dic["diffusion"][0]} ${dic["diffusion"][0]} /
 DIFFAGAS
 ${dic["diffusion"][1]} ${dic["diffusion"][1]} /
 % if dic['model'] == 'convective':
-% for i in range(dic['noSands']-1):
+% for i in range(6):
 /
 % endfor
 % endif
@@ -122,7 +122,7 @@ ${dic["diffusion"][1]} ${dic["diffusion"][1]} /
 SPECROCK
 ${min(dic["temperature"][0], dic["temperature"][1])} ${dic["rockExtra"][0]*dic["rockExtra"][1]}
 ${max(dic["temperature"][0], dic["temperature"][1]) if dic["temperature"][0]!=dic["temperature"][1] else dic["temperature"][0]+1} ${dic["rockExtra"][0]*dic["rockExtra"][1]} / --Table 1
-% for i in range(dic['noSands']-1): 
+% for i in range(6): 
 / --Defaulted to table 1
 % endfor
 
@@ -184,7 +184,7 @@ BASIC=2 DEN PCGW RESIDUAL ${f"RSWSAT /" if dic['model'] != 'immiscible' else "/"
 % if dic['model'] == 'convective':
 
 DRSDTCON
-% if 'drsdtcon' in dic:
+% if dic['drsdtcon']:
 % for row in dic['drsdtcon']:
 ${str([val for val in row])[1:-1]} /
 % endfor

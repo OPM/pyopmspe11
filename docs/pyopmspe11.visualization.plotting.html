@@ -88,95 +88,207 @@
   <section id="module-pyopmspe11.visualization.plotting">
 <span id="pyopmspe11-visualization-plotting-module"></span><h1>pyopmspe11.visualization.plotting module<a class="headerlink" href="#module-pyopmspe11.visualization.plotting" title="Link to this heading"></a></h1>
 <p>Script to plot the results</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.CaseConfig">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">CaseConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">case</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tlabel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tscale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.plotting.CaseConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Case configuration</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.CaseConfig.case">
+<span class="sig-name descname"><span class="pre">case</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.CaseConfig.case" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.CaseConfig.dims">
+<span class="sig-name descname"><span class="pre">dims</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.CaseConfig.dims" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.CaseConfig.lower">
+<span class="sig-name descname"><span class="pre">lower</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.CaseConfig.lower" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.CaseConfig.tlabel">
+<span class="sig-name descname"><span class="pre">tlabel</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.CaseConfig.tlabel" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.CaseConfig.tscale">
+<span class="sig-name descname"><span class="pre">tscale</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.CaseConfig.tscale" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.GridState">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">GridState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmsh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmsh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ymy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kinds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmaps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.plotting.GridState" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Grid configuration</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.GridState.cmaps">
+<span class="sig-name descname"><span class="pre">cmaps</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.GridState.cmaps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.GridState.dims">
+<span class="sig-name descname"><span class="pre">dims</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.GridState.dims" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.GridState.kinds">
+<span class="sig-name descname"><span class="pre">kinds</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.GridState.kinds" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.GridState.times">
+<span class="sig-name descname"><span class="pre">times</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.GridState.times" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.GridState.xmsh">
+<span class="sig-name descname"><span class="pre">xmsh</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.GridState.xmsh" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.GridState.xmx">
+<span class="sig-name descname"><span class="pre">xmx</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.GridState.xmx" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.GridState.ymy">
+<span class="sig-name descname"><span class="pre">ymy</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.GridState.ymy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.GridState.zmsh">
+<span class="sig-name descname"><span class="pre">zmsh</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.GridState.zmsh" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.GridState.zmz">
+<span class="sig-name descname"><span class="pre">zmz</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.GridState.zmz" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.RunConfig">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">RunConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compare</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">where</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linestyles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.plotting.RunConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Runtime configuration</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.RunConfig.colors">
+<span class="sig-name descname"><span class="pre">colors</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.RunConfig.colors" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.RunConfig.compare">
+<span class="sig-name descname"><span class="pre">compare</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.RunConfig.compare" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.RunConfig.dataf">
+<span class="sig-name descname"><span class="pre">dataf</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.RunConfig.dataf" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.RunConfig.folders">
+<span class="sig-name descname"><span class="pre">folders</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.RunConfig.folders" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.RunConfig.generate">
+<span class="sig-name descname"><span class="pre">generate</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.RunConfig.generate" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.RunConfig.linestyles">
+<span class="sig-name descname"><span class="pre">linestyles</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.RunConfig.linestyles" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.RunConfig.props">
+<span class="sig-name descname"><span class="pre">props</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.RunConfig.props" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.RunConfig.where">
+<span class="sig-name descname"><span class="pre">where</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.RunConfig.where" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.configure_matplotlib">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">configure_matplotlib</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.configure_matplotlib" title="Link to this definition"></a></dt>
+<dd><p>Parameters for the figures</p>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.dense_data">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">dense_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.plotting.dense_data" title="Link to this definition"></a></dt>
-<dd><p>Make the plots related to the dense data (e.g., saturation maps)</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
-</dd>
-<dt>Returns:</dt><dd><p>None</p>
-</dd>
-</dl>
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">dense_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">case_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyopmspe11.visualization.plotting.CaseConfig" title="pyopmspe11.visualization.plotting.CaseConfig"><span class="pre">CaseConfig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyopmspe11.visualization.plotting.RunConfig" title="pyopmspe11.visualization.plotting.RunConfig"><span class="pre">RunConfig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyopmspe11.visualization.plotting.GridState" title="pyopmspe11.visualization.plotting.GridState"><span class="pre">GridState</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.dense_data" title="Link to this definition"></a></dt>
+<dd><p>Plot the dense data</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.generate_grid">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">generate_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.plotting.generate_grid" title="Link to this definition"></a></dt>
-<dd><p>Create the plotting grid and load the times</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
-</dd>
-<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
-</dd>
-</dl>
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">generate_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tlabel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarT</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarT</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarT</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarT</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarT</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.generate_grid" title="Link to this definition"></a></dt>
+<dd><p>Create the meshgrid</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.handle_kind">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">handle_kind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.plotting.handle_kind" title="Link to this definition"></a></dt>
-<dd><p>Identify between dense and performance-spatial</p>
-<dl>
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
-<p>kind (list): Strings with the type of data to generate</p>
-</dd>
-<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
-</dd>
-</dl>
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.load_csv">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">load_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarT</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.load_csv" title="Link to this definition"></a></dt>
+<dd><p>Load the csv</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.ini_quantity_plot">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">ini_quantity_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.plotting.ini_quantity_plot" title="Link to this definition"></a></dt>
-<dd><p>Initialized the size of the Figure according to the spe case</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
-</dd>
-<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
-</dd>
-</dl>
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.load_performance">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">load_performance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarT</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.load_performance" title="Link to this definition"></a></dt>
+<dd><p>Read the performance_time_series*.csv</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.load_spatial">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">load_spatial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tlabel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarT</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.load_spatial" title="Link to this definition"></a></dt>
+<dd><p>Read the spatial_map_*.csv</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.load_time_series">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">load_time_series</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarT</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.load_time_series" title="Link to this definition"></a></dt>
+<dd><p>Read the time_series.csv</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.main">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.plotting.main" title="Link to this definition"></a></dt>
-<dd><p>Generate figures</p>
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.main" title="Link to this definition"></a></dt>
+<dd><p>Entry point</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.performance">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">performance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.plotting.performance" title="Link to this definition"></a></dt>
-<dd><p>Make the plots related to the performance data (e.g., number of Newton iterations)</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
-</dd>
-<dt>Returns:</dt><dd><p>None</p>
-</dd>
-</dl>
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">performance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">case_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyopmspe11.visualization.plotting.CaseConfig" title="pyopmspe11.visualization.plotting.CaseConfig"><span class="pre">CaseConfig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyopmspe11.visualization.plotting.RunConfig" title="pyopmspe11.visualization.plotting.RunConfig"><span class="pre">RunConfig</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.performance" title="Link to this definition"></a></dt>
+<dd><p>Plot the performance</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.performance_label">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">performance_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarT</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.performance_label" title="Link to this definition"></a></dt>
+<dd><p>Set the metrics in the labels for the performance plots</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.plot_results">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.plotting.plot_results" title="Link to this definition"></a></dt>
-<dd><p>Make some figures using the csv files from the benchmark data</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
-</dd>
-<dt>Returns:</dt><dd><p>None</p>
-</dd>
-</dl>
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.plot_results" title="Link to this definition"></a></dt>
+<dd><p>Orchestrate the plotting</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.visualization.plotting.sparse_data">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">sparse_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.visualization.plotting.sparse_data" title="Link to this definition"></a></dt>
-<dd><p>Make the plots related to the sparse data (e.g., pressure in sensors over time)</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
-</dd>
-<dt>Returns:</dt><dd><p>None</p>
-</dd>
-</dl>
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.visualization.plotting.</span></span><span class="sig-name descname"><span class="pre">sparse_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">case_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyopmspe11.visualization.plotting.CaseConfig" title="pyopmspe11.visualization.plotting.CaseConfig"><span class="pre">CaseConfig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyopmspe11.visualization.plotting.RunConfig" title="pyopmspe11.visualization.plotting.RunConfig"><span class="pre">RunConfig</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pyopmspe11.visualization.plotting.sparse_data" title="Link to this definition"></a></dt>
+<dd><p>Plot the sparse data</p>
 </dd></dl>
 
 </section>

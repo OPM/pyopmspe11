@@ -1,0 +1,473 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyopmspe11.config.config module &mdash; pyopmspe11  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pyopmspe11.core package" href="pyopmspe11.core.html" />
+    <link rel="prev" title="pyopmspe11.config package" href="pyopmspe11.config.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #aaaaaa" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_file.html">Configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convergence.html">Convergence</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">pyopmspe11 Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_folder.html">Output folder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="related.html">Related</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About pyopmspe11</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #aaaaaa" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyopmspe11</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api.html">pyopmspe11 Python API</a></li>
+          <li class="breadcrumb-item"><a href="pyopmspe11.html">pyopmspe11 package</a></li>
+          <li class="breadcrumb-item"><a href="pyopmspe11.config.html">pyopmspe11.config package</a></li>
+      <li class="breadcrumb-item active">pyopmspe11.config.config module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/pyopmspe11.config.config.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pyopmspe11.config.config">
+<span id="pyopmspe11-config-config-module"></span><h1>pyopmspe11.config.config module<a class="headerlink" href="#module-pyopmspe11.config.config" title="Link to this heading"></a></h1>
+<p>Central configuration models for pyopmspe11</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyopmspe11.config.config.</span></span><span class="sig-name descname"><span class="pre">Config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">fol:</span> <span class="pre">str,</span> <span class="pre">generate:</span> <span class="pre">str,</span> <span class="pre">mode:</span> <span class="pre">str,</span> <span class="pre">resolution:</span> <span class="pre">str,</span> <span class="pre">time_data:</span> <span class="pre">str,</span> <span class="pre">dt_data:</span> <span class="pre">float,</span> <span class="pre">lower:</span> <span class="pre">bool,</span> <span class="pre">subfolders:</span> <span class="pre">str,</span> <span class="pre">flow:</span> <span class="pre">str,</span> <span class="pre">spe11:</span> <span class="pre">str,</span> <span class="pre">version:</span> <span class="pre">str,</span> <span class="pre">model:</span> <span class="pre">str,</span> <span class="pre">grid:</span> <span class="pre">str,</span> <span class="pre">dims:</span> <span class="pre">~typing.List[float],</span> <span class="pre">x_n:</span> <span class="pre">~typing.List[int],</span> <span class="pre">y_n:</span> <span class="pre">~typing.List[int],</span> <span class="pre">z_n:</span> <span class="pre">~typing.List[int],</span> <span class="pre">temperature:</span> <span class="pre">~typing.List[float],</span> <span class="pre">datum:</span> <span class="pre">float,</span> <span class="pre">pressure:</span> <span class="pre">float,</span> <span class="pre">kzMult:</span> <span class="pre">float,</span> <span class="pre">diffusion:</span> <span class="pre">~typing.List[float],</span> <span class="pre">dispersion:</span> <span class="pre">~typing.List[float],</span> <span class="pre">radius:</span> <span class="pre">~typing.List[float],</span> <span class="pre">wellCoord:</span> <span class="pre">~typing.List[~typing.List[float]],</span> <span class="pre">krw:</span> <span class="pre">str,</span> <span class="pre">krn:</span> <span class="pre">str,</span> <span class="pre">pcap:</span> <span class="pre">str,</span> <span class="pre">s_w:</span> <span class="pre">str,</span> <span class="pre">safu:</span> <span class="pre">~typing.List[~typing.List[float]],</span> <span class="pre">rock:</span> <span class="pre">~typing.List[~typing.List[float]],</span> <span class="pre">inj:</span> <span class="pre">~typing.List[~typing.List[float]],</span> <span class="pre">spe11aBC:</span> <span class="pre">float</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">0,</span> <span class="pre">drsdtcon:</span> <span class="pre">~typing.List[~typing.List[str]]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">elevation:</span> <span class="pre">float</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">backElevation:</span> <span class="pre">float</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">rockCond:</span> <span class="pre">~typing.List[float]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">widthBuffer:</span> <span class="pre">float</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">rockExtra:</span> <span class="pre">~typing.List[float]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">pvAdded:</span> <span class="pre">float</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">wellCoordF:</span> <span class="pre">~typing.List[~typing.List[float]]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">maxelevation:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0,</span> <span class="pre">cut:</span> <span class="pre">float</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">0,</span> <span class="pre">nxyz:</span> <span class="pre">~typing.List[int]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">boxa:</span> <span class="pre">~typing.List[~typing.List[float]]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">boxb:</span> <span class="pre">~typing.List[~typing.List[float]]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">boxc:</span> <span class="pre">~typing.List[~typing.List[float]]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">sensors:</span> <span class="pre">~typing.List[~typing.List[float]]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">sensorijk:</span> <span class="pre">~typing.List[~typing.List[int]]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">wellijk:</span> <span class="pre">~typing.List[~typing.List[int]]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">wellijkf:</span> <span class="pre">~typing.List[~typing.List[int]]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">wellkh:</span> <span class="pre">~typing.List[int]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">pat:</span> <span class="pre">~pathlib.Path</span> <span class="pre">=</span> <span class="pre">PosixPath('/Users/dmar/cssr-tools/pyopmspe11/src/pyopmspe11'),</span> <span class="pre">tuning:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">deckfol:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'output',</span> <span class="pre">compact_dx:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.config.config.Config" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Combines CLI options, TOML inputs, and derived runtime settings</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>backElevation</strong></dt><dd></dd>
+<dt><strong>boxa</strong></dt><dd></dd>
+<dt><strong>boxb</strong></dt><dd></dd>
+<dt><strong>boxc</strong></dt><dd></dd>
+<dt><strong>compact_dx</strong></dt><dd></dd>
+<dt><strong>cut</strong></dt><dd></dd>
+<dt><strong>datum</strong></dt><dd></dd>
+<dt><strong>deckfol</strong></dt><dd></dd>
+<dt><strong>diffusion</strong></dt><dd></dd>
+<dt><strong>dims</strong></dt><dd></dd>
+<dt><strong>dispersion</strong></dt><dd></dd>
+<dt><strong>drsdtcon</strong></dt><dd></dd>
+<dt><strong>dt_data</strong></dt><dd></dd>
+<dt><strong>elevation</strong></dt><dd></dd>
+<dt><strong>flow</strong></dt><dd></dd>
+<dt><strong>fol</strong></dt><dd></dd>
+<dt><strong>generate</strong></dt><dd></dd>
+<dt><strong>grid</strong></dt><dd></dd>
+<dt><strong>inj</strong></dt><dd></dd>
+<dt><strong>krn</strong></dt><dd></dd>
+<dt><strong>krw</strong></dt><dd></dd>
+<dt><strong>kzMult</strong></dt><dd></dd>
+<dt><strong>lower</strong></dt><dd></dd>
+<dt><strong>maxelevation</strong></dt><dd></dd>
+<dt><strong>mode</strong></dt><dd></dd>
+<dt><strong>model</strong></dt><dd></dd>
+<dt><strong>nxyz</strong></dt><dd></dd>
+<dt><strong>pat</strong></dt><dd></dd>
+<dt><strong>pcap</strong></dt><dd></dd>
+<dt><strong>pressure</strong></dt><dd></dd>
+<dt><strong>pvAdded</strong></dt><dd></dd>
+<dt><strong>radius</strong></dt><dd></dd>
+<dt><strong>resolution</strong></dt><dd></dd>
+<dt><strong>rock</strong></dt><dd></dd>
+<dt><strong>rockCond</strong></dt><dd></dd>
+<dt><strong>rockExtra</strong></dt><dd></dd>
+<dt><strong>s_w</strong></dt><dd></dd>
+<dt><strong>safu</strong></dt><dd></dd>
+<dt><strong>sensorijk</strong></dt><dd></dd>
+<dt><strong>sensors</strong></dt><dd></dd>
+<dt><strong>spe11</strong></dt><dd></dd>
+<dt><strong>spe11aBC</strong></dt><dd></dd>
+<dt><strong>subfolders</strong></dt><dd></dd>
+<dt><strong>temperature</strong></dt><dd></dd>
+<dt><strong>time_data</strong></dt><dd></dd>
+<dt><strong>tuning</strong></dt><dd></dd>
+<dt><strong>version</strong></dt><dd></dd>
+<dt><strong>wellCoord</strong></dt><dd></dd>
+<dt><strong>wellCoordF</strong></dt><dd></dd>
+<dt><strong>wellijk</strong></dt><dd></dd>
+<dt><strong>wellijkf</strong></dt><dd></dd>
+<dt><strong>wellkh</strong></dt><dd></dd>
+<dt><strong>widthBuffer</strong></dt><dd></dd>
+<dt><strong>x_n</strong></dt><dd></dd>
+<dt><strong>y_n</strong></dt><dd></dd>
+<dt><strong>z_n</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.backElevation">
+<span class="sig-name descname"><span class="pre">backElevation</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.backElevation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.boxa">
+<span class="sig-name descname"><span class="pre">boxa</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.boxa" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.boxb">
+<span class="sig-name descname"><span class="pre">boxb</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.boxb" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.boxc">
+<span class="sig-name descname"><span class="pre">boxc</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.boxc" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.compact_dx">
+<span class="sig-name descname"><span class="pre">compact_dx</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.compact_dx" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.cut">
+<span class="sig-name descname"><span class="pre">cut</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.cut" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.datum">
+<span class="sig-name descname"><span class="pre">datum</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.datum" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.deckfol">
+<span class="sig-name descname"><span class="pre">deckfol</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.deckfol" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.diffusion">
+<span class="sig-name descname"><span class="pre">diffusion</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.diffusion" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.dims">
+<span class="sig-name descname"><span class="pre">dims</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.dims" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.dispersion">
+<span class="sig-name descname"><span class="pre">dispersion</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.dispersion" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.drsdtcon">
+<span class="sig-name descname"><span class="pre">drsdtcon</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.drsdtcon" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.dt_data">
+<span class="sig-name descname"><span class="pre">dt_data</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.dt_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.elevation">
+<span class="sig-name descname"><span class="pre">elevation</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.elevation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.flow">
+<span class="sig-name descname"><span class="pre">flow</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.flow" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.fol">
+<span class="sig-name descname"><span class="pre">fol</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.fol" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.generate">
+<span class="sig-name descname"><span class="pre">generate</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.generate" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.grid">
+<span class="sig-name descname"><span class="pre">grid</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.grid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.inj">
+<span class="sig-name descname"><span class="pre">inj</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.inj" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.krn">
+<span class="sig-name descname"><span class="pre">krn</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.krn" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.krw">
+<span class="sig-name descname"><span class="pre">krw</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.krw" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.kzMult">
+<span class="sig-name descname"><span class="pre">kzMult</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.kzMult" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.lower">
+<span class="sig-name descname"><span class="pre">lower</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.lower" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.maxelevation">
+<span class="sig-name descname"><span class="pre">maxelevation</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.maxelevation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.mode">
+<span class="sig-name descname"><span class="pre">mode</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.mode" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.model">
+<span class="sig-name descname"><span class="pre">model</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.nxyz">
+<span class="sig-name descname"><span class="pre">nxyz</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.nxyz" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.pat">
+<span class="sig-name descname"><span class="pre">pat</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.pat" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.pcap">
+<span class="sig-name descname"><span class="pre">pcap</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.pcap" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.pressure">
+<span class="sig-name descname"><span class="pre">pressure</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.pressure" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.pvAdded">
+<span class="sig-name descname"><span class="pre">pvAdded</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.pvAdded" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.radius">
+<span class="sig-name descname"><span class="pre">radius</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.radius" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.resolution">
+<span class="sig-name descname"><span class="pre">resolution</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.resolution" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.rock">
+<span class="sig-name descname"><span class="pre">rock</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.rock" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.rockCond">
+<span class="sig-name descname"><span class="pre">rockCond</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.rockCond" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.rockExtra">
+<span class="sig-name descname"><span class="pre">rockExtra</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.rockExtra" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.s_w">
+<span class="sig-name descname"><span class="pre">s_w</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.s_w" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.safu">
+<span class="sig-name descname"><span class="pre">safu</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.safu" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.sensorijk">
+<span class="sig-name descname"><span class="pre">sensorijk</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.sensorijk" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.sensors">
+<span class="sig-name descname"><span class="pre">sensors</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.sensors" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.spe11">
+<span class="sig-name descname"><span class="pre">spe11</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.spe11" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.spe11aBC">
+<span class="sig-name descname"><span class="pre">spe11aBC</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.spe11aBC" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.subfolders">
+<span class="sig-name descname"><span class="pre">subfolders</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.subfolders" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.temperature">
+<span class="sig-name descname"><span class="pre">temperature</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.temperature" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.time_data">
+<span class="sig-name descname"><span class="pre">time_data</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.time_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.tuning">
+<span class="sig-name descname"><span class="pre">tuning</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.tuning" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.version">
+<span class="sig-name descname"><span class="pre">version</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.version" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.wellCoord">
+<span class="sig-name descname"><span class="pre">wellCoord</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.wellCoord" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.wellCoordF">
+<span class="sig-name descname"><span class="pre">wellCoordF</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.wellCoordF" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.wellijk">
+<span class="sig-name descname"><span class="pre">wellijk</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.wellijk" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.wellijkf">
+<span class="sig-name descname"><span class="pre">wellijkf</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.wellijkf" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.wellkh">
+<span class="sig-name descname"><span class="pre">wellkh</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.wellkh" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.widthBuffer">
+<span class="sig-name descname"><span class="pre">widthBuffer</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.widthBuffer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.x_n">
+<span class="sig-name descname"><span class="pre">x_n</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.x_n" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.y_n">
+<span class="sig-name descname"><span class="pre">y_n</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.y_n" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyopmspe11.config.config.Config.z_n">
+<span class="sig-name descname"><span class="pre">z_n</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyopmspe11.config.config.Config.z_n" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyopmspe11.config.html" class="btn btn-neutral float-left" title="pyopmspe11.config package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyopmspe11.core.html" class="btn btn-neutral float-right" title="pyopmspe11.core package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2026, NORCE Research AS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

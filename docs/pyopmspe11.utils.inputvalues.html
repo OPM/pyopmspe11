@@ -87,80 +87,35 @@
              
   <section id="module-pyopmspe11.utils.inputvalues">
 <span id="pyopmspe11-utils-inputvalues-module"></span><h1>pyopmspe11.utils.inputvalues module<a class="headerlink" href="#module-pyopmspe11.utils.inputvalues" title="Link to this heading"></a></h1>
-<p>Utiliy functions to set the requiried input values by pyopmspe11.</p>
+<p>Utility functions to set required input values for pyopmspe11.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.inputvalues.check_deck">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">check_deck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.check_deck" title="Link to this definition"></a></dt>
-<dd><p>Write unsupported features to the terminal if Flow from release is used</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
-</dd>
-<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
-</dd>
-</dl>
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">check_deck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyopmspe11.config.config.html#pyopmspe11.config.config.Config" title="pyopmspe11.config.config.Config"><span class="pre">Config</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.check_deck" title="Link to this definition"></a></dt>
+<dd><p>Check Flow release compatibility.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.utils.inputvalues.load_config_txt">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">load_config_txt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.load_config_txt" title="Link to this definition"></a></dt>
+<dd><p>Read the txt  (the types are checked when creating the Config data class)</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.inputvalues.postprocesstoml">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">postprocesstoml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.postprocesstoml" title="Link to this definition"></a></dt>
-<dd><p>Perform the unit convertions and generation of needed variables</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
-</dd>
-<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
-</dd>
-</dl>
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">postprocesstoml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyopmspe11.config.config.html#pyopmspe11.config.config.Config" title="pyopmspe11.config.config.Config"><span class="pre">Config</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msg1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msg2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.postprocesstoml" title="Link to this definition"></a></dt>
+<dd><p>Convert units and generate variables.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.inputvalues.process_input">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">process_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.process_input" title="Link to this definition"></a></dt>
-<dd><p>Process the configuration file</p>
-<dl>
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
-<p>in_file (str): Name of the input text file</p>
-</dd>
-<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="pyopmspe11.utils.inputvalues.readthefirstpart">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">readthefirstpart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.readthefirstpart" title="Link to this definition"></a></dt>
-<dd><p>Process the lines from the flow executable and model parameters</p>
-<dl>
-<dt>Args:</dt><dd><p>lol (list): List of lines read from the input file</p>
-<p>dic (dict): Global dictionary</p>
-</dd>
-<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="pyopmspe11.utils.inputvalues.readthesecondpart">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">readthesecondpart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.readthesecondpart" title="Link to this definition"></a></dt>
-<dd><p>Process the lines from the saturation functions until the end</p>
-<dl>
-<dt>Args:</dt><dd><p>lol (list): List of lines read from the input file</p>
-<p>dic (dict): Global dictionary</p>
-</dd>
-<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
-</dd>
-</dl>
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">process_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pyopmspe11.config.config.html#pyopmspe11.config.config.Config" title="pyopmspe11.config.config.Config"><span class="pre">Config</span></a></span></span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.process_input" title="Link to this definition"></a></dt>
+<dd><p>Process configuration input.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.utils.inputvalues.setcaseproperties">
-<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">setcaseproperties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.setcaseproperties" title="Link to this definition"></a></dt>
-<dd><p>Set the time scale, box, and sensor locations</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>dic (dict): Global dictionary</p>
-</dd>
-<dt>Returns:</dt><dd><p>dic (dict): Modified global dictionary</p>
-</dd>
-</dl>
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">setcaseproperties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyopmspe11.config.config.html#pyopmspe11.config.config.Config" title="pyopmspe11.config.config.Config"><span class="pre">Config</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.setcaseproperties" title="Link to this definition"></a></dt>
+<dd><p>Set time scale, boxes, and sensors.</p>
 </dd></dl>
 
 </section>

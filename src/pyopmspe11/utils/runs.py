@@ -1,85 +1,73 @@
 # SPDX-FileCopyrightText: 2023-2026 NORCE Research AS
 # SPDX-License-Identifier: MIT
 
-"""
-Utiliy functions for the simulations, data processing, and plotting.
-"""
+"""Utility functions for simulations, data processing, and plotting."""
 
-import os
 import subprocess
 
-
-def simulations(dic):
-    """
-    Run OPM Flow
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        None
-
-    """
-    os.system(
-        f"{dic['flow']} --output-dir={dic['flowf']} "
-        f"{dic['deckf']}/{dic['fol'].split('/')[-1].upper()}.DATA & wait\n"
-    )
+from pyopmspe11.config.config import Config
 
 
-def plotting(dic):
-    """
-    Generate the figures
+def simulations(cfg: Config, flowfol: str) -> None:
+    """Run OPM Flow."""
+    data_file = f"{cfg.deckfol}/{cfg.fol.split('/')[-1].upper()}.DATA"
+    flow_cmd = cfg.flow.split(" ") + [f"--output-dir={flowfol}", data_file]
+    result = subprocess.run(flow_cmd, check=True)
+    if result.returncode != 0:
+        raise ValueError(f"Invalid result: {result.returncode}")
 
-    Args:
-        dic (dict): Global dictionary
 
-    Returns:
-        None
-
-    """
-    plot_exe = [
+def plotting(cfg: Config) -> None:
+    """Generate the figures."""
+    plot_cmd = [
         "python3",
-        f"{dic['pat']}/visualization/plotting.py",
-        "-p " + f"{dic['fol']}",
-        "-d " + f"{dic['spe11']}",
-        "-g " + f"{dic['generate']}",
-        "-r " + f"{dic['resolution']}",
-        "-f " + f"{dic['subfolders']}",
-        "-t " + f"{dic['time_data']}",
-        "-n " + f"{'lower' if dic['lower'] else ''}",
+        f"{cfg.pat}/visualization/plotting.py",
+        "-p",
+        f"{cfg.fol}",
+        "-d",
+        f"{cfg.spe11}",
+        "-g",
+        f"{cfg.generate}",
+        "-r",
+        f"{cfg.resolution}",
+        "-f",
+        f"{cfg.subfolders}",
+        "-t",
+        f"{cfg.time_data}",
+        "-n",
+        "lower" if cfg.lower else "",
     ]
     print("\nPlot: Generation of png figures, please wait.")
-    prosc = subprocess.run(plot_exe, check=True)
-    if prosc.returncode != 0:
-        raise ValueError(f"Invalid result: { prosc.returncode }")
+    result = subprocess.run(plot_cmd, check=True)
+    if result.returncode != 0:
+        raise ValueError(f"Invalid result: {result.returncode}")
 
 
-def data(dic):
-    """
-    Write the benchmark data
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        None
-
-    """
-    data_exe = [
+def data(cfg: Config) -> None:
+    """Write the benchmark data."""
+    data_cmd = [
         "python3",
-        f"{dic['pat']}/visualization/data.py",
-        "-p " + f"{dic['fol']}",
-        "-d " + f"{dic['spe11']}",
-        "-g " + f"{dic['generate']}",
-        "-r " + f"{dic['resolution']}",
-        "-t " + f"{dic['time_data']}",
-        "-w " + f"{dic['dt_data']}",
-        "-f " + f"{dic['subfolders']}",
-        "-n " + f"{'lower' if dic['lower'] else ''}",
+        f"{cfg.pat}/visualization/data.py",
+        "-p",
+        f"{cfg.fol}",
+        "-d",
+        f"{cfg.spe11}",
+        "-g",
+        f"{cfg.generate}",
+        "-r",
+        f"{cfg.resolution}",
+        "-t",
+        f"{cfg.time_data}",
+        "-w",
+        f"{cfg.dt_data}",
+        "-f",
+        f"{cfg.subfolders}",
+        "-n",
+        "lower" if cfg.lower else "",
     ]
     print(
         "\nData: Generation of csv files following the SPE11 benchmark format, please wait."
     )
-    prosc = subprocess.run(data_exe, check=True)
-    if prosc.returncode != 0:
-        raise ValueError(f"Invalid result: { prosc.returncode }")
+    result = subprocess.run(data_cmd, check=True)
+    if result.returncode != 0:
+        raise ValueError(f"Invalid result: {result.returncode}")

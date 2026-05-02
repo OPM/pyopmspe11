@@ -3,21 +3,21 @@
 
 """Test the script to compare the data for different runs"""
 
-import subprocess
+import pathlib
 from shutil import copytree
 
+from pyopmspe11.core.pyopmspe11 import main
 
-def test_h_compare(test_e_h_workdir, monkeypatch):
-    """Compare performance plots between two spe11c runs"""
-    src = test_e_h_workdir / "spe11c"
-    assert src.exists(), "Please run test_e_spe11c first"
-    testcmp = test_e_h_workdir / "test_compare"
-    ens1 = testcmp / "spe11c_ens1"
-    ens2 = testcmp / "spe11c_ens2"
-    copytree(src, ens1)
-    copytree(src, ens2)
-    monkeypatch.chdir(testcmp)
-    subprocess.run(["pyopmspe11", "-c", "spe11c", "-m", "performance"], check=True)
-    cmpdir = testcmp / "compare"
-    assert (cmpdir / "spe11c_performance_detailed.png").exists()
-    assert (cmpdir / "spe11c_performance.png").exists()
+testpth = pathlib.Path(__file__).parent
+
+
+def test_h_compare(tmp_path, monkeypatch):
+    """Run compare via main()"""
+    monkeypatch.chdir(tmp_path)
+    for x in ("cartesian", "corner-point"):
+        run = tmp_path / f"spe11c_{x}"
+        copytree(testpth / "datas" / f"spe11c_{x}", run)
+    main(["-c", "spe11c"])
+    for file in ["performance", "performance_detailed", "sparse_data"]:
+        figure = tmp_path / "compare" / f"spe11c_{file}.png"
+        assert figure.is_file(), f"Missing {figure}"

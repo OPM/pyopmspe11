@@ -52,7 +52,7 @@ jobs:
       
     - name: Run the tests
       run: |
-        pytest tests/ --cov=pyopmspe11 --exitfirst --cov-report term-missing --basetemp=test_outputs
+        pytest --cov=pyopmspe11 --exitfirst --cov-report term-missing --basetemp=test_outputs tests/
         
     - name: Build documentation
       run: |
