@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   pyopmspe11.config
    pyopmspe11.core
    pyopmspe11.utils
    pyopmspe11.visualization

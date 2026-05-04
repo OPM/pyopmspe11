@@ -1,305 +1,324 @@
 # SPDX-FileCopyrightText: 2023-2026 NORCE Research AS
 # SPDX-License-Identifier: MIT
-# pylint: disable=C0302, R0912, R0914, R0915, E1102
+# pylint: disable=C0302, R0912, R0913, R0914, R0915, R0917, E1102
 
-"""
-Utiliy function for the grid and locations in the geological models.
-"""
+"""Utiliy function for the grid and locations in the geological models."""
 
 import csv
 import numpy as np
-import pandas as pd
 from shapely.geometry import Point, Polygon
+from shapely.prepared import prep
 from alive_progress import alive_bar
-from pyopmspe11.utils.writefile import create_corner_point_grid
+from numpy.typing import NDArray
+
+from pyopmspe11.config.config import Config
+from pyopmspe11.utils.writefile import (
+    create_corner_point_grid,
+    write_keywords,
+    opm_files,
+    write_regular_spe11c_grid,
+)
 
 
-def grid(dic):
-    """
-    Handle the different grid types (Cartesian, tensor, and corner-point grids)
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    getpolygons(dic)
-    dic["cut"] = 550.0 * dic["dims"][2] / 1200 if dic["lower"] else 0.0
-    if dic["grid"] == "corner-point":
-        corner(dic)
-    elif dic["grid"] == "cartesian":
-        dic["dsize"] = [1.0 * dic["dims"][i] / dic["noCells"][i] for i in range(3)]
-        for i, name in enumerate(["xmx", "ymy", "zmz"]):
-            dic[f"{name}"] = np.linspace(0, dic["dims"][i], dic["noCells"][i] + 1)
-        if dic["lower"]:
-            dic["zmz"] = np.linspace(
-                dic["dims"][2] - dic["cut"], dic["dims"][2], dic["noCells"][i] + 1
+def generate_files(cfg: Config) -> None:
+    """Handle the deck and input files generation"""
+    polygons, facies, points = getpolygons(cfg)
+    if cfg.grid == "corner-point":
+        xc, zc, d_x, d_y, d_z, ycent, xmx, ymy = corner(cfg, points)
+        if cfg.spe11 == "spe11a":
+            fipnum, fluxnum = corner_point_handling_spe11a(
+                cfg, polygons, facies, xc, zc
             )
-            dic["dsize"][2] = 1.0 * dic["cut"] / dic["noCells"][2]
+            write_keywords(cfg, fipnum, fluxnum, xmx)
+        else:
+            fipnum, fluxnum, porv = corner_point_handling_spe11bc(
+                cfg, polygons, facies, xc, zc, ymy, ycent, d_x, d_y, d_z
+            )
+            write_keywords(cfg, fipnum, fluxnum, xmx, None, porv)
     else:
-        for i, (name, arr) in enumerate(
-            zip(["xmx", "ymy", "zmz"], ["x_n", "y_n", "z_n"])
-        ):
-            dic[f"{name}"] = [] if dic["lower"] and i == 2 else [0.0]
-            for j, num in enumerate(dic[f"{arr}"]):
-                if i == 2 and dic["lower"]:
-                    for k in range(num):
-                        dic[f"{name}"].append(
-                            (dic["dims"][2] - dic["cut"])
-                            + (j + (k + 1.0) / num) * dic["cut"] / len(dic[f"{arr}"])
-                        )
-                else:
-                    for k in range(num):
-                        dic[f"{name}"].append(
-                            (j + (k + 1.0) / num) * dic["dims"][i] / len(dic[f"{arr}"])
-                        )
-            dic[f"{name}"] = np.array(dic[f"{name}"])
-            dic["noCells"][i] = len(dic[f"{name}"]) - 1
-    if dic["grid"] != "corner-point":
-        if (dic["spe11"] == "spe11b" or dic["spe11"] == "spe11c") and 1.1 * dic[
-            "widthBuffer"
-        ] < dic["xmx"][1]:
-            dic["xmx"] = np.insert(dic["xmx"], 1, dic["widthBuffer"])
-            dic["xmx"] = np.insert(
-                dic["xmx"], len(dic["xmx"]) - 1, dic["xmx"][-1] - dic["widthBuffer"]
+        if cfg.spe11 == "spe11a":
+            fipnum, fluxnum, xmx, zmz = structured_handling_spe11a(
+                cfg, polygons, facies
             )
-            dic["noCells"][0] += 2
-        if dic["spe11"] == "spe11c" and 1.1 * dic["widthBuffer"] < dic["ymy"][1]:
-            dic["ymy"] = np.insert(dic["ymy"], 1, dic["widthBuffer"])
-            dic["ymy"] = np.insert(
-                dic["ymy"], len(dic["ymy"]) - 1, dic["ymy"][-1] - dic["widthBuffer"]
+            write_keywords(cfg, fipnum, fluxnum, xmx, zmz)
+        else:
+            fipnum, fluxnum, porv, xmx, zmz = structured_handling_spe11bc(
+                cfg, polygons, facies
             )
-            dic["noCells"][1] += 2
-        for name, size in zip(["xmx", "ymy", "zmz"], ["dx", "dy", "dz"]):
-            dic[f"{name}_center"] = (dic[f"{name}"][1:] + dic[f"{name}"][:-1]) / 2.0
-            dic[f"{size}"] = dic[f"{name}"][1:] - dic[f"{name}"][:-1]
+            write_keywords(cfg, fipnum, fluxnum, xmx, zmz, porv)
+    opm_files(cfg)
 
 
-def structured_handling_spe11a(dic):
-    """
-    Locate the geological positions in the tensor/cartesian grid for spe11a
+def prepare_structured_grid(cfg: Config) -> tuple[NDArray, NDArray, NDArray]:
+    """Set the regular grid parameters"""
+    dims_x, dims_y, dims_z = cfg.dims
+    no_cells_x, no_cells_y, no_cells_z = cfg.nxyz
+    grid = cfg.grid
+    spe11 = cfg.spe11
+    lower = cfg.lower
+    cfg.cut = 550.0 * dims_z / 1200 if lower else 0.0
+    if grid == "cartesian":
+        xmx = np.linspace(0, dims_x, no_cells_x + 1)
+        ymy = np.linspace(0, dims_y, no_cells_y + 1)
+        zmz = (
+            np.linspace(dims_z - cfg.cut, dims_z, no_cells_z + 1)
+            if lower
+            else np.linspace(0, dims_z, no_cells_z + 1)
+        )
+    if grid == "tensor":
+        len_x_n = len(cfg.x_n)
+        len_y_n = len(cfg.y_n)
+        len_z_n = len(cfg.z_n)
+        x_idx = np.concatenate(
+            [np.full(num, index) for index, num in enumerate(cfg.x_n)]
+        )
+        x_frac = np.concatenate([np.arange(1, num + 1) / num for num in cfg.x_n])
+        xmx = np.concatenate(([0.0], (x_idx + x_frac) * dims_x / len_x_n))
+        y_idx = np.concatenate(
+            [np.full(num, index) for index, num in enumerate(cfg.y_n)]
+        )
+        y_frac = np.concatenate([np.arange(1, num + 1) / num for num in cfg.y_n])
+        ymy = np.concatenate(([0.0], (y_idx + y_frac) * dims_y / len_y_n))
+        z_idx = np.concatenate(
+            [np.full(num, index) for index, num in enumerate(cfg.z_n)]
+        )
+        z_frac = np.concatenate([np.arange(1, num + 1) / num for num in cfg.z_n])
+        zmz = (
+            (dims_z - cfg.cut) + (z_idx + z_frac) * cfg.cut / len_z_n
+            if lower
+            else np.concatenate(([0.0], (z_idx + z_frac) * dims_z / len_z_n))
+        )
+        zmz = np.asarray(zmz)
+        cfg.nxyz[0] = len(xmx) - 1
+        cfg.nxyz[1] = len(ymy) - 1
+        cfg.nxyz[2] = len(zmz) - 1
+    if cfg.widthBuffer is not None:
+        if (spe11 in ["spe11b", "spe11c"]) and 1.1 * cfg.widthBuffer < xmx[1]:
+            xmx = np.insert(xmx, 1, cfg.widthBuffer)
+            xmx = np.insert(xmx, len(xmx) - 1, xmx[-1] - cfg.widthBuffer)
+            cfg.nxyz[0] += 2
+        if spe11 == "spe11c" and 1.1 * cfg.widthBuffer < ymy[1]:
+            ymy = np.insert(ymy, 1, cfg.widthBuffer)
+            ymy = np.insert(ymy, len(ymy) - 1, ymy[-1] - cfg.widthBuffer)
+            cfg.nxyz[1] += 2
+    return xmx, ymy, zmz
 
-    Args:
-        dic (dict): Global dictionary
 
-    Returns:
-        dic (dict): Modified global dictionary
+def vertices_centers(
+    xmx: NDArray, ymy: NDArray, zmz: NDArray
+) -> tuple[NDArray, NDArray, NDArray]:
+    """Get the axis centers and sizes for a regular grid"""
+    return (
+        (xmx[1:] + xmx[:-1]) / 2.0,
+        (ymy[1:] + ymy[:-1]) / 2.0,
+        (zmz[1:] + zmz[:-1]) / 2.0,
+    )
 
-    """
-    sensor1, sensor2 = [], []
-    with alive_bar(dic["noCells"][0] * dic["noCells"][2]) as bar_animation:
-        for k in range(dic["noCells"][2]):
-            for i in range(dic["noCells"][0]):
+
+def vertices_sizes(
+    xmx: NDArray, ymy: NDArray, zmz: NDArray
+) -> tuple[NDArray, NDArray, NDArray]:
+    """Get the axis centers and sizes for a regular grid"""
+    return (
+        xmx[1:] - xmx[:-1],
+        ymy[1:] - ymy[:-1],
+        zmz[1:] - zmz[:-1],
+    )
+
+
+def structured_handling_spe11a(
+    cfg: Config, polygons: list, facies: list
+) -> tuple[NDArray, NDArray, NDArray, NDArray]:
+    """Geological positions in the tensor/cartesian grid for spe11a"""
+    w = 1.0 if cfg.spe11 == "spe11a" else 1200.0 / 1.2
+    ztopbot = cfg.dims[2] - 0.644 * w
+    zmidbot = cfg.dims[2] - 0.265 * w
+    if cfg.lower:
+        lowpoly = get_lower_polygon(cfg)
+    xmx, ymy, zmz = prepare_structured_grid(cfg)
+    xcent, ycent, zcent = vertices_centers(xmx, ymy, zmz)
+    nxz = cfg.nxyz[0] * cfg.nxyz[2]
+    fluxnum = np.zeros(nxz, dtype="uint8")
+    fipnum = np.zeros(nxz, dtype="uint8")
+    with alive_bar(nxz, bar="fish") as bar_animation:
+        for k in range(cfg.nxyz[2]):
+            for i in range(cfg.nxyz[0]):
                 bar_animation()
-                n = -1
-                if dic["zmz_center"][k] > dic["zmidbot"]:
-                    order = dic["under_order"]
-                elif dic["zmz_center"][k] > dic["ztopbot"]:
-                    order = dic["bottom_order"]
-                else:
-                    order = dic["top_order"]
+                gind = i + k * cfg.nxyz[0]
+                n = 0
+                order = polygon_search_order(zcent[k], zmidbot, ztopbot)
                 for ind in order:
-                    if dic["polygons"][ind].contains(
-                        Point(dic["xmx_center"][i], dic["zmz_center"][k])
-                    ):
-                        n = dic["facies"][ind]
+                    if polygons[ind].contains(Point(xcent[i], zcent[k])):
+                        n = facies[ind]
                         break
-                sensor1.append(
-                    (dic["xmx_center"][i] - dic["sensors"][0][0]) ** 2
-                    + (dic["zmz_center"][k] + dic["sensors"][0][2] - dic["dims"][2])
-                    ** 2
-                )
-                sensor2.append(
-                    (dic["xmx_center"][i] - dic["sensors"][1][0]) ** 2
-                    + (dic["zmz_center"][k] + dic["sensors"][1][2] - dic["dims"][2])
-                    ** 2
-                )
-                if dic["lower"] and not dic["lowerpolygon"].contains(
-                    Point(dic["xmx_center"][i], dic["zmz_center"][k])
-                ):
-                    n = 7
-                dic["fluxnum"].append(str(n))
-                boxes(
-                    dic,
-                    dic["xmx_center"][i],
-                    dic["zmz_center"][k],
+                if cfg.lower:
+                    if not lowpoly.contains(Point(xcent[i], zcent[k])):
+                        n = 7
+                fluxnum[gind] = n
+                fipnum[gind] = boxes(
+                    cfg,
+                    xcent[i],
+                    zcent[k],
                     i,
-                    dic["fluxnum"][-1],
+                    n,
                 )
-    dic["pop1"] = pd.Series(sensor1).argmin()
-    dic["fipnum"][dic["pop1"]] = "8"
-    if not dic["lower"]:
-        dic["pop2"] = pd.Series(sensor2).argmin()
-        dic["fipnum"][dic["pop2"]] = "9"
-    sensors(dic)
-    wells(dic)
+    sensors_structured_spe11abc(cfg, fipnum, xcent, ycent, zcent)
+    wells_structured_spe11abc(cfg, xcent, ycent, zcent)
+    return fipnum, fluxnum, xmx, zmz
 
 
-def structured_handling_spe11bc(dic):
-    """
-    Locate the geological positions in the tensor/cartesian grid for the spe11b/c
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    sensor1, sensor2, pv_l = [], [], 0
-    with alive_bar(dic["noCells"][0] * dic["noCells"][2]) as bar_animation:
-        for k in range(dic["noCells"][2]):
-            for i in range(dic["noCells"][0]):
+def structured_handling_spe11bc(
+    cfg: Config, polygons: list[Polygon], facies: list
+) -> tuple[NDArray, NDArray, list, NDArray, NDArray]:
+    """Geological positions in the tensor/cartesian grid for the spe11b/c"""
+    assert cfg.widthBuffer is not None
+    assert cfg.pvAdded is not None
+    pv_l, porv, lowpoly = 0.0, [], Polygon()
+    w = 1.0 if cfg.spe11 == "spe11a" else 1200.0 / 1.2
+    dims_z = cfg.dims[2]
+    ztopbot = dims_z - 0.644 * w
+    zmidbot = dims_z - 0.265 * w
+    if cfg.lower:
+        lowpoly = get_lower_polygon(cfg)
+    xmx, ymy, zmz = prepare_structured_grid(cfg)
+    xcent, ycent, zcent = vertices_centers(xmx, ymy, zmz)
+    dx, dy, dz = vertices_sizes(xmx, ymy, zmz)
+    nxyz = cfg.nxyz[0] * cfg.nxyz[1] * cfg.nxyz[2]
+    fluxnum = np.zeros(nxyz, dtype="uint8")
+    fipnum = np.zeros(nxyz, dtype="uint8")
+    no_cells_x = cfg.nxyz[0]
+    no_cells_y = cfg.nxyz[1]
+    no_cells_z = cfg.nxyz[2]
+    spe11 = cfg.spe11
+    z_c = map_z(cfg, ycent) if spe11 == "spe11c" else 0 * ycent
+    with alive_bar(no_cells_x * no_cells_z, bar="fish") as bar_animation:
+        for index_z in range(no_cells_z):
+            value_z = zcent[index_z]
+            order = polygon_search_order(value_z, zmidbot, ztopbot)
+            for index_x in range(no_cells_x):
+                gind = index_x + index_z * no_cells_x * no_cells_y
                 bar_animation()
-                n = -1
-                if dic["zmz_center"][k] > dic["zmidbot"]:
-                    order = dic["under_order"]
-                elif dic["zmz_center"][k] > dic["ztopbot"]:
-                    order = dic["bottom_order"]
-                else:
-                    order = dic["top_order"]
-                for ind in order:
-                    if dic["polygons"][ind].contains(
-                        Point(dic["xmx_center"][i], dic["zmz_center"][k])
-                    ):
-                        n = dic["facies"][ind]
+                value_x = xcent[index_x]
+                point = Point(value_x, value_z)
+                n = 0
+                for i in order:
+                    if polygons[i].contains(point):
+                        n = facies[i]
                         break
-                sensor1.append(
-                    (dic["xmx_center"][i] - dic["sensors"][0][0]) ** 2
-                    + (dic["ymy_center"][0] - dic["sensors"][0][1]) ** 2
-                    + (dic["zmz_center"][k] + dic["sensors"][0][2] - dic["dims"][2])
-                    ** 2
+                fluxnum[gind] = n
+                fipnum[gind] = boxes(cfg, value_x, value_z - z_c[0], index_x, n)
+                pv = (
+                    cfg.rock[n - 1][1] * (cfg.pvAdded + cfg.widthBuffer) if n > 0 else 0
                 )
-                sensor2.append(
-                    (dic["xmx_center"][i] - dic["sensors"][1][0]) ** 2
-                    + (dic["ymy_center"][0] - dic["sensors"][1][1]) ** 2
-                    + (dic["zmz_center"][k] + dic["sensors"][1][2] - dic["dims"][2])
-                    ** 2
-                )
-                z_c = dic["zmz_center"][k]
-                if dic["spe11"] == "spe11c":
-                    z_c -= map_z(dic, 0)
-                dic["fluxnum"].append(str(n))
-                boxes(dic, dic["xmx_center"][i], z_c, i, dic["fluxnum"][-1])
-                pv = dic["rock"][n - 1][1] * (dic["pvAdded"] + dic["widthBuffer"])
-                if i == 0 and n not in (1, 7):
-                    dic["porv"].append(
-                        f"PORV {pv*dic['dy'][0]*dic['dz'][k]} 1 1 1 1 {k+1} {k+1} /"
+                if cfg.lower and not lowpoly.contains(point):
+                    porv.append(
+                        f"PORV 0 {index_x+1} {index_x+1} 2* {index_z+1} {index_z+1} /"
+                    )
+                elif index_x == 0 and n not in (1, 7):
+                    porv.append(
+                        f"PORV {pv*dy[0]*dz[index_z]} 1 1 1 1 {index_z+1} {index_z+1} /"
                     )
                     pv_l = pv
-                elif i == dic["noCells"][0] - 1 and n not in (1, 7):
-                    dic["porv"].append(
-                        f"PORV {pv*dic['dy'][0]*dic['dz'][k]} {dic['noCells'][0]} "
-                        + f"{dic['noCells'][0]} 1 1 {k+1} {k+1} /"
+                elif index_x == no_cells_x - 1 and n not in (1, 7):
+                    porv.append(
+                        f"PORV {pv*dy[0]*dz[index_z]} {no_cells_x} {no_cells_x} 1 1 "
+                        f"{index_z+1} {index_z+1} /"
                     )
-                if dic["lower"] and not dic["lowerpolygon"].contains(
-                    Point(dic["xmx_center"][i], dic["zmz_center"][k])
-                ):
-                    dic["porv"].append(f"PORV 0 {i+1} {i+1} 2* {k+1} {k+1} /")
-            for j in range(dic["noCells"][1] - 1):
-                dic["fluxnum"].extend(dic["fluxnum"][-dic["noCells"][0] :])
-                for i_i in range(dic["noCells"][0]):
-                    sensor1.append(
-                        (dic["xmx_center"][i_i] - dic["sensors"][0][0]) ** 2
-                        + (dic["ymy_center"][j + 1] - dic["sensors"][0][1]) ** 2
-                        + (dic["zmz_center"][k] + dic["sensors"][0][2] - dic["dims"][2])
-                        ** 2
+            base_offset = index_z * no_cells_x * no_cells_y
+            src = base_offset
+            for index_y in range(1, no_cells_y):
+                dst = base_offset + index_y * no_cells_x
+                fluxnum[dst : dst + no_cells_x] = fluxnum[src : src + no_cells_x]
+                for index_x in range(no_cells_x):
+                    value_x = xcent[index_x]
+                    fipnum[dst + index_x] = boxes(
+                        cfg,
+                        value_x,
+                        value_z - z_c[index_y],
+                        index_x,
+                        fluxnum[dst + index_x],
                     )
-                    sensor2.append(
-                        (dic["xmx_center"][i_i] - dic["sensors"][1][0]) ** 2
-                        + (dic["ymy_center"][j + 1] - dic["sensors"][1][1]) ** 2
-                        + (dic["zmz_center"][k] + dic["sensors"][1][2] - dic["dims"][2])
-                        ** 2
-                    )
-                    z_c = dic["zmz_center"][k]
-                    if dic["spe11"] == "spe11c":
-                        z_c -= map_z(dic, j + 1)
-                    boxes(
-                        dic,
-                        dic["xmx_center"][i_i],
-                        z_c,
-                        i_i,
-                        dic["fluxnum"][-dic["noCells"][0] + i_i],
-                    )
-                    if dic["lower"] and not dic["lowerpolygon"].contains(
-                        Point(dic["xmx_center"][i], dic["zmz_center"][k])
-                    ):
-                        dic["porv"].append(f"PORV 0 {i+1} {i+1} 2* {k+1} {k+1} /")
-                    elif i_i == 0 and (
-                        int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
-                        and int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 7
-                    ):
-                        dic["porv"].append(
-                            f"PORV {pv_l*dic['dy'][j+1]*dic['dz'][k]} 1 1 "
-                            + f"{j+2} {j+2} {k+1} {k+1} /"
+                    if cfg.lower and not lowpoly.contains(Point(value_x, value_z)):
+                        pass
+                    elif index_x == 0 and fluxnum[dst + index_x] not in (1, 7):
+                        porv.append(
+                            f"PORV {pv_l*dy[index_y]*dz[index_z]} 1 1 {index_y+1} "
+                            f"{index_y+1} {index_z+1} {index_z+1} /"
                         )
-                    elif i_i == dic["noCells"][0] - 1 and (
-                        int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
-                        and int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 7
+                    elif index_x == no_cells_x - 1 and fluxnum[dst + index_x] not in (
+                        1,
+                        7,
                     ):
-                        dic["porv"].append(
-                            f"PORV {pv*dic['dy'][j+1]*dic['dz'][k]} {dic['noCells'][0]} "
-                            + f"{dic['noCells'][0]} {j+2} {j+2} {k+1} {k+1} /"
+                        porv.append(
+                            f"PORV {pv*dy[index_y]*dz[index_z]} {no_cells_x} {no_cells_x} "
+                            f"{index_y+1} {index_y+1} {index_z+1} {index_z+1} /"
                         )
-    if dic["spe11"] == "spe11c":
-        add_pv_fipnum_front_back(dic)
-    dic["pop1"] = pd.Series(sensor1).argmin()
-    dic["fipnum"][dic["pop1"]] = "8"
-    if not dic["lower"]:
-        dic["pop2"] = pd.Series(sensor2).argmin()
-        dic["fipnum"][dic["pop2"]] = "9"
-    sensors(dic)
-    wells(dic)
+                src = dst
+    sensors_structured_spe11abc(cfg, fipnum, xcent, ycent, zcent)
+    wells_structured_spe11abc(cfg, xcent, ycent, zcent)
+    if spe11 == "spe11c":
+        if not cfg.lower:
+            add_pv_fipnum_front_back(
+                cfg, fipnum, fluxnum, porv, dx, dz, xcent, zcent, Polygon()
+            )
+        else:
+            add_pv_fipnum_front_back(
+                cfg,
+                fipnum,
+                fluxnum,
+                porv,
+                dx,
+                dz,
+                xcent,
+                zcent,
+                lowpoly,
+            )
+        write_regular_spe11c_grid(cfg, xmx, ymy, zmz)
+    return fipnum, fluxnum, porv, xmx, zmz
 
 
-def add_pv_fipnum_front_back(dic):
-    """
-    Add the buffer pore volume and bc labels also on the front and back boundaries.
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    for k in range(dic["noCells"][2]):
-        for i in range(dic["noCells"][0] - 2):
-            if dic["grid"] != "corner-point":
-                if dic["lower"] and not dic["lowerpolygon"].contains(
-                    Point(dic["xmx_center"][i], dic["zmz_center"][k])
-                ):
-                    continue
-            ind = i + 1 + k * dic["noCells"][0] * dic["noCells"][1]
-            if int(dic["fluxnum"][ind]) != 1 and int(dic["fluxnum"][ind]) != 7:
-                pv = dic["rock"][int(dic["fluxnum"][ind]) - 1][1] * (
-                    dic["pvAdded"] + dic["widthBuffer"]
+def add_pv_fipnum_front_back(
+    cfg: Config,
+    fipnum: NDArray,
+    fluxnum: NDArray,
+    porv: list,
+    d_x: NDArray,
+    d_z: NDArray,
+    xcent: NDArray,
+    zcent: NDArray,
+    lowpoly: Polygon,
+) -> None:
+    """Buffer pore volume and bc labels also on front and back boundaries."""
+    assert cfg.pvAdded is not None
+    assert cfg.widthBuffer is not None
+    no_cells_x = cfg.nxyz[0]
+    no_cells_y = cfg.nxyz[1]
+    no_cells_z = cfg.nxyz[2]
+    grid = cfg.grid
+    rock = cfg.rock
+    pv_added = cfg.pvAdded + cfg.widthBuffer
+    for k in range(no_cells_z):
+        for i in range(no_cells_x - 2):
+            if grid != "corner-point":
+                if cfg.lower:
+                    if not lowpoly.contains(Point(xcent[i], zcent[k])):
+                        continue
+            ind = i + 1 + k * no_cells_x * no_cells_y
+            n = fluxnum[ind]
+            if n not in (0, 1, 7):
+                pv = rock[n - 1][1] * pv_added
+                ind_xz = i + 1 + k * no_cells_x if grid == "corner-point" else k
+                pv_val = pv * d_x[i + 1] * d_z[ind_xz]
+                porv.append(f"PORV {pv_val} {i+2} {i+2} 1 1 {k+1} {k+1} /")
+                porv.append(
+                    f"PORV {pv_val} {i+2} {i+2} {no_cells_y} {no_cells_y} {k+1} {k+1} /"
                 )
-                if dic["grid"] == "corner-point":
-                    ind_xz = i + 1 + k * dic["noCells"][0]
-                    dic["porv"].append(
-                        f"PORV {pv*dic['d_x'][i+1]*dic['d_z'][ind_xz]} {i+2} {i+2} "
-                        + f"1 1 {k+1} {k+1} /"
-                    )
-                    dic["porv"].append(
-                        f"PORV {pv*dic['d_x'][i+1]*dic['d_z'][ind_xz]} {i+2} {i+2} "
-                        + f"{dic['noCells'][1]} {dic['noCells'][1]} {k+1} {k+1} /"
-                    )
-                else:
-                    dic["porv"].append(
-                        f"PORV {pv*dic['dx'][i+1]*dic['dz'][k]} {i+2} {i+2} "
-                        + f"1 1 {k+1} {k+1} /"
-                    )
-                    dic["porv"].append(
-                        f"PORV {pv*dic['dx'][i+1]*dic['dz'][k]} {i+2} {i+2} "
-                        + f"{dic['noCells'][1]} {dic['noCells'][1]} {k+1} {k+1} /"
-                    )
-            set_back_front_fipnums(dic, ind)
+            set_back_front_fipnums(cfg, fipnum, fluxnum, ind)
 
 
-def set_back_front_fipnums(dic, ind):
+def set_back_front_fipnums(
+    cfg: Config, fipnum: NDArray, fluxnum: NDArray, ind: int
+) -> None:
     """
     For the front and back boundaries in spe11c:\n
     Box A: Fipnum 13\n
@@ -308,538 +327,416 @@ def set_back_front_fipnums(dic, ind):
     Facie 1 and Box B: Fipnum 16\n
     Box C: Fipnum 17\n
     Facie 1 and Box C: Fipnum 18\n
-
-    Args:
-        dic (dict): Global dictionary
-        ind (int): ID index for the property
-
-    Returns:
-        dic (dict): Modified global dictionary
-
     """
-    if int(dic["fipnum"][ind]) == 2:
-        dic["fipnum"][ind] = "13"
-        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "13"
-    elif int(dic["fipnum"][ind]) == 5:
-        dic["fipnum"][ind] = "14"
-        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "14"
-    elif int(dic["fipnum"][ind]) == 3:
-        dic["fipnum"][ind] = "15"
-        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "15"
-    elif int(dic["fipnum"][ind]) == 6:
-        dic["fipnum"][ind] = "16"
-        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "16"
-    elif int(dic["fipnum"][ind]) == 4:
-        dic["fipnum"][ind] = "17"
-        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "17"
-    elif int(dic["fipnum"][ind]) == 12:
-        dic["fipnum"][ind] = "18"
-        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "18"
-    elif int(dic["fluxnum"][ind]) == 1:
-        dic["fipnum"][ind] = "10"
-        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "10"
+    offset = cfg.nxyz[0] * (cfg.nxyz[1] - 1)
+    val = fipnum[ind]
+    if val == 2:
+        fipnum[ind] = 13
+        fipnum[ind + offset] = 13
+    elif val == 5:
+        fipnum[ind] = 14
+        fipnum[ind + offset] = 14
+    elif val == 3:
+        fipnum[ind] = 15
+        fipnum[ind + offset] = 15
+    elif val == 6:
+        fipnum[ind] = 16
+        fipnum[ind + offset] = 16
+    elif val == 4:
+        fipnum[ind] = 17
+        fipnum[ind + offset] = 17
+    elif val == 12:
+        fipnum[ind] = 18
+        fipnum[ind + offset] = 18
+    elif fluxnum[ind] == 1:
+        fipnum[ind] = 10
+        fipnum[ind + offset] = 10
     else:
-        dic["fipnum"][ind] = "11"
-        dic["fipnum"][ind + dic["noCells"][0] * (dic["noCells"][1] - 1)] = "11"
+        fipnum[ind] = 11
+        fipnum[ind + offset] = 11
 
 
-def corner_point_handling_spe11a(dic):
-    """
-    Locate the geological positions in the corner-point grid for the spe11a
+def polygon_search_order(z: float, zmidbot: float, ztopbot: float) -> list:
+    """Speed up by giving the polygon order according to the search region"""
+    # fmt: off
+    if z > zmidbot:
+        v = [25,26,31,29,12,20,1,8,19,21,14,2,3,0,4,5,6,9,10,11,15,16,17,18,22,23,24,27,28,30,7,13]
+    elif z > ztopbot:
+        v = [12,20,1,8,19,21,14,2,3,25,26,29,31,0,4,5,6,9,10,11,15,16,17,18,22,23,24,27,28,30,7,13]
+    else:
+        v = [0,4,5,6,9,10,11,15,16,17,18,22,23,24,27,28,30,7,13,12,20,1,8,19,21,14,2,3,25,26,29,31]
+    return v
+    # fmt: on
 
-    Args:
-        dic (dict): Global dictionary
 
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    well1, well2, sensor1, sensor2 = [], [], [], []
-    dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
-    with alive_bar(dic["no_cells"]) as bar_animation:
-        for i in range(dic["no_cells"]):
+def corner_point_handling_spe11a(
+    cfg: Config, polygons: list[Polygon], facies: list, xc: NDArray, zc: NDArray
+) -> tuple[NDArray, NDArray]:
+    """Locate the geological positions in the corner-point grid for the spe11a"""
+    w = 1.0 if cfg.spe11 == "spe11a" else 1200.0 / 1.2
+    dims_z = cfg.dims[2]
+    ztopbot = dims_z - 0.644 * w
+    zmidbot = dims_z - 0.265 * w
+    no_cells_x = cfg.nxyz[0]
+    sensors = cfg.sensors
+    wells = cfg.wellCoord
+    nxz = cfg.nxyz[0] * cfg.nxyz[2]
+    fluxnum = np.zeros(nxz, dtype="uint8")
+    fipnum = np.zeros(nxz, dtype="uint8")
+    with alive_bar(nxz, bar="fish") as bar_animation:
+        for i in range(nxz):
             bar_animation()
-            i_x = int(i % dic["noCells"][0])
-            k_z = int(np.floor(i / dic["noCells"][0]))
-            n = -1
-            if dic["xyz"][i][2] > dic["zmidbot"]:
-                order = dic["under_order"]
-            elif dic["xyz"][i][2] > dic["ztopbot"]:
-                order = dic["bottom_order"]
-            else:
-                order = dic["top_order"]
+            i_x = i % no_cells_x
+            k_z = i // no_cells_x
+            gind = i_x + k_z * no_cells_x
+            x_val = xc[i]
+            z_val = zc[i]
+            n = 0
+            order = polygon_search_order(z_val, zmidbot, ztopbot)
+            point = Point(x_val, z_val)
             for ind in order:
-                if dic["polygons"][ind].contains(
-                    Point(dic["xyz"][i][0], dic["xyz"][i][2])
-                ):
-                    n = dic["facies"][ind]
+                if polygons[ind].contains(point):
+                    n = facies[ind]
                     break
-            well1.append(
-                (dic["wellCoord"][0][0] - dic["xyz"][i][0]) ** 2
-                + (dic["wellCoord"][0][2] - dic["xyz"][i][2]) ** 2
-            )
-            sensor1.append(
-                (dic["xyz"][i][0] - dic["sensors"][0][0]) ** 2
-                + (dic["xyz"][i][2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
-            )
-            dic["fluxnum"].append(str(n))
-            if not dic["lower"]:
-                well2.append(
-                    (dic["wellCoord"][1][0] - dic["xyz"][i][0]) ** 2
-                    + (dic["wellCoord"][1][2] - dic["xyz"][i][2]) ** 2
-                )
-                sensor2.append(
-                    (dic["xyz"][i][0] - dic["sensors"][1][0]) ** 2
-                    + (dic["xyz"][i][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
-                )
-            boxes(dic, dic["xyz"][i][0], dic["xyz"][i][2], i_x, dic["fluxnum"][-1])
-    dic["pop1"] = pd.Series(sensor1).argmin()
-    dic["fipnum"][dic["pop1"]] = "8"
-    idwell1 = pd.Series(well1).argmin()
-    i_x = int(idwell1 % dic["noCells"][0])
-    k_z = int(np.floor(idwell1 / dic["noCells"][0]))
-    well1ijk = [i_x, 0, k_z]
-    i_x = int(dic["pop1"] % dic["noCells"][0])
-    k_z = int(np.floor(dic["pop1"] / dic["noCells"][0]))
-    dic["sensorijk"][0] = [i_x, 0, k_z]
-    dic["wellijk"][0] = [well1ijk[0] + 1, 1, well1ijk[2] + 1]
-    if not dic["lower"]:
-        dic["pop2"] = pd.Series(sensor2).argmin()
-        dic["fipnum"][dic["pop2"]] = "9"
-        idwell2 = pd.Series(well2).argmin()
-        i_x = int(idwell2 % dic["noCells"][0])
-        k_z = int(np.floor(idwell2 / dic["noCells"][0]))
-        well2ijk = [i_x, 0, k_z]
-        i_x = int(dic["pop2"] % dic["noCells"][0])
-        k_z = int(np.floor(dic["pop2"] / dic["noCells"][0]))
-        dic["sensorijk"][1] = [i_x, 0, k_z]
-        dic["wellijk"][1] = [well2ijk[0] + 1, 1, well2ijk[2] + 1]
+            fluxnum[gind] = n
+            fipnum[gind] = boxes(cfg, x_val, z_val, i_x, n)
+    dx = (xc - sensors[0][0]) ** 2
+    dz = (zc + sensors[0][2] - dims_z) ** 2
+    pop1 = int(np.argmin(dx + dz))
+    fipnum[pop1] = 8
+    i_x = pop1 % no_cells_x
+    k_z = pop1 // no_cells_x
+    cfg.sensorijk[0] = [i_x, 0, k_z]
+    dx = (xc - wells[0][0]) ** 2
+    dz = (zc - wells[0][2]) ** 2
+    idwell1 = int(np.argmin(dx + dz))
+    i_x = idwell1 % no_cells_x
+    k_z = idwell1 // no_cells_x
+    cfg.wellijk[0] = [i_x + 1, 1, k_z + 1]
+    if not cfg.lower:
+        dx = (xc - sensors[1][0]) ** 2
+        dz = (zc + sensors[1][2] - dims_z) ** 2
+        pop2 = int(np.argmin(dx + dz))
+        fipnum[pop2] = 9
+        i_x = pop2 % no_cells_x
+        k_z = pop2 // no_cells_x
+        cfg.sensorijk[1] = [i_x, 0, k_z]
+        dx = (xc - wells[1][0]) ** 2
+        dz = (zc - wells[1][2]) ** 2
+        idwell2 = int(np.argmin(dx + dz))
+        i_x = idwell2 % no_cells_x
+        k_z = idwell2 // no_cells_x
+        cfg.wellijk[1] = [i_x + 1, 1, k_z + 1]
+    return fipnum, fluxnum
 
 
-def corner_point_handling_spe11bc(dic):
-    """
-    Locate the geological positions in the corner-point grid for the spe11b/c
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    well1, well2, sensor1, sensor2, xtemp, ztemp, pv_l = (
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        0,
-    )
-    dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
-    with alive_bar(dic["no_cells"]) as bar_animation:
-        for i in range(dic["no_cells"]):
+def corner_point_handling_spe11bc(
+    cfg: Config,
+    polygons: list[Polygon],
+    facies: list,
+    xc: NDArray,
+    zc: NDArray,
+    ymy: NDArray,
+    ycent: NDArray,
+    d_x: NDArray,
+    d_y: NDArray,
+    d_z: NDArray,
+) -> tuple[NDArray, NDArray, list]:
+    """Locate the geological positions in the corner-point grid for the spe11b/c"""
+    assert cfg.pvAdded is not None
+    assert cfg.widthBuffer is not None
+    pv_l, porv = 0.0, []
+    w = 1.0 if cfg.spe11 == "spe11a" else 1200.0 / 1.2
+    dims_z = cfg.dims[2]
+    ztopbot = dims_z - 0.644 * w
+    zmidbot = dims_z - 0.265 * w
+    no_cells_x = cfg.nxyz[0]
+    no_cells_y = cfg.nxyz[1]
+    sensors = cfg.sensors
+    wells = cfg.wellCoord
+    rock = cfg.rock
+    spe11 = cfg.spe11
+    pv_added = cfg.pvAdded + cfg.widthBuffer
+    nxz = cfg.nxyz[0] * cfg.nxyz[2]
+    fluxnum = np.zeros(nxz * cfg.nxyz[1], dtype="uint8")
+    fipnum = np.zeros(nxz * cfg.nxyz[1], dtype="uint8")
+    xtemp = np.empty(no_cells_x, dtype=xc[0].dtype)
+    ztemp = np.empty(no_cells_x, dtype=zc[0].dtype)
+    z_c = map_z(cfg, ycent) if spe11 == "spe11c" else 0 * ycent
+    with alive_bar(nxz, bar="fish") as bar_animation:
+        for i in range(nxz):
             bar_animation()
-            i_x = int(i % dic["noCells"][0])
-            k_z = int(np.floor(i / dic["noCells"][0]))
-            xtemp.append(dic["xyz"][i][0])
-            ztemp.append(dic["xyz"][i][2])
-            n = -1
-            if dic["xyz"][i][2] > dic["zmidbot"]:
-                order = dic["under_order"]
-            elif dic["xyz"][i][2] > dic["ztopbot"]:
-                order = dic["bottom_order"]
-            else:
-                order = dic["top_order"]
+            i_x = i % no_cells_x
+            k_z = i // no_cells_x
+            gind = i_x + k_z * no_cells_x * no_cells_y
+            x_val = xc[i]
+            z_val = zc[i]
+            xtemp[i_x] = x_val
+            ztemp[i_x] = z_val
+            n = 0
+            order = polygon_search_order(z_val, zmidbot, ztopbot)
+            point = Point(x_val, z_val)
             for ind in order:
-                if dic["polygons"][ind].contains(
-                    Point(dic["xyz"][i][0], dic["xyz"][i][2])
-                ):
-                    n = dic["facies"][ind]
+                if polygons[ind].contains(point):
+                    n = facies[ind]
                     break
-            well1.append(
-                (dic["wellCoord"][0][0] - dic["xyz"][i][0]) ** 2
-                + (dic["wellCoord"][0][2] - dic["xyz"][i][2]) ** 2
-            )
-            well2.append(
-                (dic["wellCoord"][1][0] - dic["xyz"][i][0]) ** 2
-                + (dic["wellCoord"][1][2] - dic["xyz"][i][2]) ** 2
-            )
-            sensor1.append(
-                (dic["xyz"][i][0] - dic["sensors"][0][0]) ** 2
-                + (dic["xyz"][i][2] + dic["sensors"][0][2] - dic["dims"][2]) ** 2
-            )
-            sensor2.append(
-                (dic["xyz"][i][0] - dic["sensors"][1][0]) ** 2
-                + (dic["xyz"][i][2] + dic["sensors"][1][2] - dic["dims"][2]) ** 2
-            )
-            z_c = dic["xyz"][i][2]
-            if dic["spe11"] == "spe11c":
-                z_c -= map_z(dic, 0)
-            dic["fluxnum"].append(str(n))
-            boxes(dic, dic["xyz"][i][0], z_c, i_x, dic["fluxnum"][-1])
-            pv = dic["rock"][n - 1][1] * (dic["pvAdded"] + dic["widthBuffer"])
+            fluxnum[gind] = n
+            fipnum[gind] = boxes(cfg, x_val, z_val - z_c[0], i_x, n)
+            pv = rock[n - 1][1] * pv_added if n > 0 else 0
             if i_x == 0 and n not in (1, 7):
-                dic["porv"].append(
-                    f"PORV { pv*dic['d_y'][0]*dic['d_z'][i]} 1 1 1 1 "
-                    + f"{k_z+1} {k_z+1} /"
-                )
+                porv.append(f"PORV {pv*d_y[0]*d_z[i]} 1 1 1 1 {k_z+1} {k_z+1} /")
                 pv_l = pv
-            elif i_x == dic["noCells"][0] - 1 and n not in (1, 7):
-                dic["porv"].append(
-                    f"PORV {pv*dic['d_y'][0]*dic['d_z'][i]} {dic['noCells'][0]} "
-                    + f"{dic['noCells'][0]} 1 1 {k_z+1} {k_z+1} /"
+            elif i_x == no_cells_x - 1 and n not in (1, 7):
+                porv.append(
+                    f"PORV {pv*d_y[0]*d_z[i]} {no_cells_x} {no_cells_x} 1 1 {k_z+1} {k_z+1} /"
                 )
-            if i_x > 0 and i_x == dic["noCells"][0] - 1:
-                for j in range(dic["noCells"][1] - 1):
-                    dic["fluxnum"].extend(dic["fluxnum"][-dic["noCells"][0] :])
-                    for i_i in range(dic["noCells"][0]):
-                        z_c = ztemp[i_i]
-                        if dic["spe11"] == "spe11c":
-                            z_c -= map_z(dic, j + 1)
-                        boxes(
-                            dic,
+            if i_x == no_cells_x - 1:
+                base_offset = k_z * no_cells_x * no_cells_y
+                src = base_offset
+                for j in range(1, no_cells_y):
+                    dst = base_offset + j * no_cells_x
+                    fluxnum[dst : dst + no_cells_x] = fluxnum[src : src + no_cells_x]
+                    for i_i in range(no_cells_x):
+                        fipnum[dst + i_i] = boxes(
+                            cfg,
                             xtemp[i_i],
-                            z_c,
+                            ztemp[i_i] - z_c[j],
                             i_i,
-                            dic["fluxnum"][-dic["noCells"][0] + i_i],
+                            fluxnum[dst + i_i],
                         )
-                        if i_i == 0 and (
-                            int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
-                            and int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 7
-                        ):
-                            dic["d_zl"] = dic["d_z"][-dic["noCells"][0] + 1 + i]
-                            dic["porv"].append(
-                                "PORV "
-                                + f"{pv_l*dic['d_y'][j+1]*dic['d_zl']} 1 1 "
-                                + f"{j+2} {j+2} {k_z+1} {k_z+1} /"
+                        if i_i == 0 and fluxnum[dst + i_i] not in (1, 7):
+                            d_zl = d_z[k_z * no_cells_x + i_i]
+                            porv.append(
+                                f"PORV {pv_l*d_y[j]*d_zl} 1 1 {j+1} {j+1} {k_z+1} {k_z+1} /"
                             )
-                        elif i_i == dic["noCells"][0] - 1 and (
-                            int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 1
-                            and int(dic["fluxnum"][-dic["noCells"][0] + i_i]) != 7
-                        ):
-                            dic["porv"].append(
-                                f"PORV {pv*dic['d_y'][j+1]*dic['d_z'][i]} "
-                                + f"{dic['noCells'][0]} {dic['noCells'][0]} {j+2} {j+2} "
-                                + f"{k_z+1} {k_z+1} /"
+                        elif i_i == no_cells_x - 1 and fluxnum[dst + i_i] not in (1, 7):
+                            porv.append(
+                                f"PORV {pv*d_y[j]*d_z[i]} {no_cells_x} {no_cells_x} "
+                                f"{j+1} {j+1} {k_z+1} {k_z+1} /"
                             )
-                xtemp, ztemp = [], []
-    if dic["spe11"] == "spe11c":
-        add_pv_fipnum_front_back(dic)
-    dic["pop1"] = pd.Series(sensor1).argmin()
-    dic["pop2"] = pd.Series(sensor2).argmin()
-    dic["well1"] = pd.Series(well1).argmin()
-    dic["well2"] = pd.Series(well2).argmin()
-    locate_wells_sensors(dic)
-
-
-def locate_wells_sensors(dic):
-    """
-    Find the wells/sources and sensors ijk positions
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    i_x = int(dic["well1"] % dic["noCells"][0])
-    k_z = int(np.floor(dic["well1"] / dic["noCells"][0]))
-    well1ijk = [i_x, 0, k_z]
-    i_x = int(dic["well2"] % dic["noCells"][0])
-    k_z = int(np.floor(dic["well2"] / dic["noCells"][0]))
-    well2ijk = [i_x, 0, k_z]
-    i_x = int(dic["pop1"] % dic["noCells"][0])
-    k_z = int(np.floor(dic["pop1"] / dic["noCells"][0]))
-    dic["sensorijk"][0] = [i_x, 0, k_z]
-    i_x = int(dic["pop2"] % dic["noCells"][0])
-    k_z = int(np.floor(dic["pop2"] / dic["noCells"][0]))
-    dic["sensorijk"][1] = [i_x, 0, k_z]
-    dic["wellijk"][0] = [well1ijk[0] + 1, 1, well1ijk[2] + 1]
-    dic["wellijk"][1] = [well2ijk[0] + 1, 1, well2ijk[2] + 1]
-    if dic["spe11"] == "spe11c":
-        dic["wellijkf"] = [[] for _ in range(len(dic["wellCoord"]))]
-        dic["wellijkf"][0] = [dic["wellijk"][0][0], 1, dic["wellijk"][0][2]]
-        dic["wellijkf"][1] = [dic["wellijk"][1][0], 1, dic["wellijk"][1][2]]
-        dic["ymy_center"] = (np.array(dic["ymy"][1:]) + np.array(dic["ymy"][:-1])) / 2.0
-        wji = pd.Series(np.abs(dic["wellCoord"][0][1] - dic["ymy_center"])).argmin() + 1
-        wjf = (
-            pd.Series(np.abs(dic["wellCoordF"][0][1] - dic["ymy_center"])).argmin() + 1
+                    src = dst
+    if spe11 == "spe11c":
+        add_pv_fipnum_front_back(
+            cfg, fipnum, fluxnum, porv, d_x, d_z, np.empty(0), np.empty(0), Polygon()
         )
-        sj1 = pd.Series(np.abs(dic["sensors"][0][1] - dic["ymy_center"])).argmin()
-        sj2 = pd.Series(np.abs(dic["sensors"][1][1] - dic["ymy_center"])).argmin()
-        dic["sensorijk"][0][1] = sj1
-        dic["sensorijk"][1][1] = sj2
-        dic["wellijk"][0][1] = wji
-        dic["wellijk"][1][1] = wji
-        dic["wellijkf"][0][1] = wjf
-        dic["wellijkf"][1][1] = wjf
-        dic["wellkh"] = []
-        z_centers = []
-        for k in range(dic["noCells"][2]):
-            z_centers.append(dic["xyz"][well1ijk[0] + k * dic["noCells"][0]][2])
-        for j in range(dic["wellijk"][0][1], dic["wellijkf"][0][1] + 1):
-            midpoints = z_centers - map_z(dic, j - 1) - dic["maxelevation"]
-            dic["wellkh"].append(
-                pd.Series(np.abs(dic["wellCoord"][0][2] - midpoints)).argmin() + 1
+    dx = (xc - sensors[0][0]) ** 2
+    dz = (zc + sensors[0][2] - dims_z) ** 2
+    pop1 = int(np.argmin(dx + dz))
+    dx = (xc - wells[0][0]) ** 2
+    dz = (zc - wells[0][2]) ** 2
+    well1 = int(np.argmin(dx + dz))
+    dx = (xc - sensors[1][0]) ** 2
+    dz = (zc + sensors[1][2] - dims_z) ** 2
+    pop2 = int(np.argmin(dx + dz))
+    dx = (xc - wells[1][0]) ** 2
+    dz = (zc - wells[1][2]) ** 2
+    well2 = int(np.argmin(dx + dz))
+    locate_wells_sensors_cp_spe11bc(cfg, fipnum, zc, ymy, pop1, pop2, well1, well2)
+    return fipnum, fluxnum, porv
+
+
+def locate_wells_sensors_cp_spe11bc(
+    cfg: Config,
+    fipnum: NDArray,
+    zc: NDArray,
+    ymy: NDArray,
+    pop1: int,
+    pop2: int,
+    well1: int,
+    well2: int,
+) -> None:
+    """Find wells/sources and sensors ijk positions in the corner-point spe11bc"""
+    no_cells_x = cfg.nxyz[0]
+    no_cells_y = cfg.nxyz[1]
+    i_x = well1 % no_cells_x
+    k_z = well1 // no_cells_x
+    well1ijk = [i_x, 0, k_z]
+    i_x = well2 % no_cells_x
+    k_z = well2 // no_cells_x
+    well2ijk = [i_x, 0, k_z]
+    i_x = pop1 % no_cells_x
+    k_z = pop1 // no_cells_x
+    cfg.sensorijk[0] = [i_x, 0, k_z]
+    i_x = pop2 % no_cells_x
+    k_z = pop2 // no_cells_x
+    cfg.sensorijk[1] = [i_x, 0, k_z]
+    cfg.wellijk[0] = [well1ijk[0] + 1, 1, well1ijk[2] + 1]
+    cfg.wellijk[1] = [well2ijk[0] + 1, 1, well2ijk[2] + 1]
+    if cfg.spe11 == "spe11c":
+        assert cfg.wellCoordF is not None
+        cfg.wellijkf[0] = [cfg.wellijk[0][0], 1, cfg.wellijk[0][2]]
+        cfg.wellijkf[1] = [cfg.wellijk[1][0], 1, cfg.wellijk[1][2]]
+        ycent = (np.array(ymy[1:]) + np.array(ymy[:-1])) / 2.0
+        wji = int(np.argmin(np.abs(cfg.wellCoord[0][1] - ycent))) + 1
+        wjf = int(np.argmin(np.abs(cfg.wellCoordF[0][1] - ycent))) + 1
+        cfg.sensorijk[0][1] = int(np.argmin(np.abs(cfg.sensors[0][1] - ycent)))
+        cfg.sensorijk[1][1] = int(np.argmin(np.abs(cfg.sensors[1][1] - ycent)))
+        cfg.wellijk[0][1] = wji
+        cfg.wellijk[1][1] = wji
+        cfg.wellijkf[0][1] = wjf
+        cfg.wellijkf[1][1] = wjf
+        cfg.wellkh = []
+        nz = cfg.nxyz[2]
+        z_centers = np.empty(nz, dtype=zc[0].dtype)
+        z_y = map_z(cfg, ycent)
+        for k in range(cfg.nxyz[2]):
+            z_centers[k] = zc[well1ijk[0] + k * no_cells_x]
+        for j in range(cfg.wellijk[0][1], cfg.wellijkf[0][1] + 1):
+            midpoints = z_centers - z_y[j - 1] - cfg.maxelevation
+            cfg.wellkh.append(
+                int(np.argmin(np.abs(cfg.wellCoord[0][2] - midpoints))) + 1
             )
-    dic["fipnum"][
-        dic["sensorijk"][0][0]
-        + dic["sensorijk"][0][1] * dic["noCells"][0]
-        + dic["sensorijk"][0][2] * dic["noCells"][0] * dic["noCells"][1]
-    ] = "8"
-    if not dic["lower"]:
-        dic["fipnum"][
-            dic["sensorijk"][1][0]
-            + dic["sensorijk"][1][1] * dic["noCells"][0]
-            + dic["sensorijk"][1][2] * dic["noCells"][0] * dic["noCells"][1]
-        ] = "9"
+    fipnum[
+        cfg.sensorijk[0][0]
+        + cfg.sensorijk[0][1] * no_cells_x
+        + cfg.sensorijk[0][2] * no_cells_x * no_cells_y
+    ] = 8
+    if not cfg.lower:
+        fipnum[
+            cfg.sensorijk[1][0]
+            + cfg.sensorijk[1][1] * no_cells_x
+            + cfg.sensorijk[1][2] * no_cells_x * no_cells_y
+        ] = 9
 
 
-def boxes(dic, x_c, z_c, idx, fluxnum):
-    """
-    Find the global indices for the different boxes for the report data
-
-    Args:
-        dic (dict): Global dictionary\n
-        x_c (float): x-position of the cell center\n
-        z_c (float): z-position of the cell center\n
-        idx (int): i index of the cell position\n
-        fluxnum (int): Number of the facie in the cell
-
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
+def boxes(cfg: Config, x_c: float, z_c: float, idx: int, fluxnum: float) -> int:
+    """Find the global indices for the different boxes for the report data"""
+    z_val = cfg.dims[2] + cfg.maxelevation - z_c
     if (
-        (dic["dims"][2] + dic["maxelevation"] - z_c >= dic["boxb"][0][2])
-        & (dic["dims"][2] + dic["maxelevation"] - z_c <= dic["boxb"][1][2])
-        & (x_c >= dic["boxb"][0][0])
-        & (x_c <= dic["boxb"][1][0])
+        (z_val >= cfg.boxb[0][2])
+        & (z_val <= cfg.boxb[1][2])
+        & (x_c >= cfg.boxb[0][0])
+        & (x_c <= cfg.boxb[1][0])
     ):
-        check_facie1(dic, fluxnum, "6", "3")
-    elif (
-        (dic["dims"][2] + dic["maxelevation"] - z_c >= dic["boxc"][0][2])
-        & (dic["dims"][2] + dic["maxelevation"] - z_c <= dic["boxc"][1][2])
-        & (x_c >= dic["boxc"][0][0])
-        & (x_c <= dic["boxc"][1][0])
+        return check_facie1(fluxnum, 6, 3)
+    if (
+        (z_val >= cfg.boxc[0][2])
+        & (z_val <= cfg.boxc[1][2])
+        & (x_c >= cfg.boxc[0][0])
+        & (x_c <= cfg.boxc[1][0])
     ):
-        check_facie1(dic, fluxnum, "12", "4")
-    elif (
-        (dic["dims"][2] + dic["maxelevation"] - z_c >= dic["boxa"][0][2])
-        & (dic["dims"][2] + dic["maxelevation"] - z_c <= dic["boxa"][1][2])
-        & (x_c >= dic["boxa"][0][0])
-        & (x_c <= dic["boxa"][1][0])
+        return check_facie1(fluxnum, 12, 4)
+    if (
+        (z_val >= cfg.boxa[0][2])
+        & (z_val <= cfg.boxa[1][2])
+        & (x_c >= cfg.boxa[0][0])
+        & (x_c <= cfg.boxa[1][0])
     ):
-        check_facie1(dic, fluxnum, "5", "2")
-    elif dic["spe11"] != "spe11a" and idx in (0, dic["noCells"][0] - 1):
-        check_facie1(dic, fluxnum, "10", "11")
-    elif fluxnum == "1":
-        dic["fipnum"].append("7")
-    else:
-        dic["fipnum"].append("1")
+        return check_facie1(fluxnum, 5, 2)
+    if cfg.spe11 != "spe11a" and idx in (0, cfg.nxyz[0] - 1):
+        return check_facie1(fluxnum, 10, 11)
+    if fluxnum == 1:
+        return 7
+    return 1
 
 
-def check_facie1(dic, fluxnum, numa, numb):
-    """
-    Handle the overlaping with facie 1
-
-    Args:
-        dic (dict): Global dictionary\n
-        fluxnum (int): Number of the facie in the cell\n
-        numa (int): Fipnum to assign to the cell if it overlaps with Facie 1\n
-        numb (int): Fipnum to assign to the cell otherwise.
-
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    if fluxnum == "1":
-        dic["fipnum"].append(numa)
-    else:
-        dic["fipnum"].append(numb)
+def check_facie1(fluxnum: float, numa: int, numb: int) -> int:
+    """Handle the overlaping with facie 1"""
+    if fluxnum == 1:
+        return numa
+    return numb
 
 
-def positions(dic):
-    """
-    Function to locate sand and well positions
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    dic["sensorijk"] = [[] for _ in range(len(dic["sensors"]))]
-    for names in ["fluxnum", "fipnum", "porv"]:
-        dic[f"{names}"] = []
-    if dic["grid"] == "corner-point":
-        if dic["spe11"] == "spe11a":
-            corner_point_handling_spe11a(dic)
-        else:
-            corner_point_handling_spe11bc(dic)
-    else:
-        if dic["spe11"] == "spe11a":
-            structured_handling_spe11a(dic)
-        else:
-            structured_handling_spe11bc(dic)
-
-
-def sensors(dic):
-    """
-    Find the i,j,k sensor indices
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    for j, _ in enumerate(dic["sensors"]):
-        if dic["lower"] and j == 1:
+def sensors_structured_spe11abc(
+    cfg: Config, fipnum: NDArray, xcent: NDArray, ycent: NDArray, zcent: NDArray
+) -> None:
+    """Find the i,j,k sensor indices"""
+    nx, ny = len(xcent), len(ycent)
+    for n, _ in enumerate(cfg.sensors):
+        if cfg.lower and n == 1:
             continue
-        for sensor_coord, axis in zip(dic["sensors"][j], ["xmx", "ymy", "zmz"]):
-            if axis == "zmz":
-                dic["sensorijk"][j].append(
-                    pd.Series(
-                        np.abs(dic["dims"][2] - sensor_coord - dic[f"{axis}_center"])
-                    ).argmin()
-                )
-            else:
-                dic["sensorijk"][j].append(
-                    pd.Series(np.abs(sensor_coord - dic[f"{axis}_center"])).argmin()
-                )
+        i = int(np.argmin(np.abs(cfg.sensors[n][0] - xcent)))
+        j = (
+            0
+            if cfg.spe11 != "spe11c"
+            else int(np.argmin(np.abs(cfg.sensors[n][1] - ycent)))
+        )
+        k = int(np.argmin(np.abs(cfg.dims[2] - cfg.sensors[n][2] - zcent)))
+        fipnum[i + j * nx + k * nx * ny] = 8 + n
+        cfg.sensorijk[n][0] = i
+        cfg.sensorijk[n][1] = j
+        cfg.sensorijk[n][2] = k
 
 
-def wells(dic):
-    """
-    Function to find the wells/sources index
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    dic["wellijk"] = [[] for _ in range(len(dic["wellCoord"]))]
-    if dic["spe11"] != "spe11c":
-        for j, _ in enumerate(dic["wellCoord"]):
-            if dic["lower"] and j == 1:
+def wells_structured_spe11abc(
+    cfg: Config, xcent: NDArray, ycent: NDArray, zcent: NDArray
+) -> None:
+    """Function to find the wells/sources index"""
+    if cfg.spe11 != "spe11c":
+        for j, _ in enumerate(cfg.wellCoord):
+            if cfg.lower and j == 1:
                 continue
-            for well_coord, axis in zip(dic["wellCoord"][j], ["xmx", "ymy", "zmz"]):
-                dic["wellijk"][j].append(
-                    pd.Series(np.abs(well_coord - dic[f"{axis}_center"])).argmin() + 1
-                )
+            cfg.wellijk[j][0] = int(np.argmin(np.abs(cfg.wellCoord[j][0] - xcent))) + 1
+            cfg.wellijk[j][1] = int(np.argmin(np.abs(cfg.wellCoord[j][1] - ycent))) + 1
+            cfg.wellijk[j][2] = int(np.argmin(np.abs(cfg.wellCoord[j][2] - zcent))) + 1
     else:
-        dic["wellijkf"] = [[] for _ in range(len(dic["wellCoord"]))]
-        for j, _ in enumerate(dic["wellCoord"]):
-            if dic["lower"] and j == 1:
+        assert cfg.wellCoordF is not None
+        assert cfg.wellkh is not None
+        z_y = map_z(cfg, ycent)
+        for j, _ in enumerate(cfg.wellCoord):
+            if cfg.lower and j == 1:
                 continue
-            for k, (well_coord, axis) in enumerate(
-                zip(dic["wellCoord"][j][:2], ["xmx", "ymy"])
-            ):
-                dic["wellijk"][j].append(
-                    pd.Series(np.abs(well_coord - dic[f"{axis}_center"])).argmin() + 1
-                )
-                dic["wellijkf"][j].append(
-                    pd.Series(
-                        np.abs(dic["wellCoordF"][j][k] - dic[f"{axis}_center"])
-                    ).argmin()
-                    + 1
-                )
+            cfg.wellijk[j][0] = int(np.argmin(np.abs(cfg.wellCoord[j][0] - xcent))) + 1
+            cfg.wellijkf[j][0] = (
+                int(np.argmin(np.abs(cfg.wellCoordF[j][0] - xcent))) + 1
+            )
+            cfg.wellijk[j][1] = int(np.argmin(np.abs(cfg.wellCoord[j][1] - ycent))) + 1
+            cfg.wellijkf[j][1] = (
+                int(np.argmin(np.abs(cfg.wellCoordF[j][1] - ycent))) + 1
+            )
             if j == 0:
-                well_coord = dic["wellCoord"][j][2]
-                midpoints = dic["zmz_center"] - map_z(dic, dic["wellijk"][j][1] - 1)
-                dic["wellijk"][j].append(
-                    pd.Series(np.abs(well_coord - midpoints)).argmin() + 1
+                midpoints = zcent - z_y[cfg.wellijk[j][1] - 1]
+                cfg.wellijk[j][2] = (
+                    int(np.argmin(np.abs(cfg.wellCoord[j][2] - midpoints))) + 1
                 )
             else:
-                well_coord = dic["wellCoord"][j][2]
-                midpoints = dic["zmz_center"]
-                dic["wellijk"][j].append(
-                    pd.Series(np.abs(well_coord - midpoints)).argmin() + 1
+                cfg.wellijk[j][2] = (
+                    int(np.argmin(np.abs(cfg.wellCoord[j][2] - zcent))) + 1
                 )
-    if dic["spe11"] == "spe11c":
-        dic["wellkh"] = []
-        for j in range(dic["wellijk"][0][1], dic["wellijkf"][0][1] + 1):
-            midpoints = dic["zmz_center"] - map_z(dic, j - 1) - dic["maxelevation"]
-            dic["wellkh"].append(
-                pd.Series(np.abs(dic["wellCoord"][0][2] - midpoints)).argmin() + 1
+        for j in range(cfg.wellijk[0][1], cfg.wellijkf[0][1] + 1):
+            midpoints = zcent - z_y[j - 1] - cfg.maxelevation
+            cfg.wellkh.append(
+                int(np.argmin(np.abs(cfg.wellCoord[0][2] - midpoints))) + 1
             )
 
 
-def map_z(dic, j):
-    """
-    Function to return the z position of the parabola for the wells
-
-    Args:
-        dic (dict): Global dictionary\n
-        j : Cell id along the y axis
-
-    Returns:
-        z: Position
-        dic (dict): Global dictionary
-
-    """
+def map_z(cfg: Config, ycent: NDArray) -> NDArray:
+    """Mapping z for spe11c as funtion of the y coordinate"""
+    assert cfg.elevation is not None
+    assert cfg.backElevation is not None
+    elevation = cfg.elevation
+    dims_y = cfg.dims[1]
+    back_elevation = cfg.backElevation
+    scale = 0.5 * dims_y
     z_pos = (
-        -dic["elevation"]
-        + dic["elevation"]
-        * (1.0 - (dic["ymy_center"][j] / (0.5 * dic["dims"][1]) - 1) ** 2.0)
-        - dic["ymy_center"][j] * dic["backElevation"] / dic["dims"][1]
+        -elevation
+        + elevation * (1.0 - (ycent / scale - 1.0) ** 2)
+        - ycent * back_elevation / dims_y
     )
     return z_pos
 
 
-def getpolygons(dic):
-    """
-    Function to create the polygons from the benchmark geo file
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    dic["points"] = []
-    lines = []
-    curves = []
-    dic["polygons"] = []
-    dic["facies"] = []
+def getpolygons(cfg: Config) -> tuple[list[Polygon], list, list[Point]]:
+    """Function to create the polygons from the benchmark geo file"""
+    polygons, curves, facies = [], [], []
+    lines: list[list[int]] = []
+    points: list[Point] = []
     facie = 0
-    if dic["spe11"] == "spe11a":
-        h_ref = 1
-        l_ref = 1
-        dic["ztopbot"] = dic["dims"][2] - 0.644
-        dic["zmidbot"] = dic["dims"][2] - 0.265
-    else:
-        h_ref = 1200.0 / 1.2
-        l_ref = 8400.0 / 2.8
-        dic["ztopbot"] = dic["dims"][2] - 0.644 * 1200.0 / 1.2
-        dic["zmidbot"] = dic["dims"][2] - 0.265 * 1200.0 / 1.2
-    with open(
-        f"{dic['pat']}/reference_mesh/points.geo",
-        "r",
-        encoding="utf8",
-    ) as file:
+    h_ref = 1 if cfg.spe11 == "spe11a" else 1200.0 / 1.2
+    l_ref = 1 if cfg.spe11 == "spe11a" else 8400.0 / 2.8
+    with open(f"{cfg.pat}/reference_mesh/points.geo", "r", encoding="utf8") as file:
         for row in csv.reader(file, delimiter=" "):
-            if row[0] == "//" and not dic["points"]:
+            if row[0] == "//" and not points:
                 continue
             if row[0][:5] == "Point":
-                dic["points"].append(
+                points.append(
                     [
                         l_ref * float(row[2][1:-1]),
-                        dic["dims"][2] - h_ref * float(row[3][:-1]),
+                        cfg.dims[2] - h_ref * float(row[3][:-1]),
                     ]
                 )
     with open(
-        f"{dic['pat']}/reference_mesh/facies_coordinates.geo",
-        "r",
-        encoding="utf8",
+        f"{cfg.pat}/reference_mesh/facies_coordinates.geo", "r", encoding="utf8"
     ) as file:
         for row in csv.reader(file, delimiter=" "):
             if row[0] in ["//", "Include"] and not lines:
@@ -847,169 +744,38 @@ def getpolygons(dic):
             if row[0][:4] == "Line":
                 lines.append([int(row[2][1:-1]), int(row[3][:-2])])
             elif row[0] == "Curve":
-                dic["facies"].append(facie)
-                tmp = []
-                tmp.append(int(row[3][1:-1]))
+                facies.append(facie)
+                tmp = [int(row[3][1:-1])]
                 for col in row[4:-1]:
                     tmp.append(int(col[:-1]))
                 tmp.append(int(row[-1][:-2]))
                 curves.append(tmp)
             else:
                 facie += 1
+    lines_list = lines
+    points_list = points
     for curve in curves:
-        tmp = []
-        tmp.append(
-            [
-                dic["points"][lines[curve[0] - 1][0] - 1][0],
-                dic["points"][lines[curve[0] - 1][0] - 1][1],
-            ]
-        )
-        tmp.append(
-            [
-                dic["points"][lines[curve[0] - 1][1] - 1][0],
-                dic["points"][lines[curve[0] - 1][1] - 1][1],
-            ]
-        )
+        values = []
+        l0 = lines_list[curve[0] - 1]
+        values.append([points_list[l0[0] - 1][0], points_list[l0[0] - 1][1]])
+        values.append([points_list[l0[1] - 1][0], points_list[l0[1] - 1][1]])
         for line in curve[1:]:
-            if line < 0:
-                tmp.append(
-                    [
-                        dic["points"][lines[abs(line) - 1][0] - 1][0],
-                        dic["points"][lines[abs(line) - 1][0] - 1][1],
-                    ]
-                )
-            else:
-                tmp.append(
-                    [
-                        dic["points"][lines[line - 1][1] - 1][0],
-                        dic["points"][lines[line - 1][1] - 1][1],
-                    ]
-                )
-        tmp.append(tmp[0])
-        dic["polygons"].append(Polygon(tmp))
-    # Performance: Set the order to search in the polygons above and below
-    dic["top_order"] = [
-        0,
-        4,
-        5,
-        6,
-        9,
-        10,
-        11,
-        15,
-        16,
-        17,
-        18,
-        22,
-        23,
-        24,
-        27,
-        28,
-        30,
-        7,
-        13,
-        12,
-        20,
-        1,
-        8,
-        19,
-        21,
-        14,
-        2,
-        3,
-        25,
-        26,
-        29,
-        31,
-    ]
-    dic["bottom_order"] = [
-        12,
-        20,
-        1,
-        8,
-        19,
-        21,
-        14,
-        2,
-        3,
-        25,
-        26,
-        29,
-        31,
-        0,
-        4,
-        5,
-        6,
-        9,
-        10,
-        11,
-        15,
-        16,
-        17,
-        18,
-        22,
-        23,
-        24,
-        27,
-        28,
-        30,
-        7,
-        13,
-    ]
-    dic["under_order"] = [
-        25,
-        26,
-        31,
-        29,
-        12,
-        20,
-        1,
-        8,
-        19,
-        21,
-        14,
-        2,
-        3,
-        0,
-        4,
-        5,
-        6,
-        9,
-        10,
-        11,
-        15,
-        16,
-        17,
-        18,
-        22,
-        23,
-        24,
-        27,
-        28,
-        30,
-        7,
-        13,
-    ]
-    if dic["lower"]:
-        get_lower_polygon(dic)
+            idx = abs(line) - 1
+            ln = lines_list[idx]
+            pidx = ln[0] - 1 if line < 0 else ln[1] - 1
+            values.append([points_list[pidx][0], points_list[pidx][1]])
+        values.append(values[0])
+        polygons.append(Polygon(values))
+    prepared_polygons = [prep(poly) for poly in polygons]
+    return prepared_polygons, facies, points
 
 
-def get_lower_polygon(dic):
-    """
-    Get the polygon for the lower active cells
-
-     Args:
-        dic (dict): Global dictionary
-
-     Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    lines = []
+def get_lower_polygon(cfg: Config) -> Polygon:
+    """Get the polygon for the lower active cells"""
+    lines: list[list[list[float]]] = []
+    dims_x, dims_z = cfg.dims[0], cfg.dims[2]
     with open(
-        f"{dic['pat']}/reference_mesh/horizonts_18.geo",
-        "r",
-        encoding="utf8",
+        f"{cfg.pat}/reference_mesh/horizonts_18.geo", "r", encoding="utf8"
     ) as file:
         lol = file.readlines()
     newline = False
@@ -1023,9 +789,9 @@ def get_lower_polygon(dic):
                     points = row[i + 1 :].split(",")
                     lines[-1].append(
                         [
-                            float(points[0]) * dic["dims"][0] / 2.8,
+                            float(points[0]) * dims_x / 2.8,
                             (1.2 - float(points[1]) - float(points[2][:-3]))
-                            * dic["dims"][2]
+                            * dims_z
                             / 1.2,
                         ]
                     )
@@ -1035,26 +801,16 @@ def get_lower_polygon(dic):
     lines[-4].append(lines[-1][-1])
     lines[-4].append(lines[-1][0])
     lines[-4].append(lines[-4][0])
-    dic["lowerpolygon"] = Polygon(lines[-4])
+    return Polygon(lines[-4])
 
 
-def get_lines(dic):
-    """
-    Read the points in the z-surface lines
-
-     Args:
-        dic (dict): Global dictionary
-
-     Returns:
-        lines (list): List with the coordinates of the geological lines
-
-    """
-    lines = []
-    if len(dic["z_n"]) == 18:  # old formart
+def get_lines(cfg: Config, points: list[Point]):
+    """Read the points in the z-surface lines"""
+    lines: list[list[list[float]]] = []
+    dims_x, dims_z = cfg.dims[0], cfg.dims[2]
+    if len(cfg.z_n) == 18:
         with open(
-            f"{dic['pat']}/reference_mesh/horizonts_18.geo",
-            "r",
-            encoding="utf8",
+            f"{cfg.pat}/reference_mesh/horizonts_18.geo", "r", encoding="utf8"
         ) as file:
             lol = file.readlines()
         newline = False
@@ -1065,131 +821,120 @@ def get_lines(dic):
                     newline = False
                 for i, column in enumerate(row):
                     if column == "{":
-                        points = row[i + 1 :].split(",")
+                        parts = row[i + 1 :].split(",")
                         lines[-1].append(
                             [
-                                float(points[0]) * dic["dims"][0] / 2.8,
-                                (1.2 - float(points[1]) - float(points[2][:-3]))
-                                * dic["dims"][2]
+                                float(parts[0]) * dims_x / 2.8,
+                                (1.2 - float(parts[1]) - float(parts[2][:-3]))
+                                * dims_z
                                 / 1.2,
                             ]
                         )
                         break
             else:
                 newline = True
-    else:  # simplified format
+    else:
         with open(
-            f"{dic['pat']}/reference_mesh/horizonts_11.geo",
-            "r",
-            encoding="utf8",
+            f"{cfg.pat}/reference_mesh/horizonts_11.geo", "r", encoding="utf8"
         ) as file:
-            for row in csv.reader(file, delimiter=" "):
-                if row[0][:4] == "Line":
+            for line in csv.reader(file, delimiter=" "):
+                if line[0][:4] == "Line":
                     if not lines[-1]:
-                        lines[-1].append(
-                            [
-                                dic["points"][int(row[2][1:-1]) - 1][0],
-                                dic["points"][int(row[2][1:-1]) - 1][1],
-                            ]
-                        )
-                    lines[-1].append(
-                        [
-                            dic["points"][int(row[3][:-2]) - 1][0],
-                            dic["points"][int(row[3][:-2]) - 1][1],
-                        ]
-                    )
-                if len(row) > 1:
-                    if row[1] == "Horizont":
+                        idx0 = int(line[2][1:-1]) - 1
+                        lines[-1].append([points[idx0][0], points[idx0][1]])
+                    idx1 = int(line[3][:-2]) - 1
+                    lines[-1].append([points[idx1][0], points[idx1][1]])
+                if len(line) > 1:
+                    if line[1] == "Horizont":
                         lines.append([])
         lines = lines[::-1]
     return lines
 
 
-def corner(dic):
-    """
-    Create a SPE11 corner-point grid
-
-    Args:
-        dic (dict): Global dictionary
-
-    Returns:
-        dic (dict): Modified global dictionary
-
-    """
-    # Read the points for the .geo gmsh file
-    lines = get_lines(dic)
-    xcoord, zcoord = [], []
-    dic["xmx"] = [0.0]
-    for i, n_x in enumerate(dic["x_n"]):
+def corner(
+    cfg: Config, points: list[Point]
+) -> tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
+    """Create a SPE11 corner-point grid"""
+    lines = get_lines(cfg, points)
+    dims_x, dims_y = cfg.dims[0], cfg.dims[1]
+    total = sum(cfg.x_n)
+    xmx = np.zeros(total + 1, dtype=float)
+    p = 1
+    for i, n_x in enumerate(cfg.x_n):
         for j in range(n_x):
-            dic["xmx"].append((i + (j + 1.0) / n_x) * dic["dims"][0] / len(dic["x_n"]))
-    dic["ymy"] = [0.0]
-    for i, n_y in enumerate(dic["y_n"]):
+            xmx[p] = (i + (j + 1.0) / n_x) * dims_x / len(cfg.x_n)
+            p += 1
+    total = sum(cfg.y_n)
+    ymy = np.zeros(total + 1, dtype=float)
+    p = 1
+    for i, n_y in enumerate(cfg.y_n):
         for j in range(n_y):
-            dic["ymy"].append((i + (j + 1.0) / n_y) * dic["dims"][1] / len(dic["y_n"]))
-    if (dic["spe11"] == "spe11b" or dic["spe11"] == "spe11c") and 1.1 * dic[
-        "widthBuffer"
-    ] < dic["xmx"][1]:
-        dic["xmx"] = np.insert(dic["xmx"], 1, dic["widthBuffer"])
-        dic["xmx"] = np.insert(
-            dic["xmx"], len(dic["xmx"]) - 1, dic["xmx"][-1] - dic["widthBuffer"]
-        )
-    if dic["spe11"] == "spe11c" and 1.1 * dic["widthBuffer"] < dic["ymy"][1]:
-        dic["ymy"] = np.insert(dic["ymy"], 1, dic["widthBuffer"])
-        dic["ymy"] = np.insert(
-            dic["ymy"], len(dic["ymy"]) - 1, dic["ymy"][-1] - dic["widthBuffer"]
-        )
-    dic["noCells"][1] = len(dic["ymy"]) - 1
-    shf = 15 if len(dic["z_n"]) == 18 else 8
-    shf = shf if dic["lower"] else 0
-    rmline = [i for i, value in enumerate(dic["z_n"]) if value == 0]
+            ymy[p] = (i + (j + 1.0) / n_y) * dims_y / len(cfg.y_n)
+            p += 1
+    if cfg.spe11 in ("spe11b", "spe11c"):
+        assert cfg.widthBuffer is not None
+        if 1.1 * cfg.widthBuffer < xmx[1]:
+            xmx = np.insert(xmx, 1, cfg.widthBuffer)
+            xmx = np.insert(xmx, len(xmx) - 1, xmx[-1] - cfg.widthBuffer)
+    if cfg.spe11 == "spe11c":
+        assert cfg.widthBuffer is not None
+        if 1.1 * cfg.widthBuffer < ymy[1]:
+            ymy = np.insert(ymy, 1, cfg.widthBuffer)
+            ymy = np.insert(ymy, len(ymy) - 1, ymy[-1] - cfg.widthBuffer)
+    cfg.nxyz[1] = len(ymy) - 1
+    shf = 15 if len(cfg.z_n) == 18 else 8
+    shf = shf if cfg.lower else 0
+    rmline = [i for i, value in enumerate(cfg.z_n) if value == 0]
     if rmline:
         lines.pop(rmline[-1])
-        dic["z_n"].pop(rmline[0])
-        dic["z_n"][rmline[0]] = 1
-    for xcor in dic["xmx"]:
-        for _, lcor in enumerate(lines[shf:]):
-            xcoord.append(xcor)
-            idx = pd.Series([abs(ii[0] - xcor) for ii in lcor]).argmin()
+        cfg.z_n.pop(rmline[0])
+        cfg.z_n[rmline[0]] = 1
+    nx = len(xmx)
+    nz = len(lines[shf:])
+    total = nx * nz
+    xcoord = np.empty(total, dtype=float)
+    zcoord = np.empty(total, dtype=float)
+    p = 0
+    for xcor in xmx:
+        for lcor in lines[shf:]:
+            xcoord[p] = xcor
+            xs = np.array([ii[0] for ii in lcor])
+            idx = int(np.argmin(np.abs(xs - xcor)))
             if lcor[idx][0] < xcor:
-                zcoord.append(
-                    lcor[idx][1]
-                    + (
-                        (lcor[idx + 1][1] - lcor[idx][1])
-                        / (lcor[idx + 1][0] - lcor[idx][0])
-                    )
-                    * (xcor - lcor[idx][0])
-                )
+                zcoord[p] = lcor[idx][1] + (
+                    (lcor[idx + 1][1] - lcor[idx][1])
+                    / (lcor[idx + 1][0] - lcor[idx][0])
+                ) * (xcor - lcor[idx][0])
             else:
-                zcoord.append(
-                    lcor[idx - 1][1]
-                    + (
-                        (lcor[idx][1] - lcor[idx - 1][1])
-                        / (lcor[idx][0] - lcor[idx - 1][0])
-                    )
-                    * (xcor - lcor[idx - 1][0])
-                )
-    res = list(filter(lambda i: i == zcoord[-1], zcoord))[0]
-    n_z = zcoord.index(res)
-    res = list(filter(lambda i: i > 0, xcoord))[0]
-    n_x = round(len(xcoord) / xcoord.index(res)) - 1
-    dic["noCells"][0], dic["noCells"][2] = n_x, n_z
-    # Refine the grid
-    xcoord, zcoord, dic["noCells"][0], dic["noCells"][2] = refinement_z(
-        xcoord, zcoord, dic["noCells"][0], dic["noCells"][2], dic["z_n"][shf:]
+                zcoord[p] = lcor[idx - 1][1] + (
+                    (lcor[idx][1] - lcor[idx - 1][1])
+                    / (lcor[idx][0] - lcor[idx - 1][0])
+                ) * (xcor - lcor[idx - 1][0])
+            p += 1
+    res = zcoord[-1]
+    n_z = int(np.where(zcoord == res)[0][0])
+    res = xcoord[xcoord > 0][0]
+    n_x = int(round(len(xcoord) / np.where(xcoord == res)[0][0])) - 1
+    cfg.nxyz[0], cfg.nxyz[2] = n_x, n_z
+    xcoord, zcoord, cfg.nxyz[0], cfg.nxyz[2] = refinement_z(
+        xcoord, zcoord, cfg.nxyz[2], cfg.z_n[shf:]
     )
-    dic["xmx"] = np.array(dic["xmx"])
-    dic["ymy_center"] = 0.5 * (np.array(dic["ymy"])[1:] + np.array(dic["ymy"])[:-1])
-    dic["d_y"] = np.array(dic["ymy"])[1:] - np.array(dic["ymy"])[:-1]
-    dic["d_x"] = np.array(dic["xmx"])[1:] - np.array(dic["xmx"])[:-1]
-    dic["no_cells"] = dic["noCells"][0] * dic["noCells"][2]
-    create_corner_point_grid(dic, xcoord, zcoord)
-    dic["xyz"] = []
-    dic["d_z"] = []
-    for k in range(dic["noCells"][2]):
-        for i in range(dic["noCells"][0]):
-            n = (i * (dic["noCells"][2] + 1)) + k
-            m = ((i + 1) * (dic["noCells"][2] + 1)) + k
+    xmx = np.array(xmx)
+    ycent = 0.5 * (np.array(ymy)[1:] + np.array(ymy)[:-1])
+    d_y = np.array(ymy)[1:] - np.array(ymy)[:-1]
+    d_x = xmx[1:] - xmx[:-1]
+    create_corner_point_grid(cfg, xcoord, ymy, zcoord)
+    no_cells_x = cfg.nxyz[0]
+    no_cells_z = cfg.nxyz[2]
+    total = no_cells_x * no_cells_z
+    xc = np.empty(total, dtype=float)
+    zc = np.empty(total, dtype=float)
+    d_z = np.empty(total, dtype=float)
+    p = 0
+    for k in range(no_cells_z):
+        for i in range(no_cells_x):
+            n = (i * (no_cells_z + 1)) + k
+            m = ((i + 1) * (no_cells_z + 1)) + k
             poly = Polygon(
                 [
                     [xcoord[n], zcoord[n]],
@@ -1199,47 +944,36 @@ def corner(dic):
                     [xcoord[n], zcoord[n]],
                 ]
             )
-            pxz = poly.centroid.wkt
-            pxz = list(float(j) for j in pxz[7:-1].split(" "))
-            dic["xyz"].append([pxz[0], 0, pxz[1]])
-            dic["d_z"].append(poly.area / (xcoord[m] - xcoord[n]))
+            xc[p], zc[p] = poly.centroid.coords[0]
+            d_z[p] = poly.area / (xcoord[m] - xcoord[n])
+            p += 1
+    return xc, zc, d_x, d_y, d_z, ycent, xmx, ymy
 
 
-def refinement_z(xci, zci, ncx, ncz, znr):
-    """
-    Refinement of the grid in the z-dir
-
-    Args:
-        xci (list): Floats with the x-coordinates of the cell corners\n
-        zci (list): Floats with the z-coordinates of the cell corners\n
-        ncx (int): Number of cells in the x-dir\n
-        ncz (int): Number of cells in the z-dir\n
-        znr (list): Integers with the number of z-refinements per cell
-
-    Returns:
-        xcr (list): Floats with the new x-coordinates of the cell corners\n
-        zcr (list): Floats with the new z-coordinates of the cell corners\n
-        ncx (int): New number of cells in the x-dir\n
-        ncz (int): New number of cells in the z-dir
-
-    """
-    xcr, zcr = [], []
-    for j in range(ncx + 1):
-        zcr.append(zci[j * (ncz + 1)])
-        xcr.append(xci[j * (ncz + 1)])
+def refinement_z(
+    xci: NDArray, zci: NDArray, ncz: int, znr: list[int]
+) -> tuple[NDArray, NDArray, int, int]:
+    """Refine grid vertically according to znr refinement factors."""
+    stride = ncz + 1
+    ncols = len(xci) // stride
+    total = ncols * (1 + np.sum(znr))
+    xcr = np.empty(total, dtype=xci.dtype)
+    zcr = np.empty(total, dtype=zci.dtype)
+    p = 0
+    for j in range(ncols):
+        b = j * stride
+        xcr[p] = xci[b]
+        zcr[p] = zci[b]
+        p += 1
         for i in range(ncz):
-            for k in range(znr[i]):
-                alp = np.arange(1.0 / znr[i], 1.0 + 1.0 / znr[i], 1.0 / znr[i]).tolist()
-                zcr.append(
-                    zci[j * (ncz + 1) + i]
-                    + (zci[j * (ncz + 1) + i + 1] - zci[j * (ncz + 1) + i]) * alp[k]
-                )
-                xcr.append(
-                    xci[j * (ncz + 1) + i]
-                    + (xci[j * (ncz + 1) + i + 1] - xci[j * (ncz + 1) + i]) * alp[k]
-                )
-    res = list(filter(lambda i: i > 0, xcr))[0]
-    ncx = round(len(xcr) / xcr.index(res)) - 1
-    res = list(filter(lambda i: i == zcr[-1], zcr))[0]
-    ncz = zcr.index(res)
-    return xcr, zcr, ncx, ncz
+            xi = xci[b + i]
+            zi = zci[b + i]
+            dx = xci[b + i + 1] - xi
+            dz = zci[b + i + 1] - zi
+            w = np.arange(1.0 / znr[i], 1.0 + 1.0 / znr[i], 1.0 / znr[i])
+            xcr[p : p + znr[i]] = xi + dx * w
+            zcr[p : p + znr[i]] = zi + dz * w
+            p += znr[i]
+    ncx_new = ncols - 1
+    ncz_new = np.where(zcr == zcr[-1])[0][0]
+    return xcr, zcr, int(ncx_new), int(ncz_new)

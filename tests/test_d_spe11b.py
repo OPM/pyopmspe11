@@ -4,20 +4,52 @@
 """Test the spe11b case"""
 
 import pathlib
-from shutil import copyfile
-from opm.io.ecl import ESmry as OpmSummary
-from opm.io.ecl import EclFile as OpmFile
-from pyopmspe11.core.pyopmspe11 import main
+import subprocess
 
 testpth: pathlib.Path = pathlib.Path(__file__).parent
 
 
-def test_d_spe11b(test_d_f_g_workdir, monkeypatch):
-    """Run spe11b via main() and validate outputs"""
-    copyfile(testpth / "configs/input.toml", test_d_f_g_workdir / "input.toml")
-    monkeypatch.chdir(test_d_f_g_workdir)
-    main()
-    case = test_d_f_g_workdir / "output/flow/OUTPUT"
-    assert case.with_suffix(".UNRST").exists()
-    assert abs(OpmSummary(f"{case}.SMSPEC")["FGMIP"][-1] - 8.2760104e07) < 1e5
-    assert abs(sum(OpmFile(f"{case}.INIT")["PORV"]) - 2.0512318e07) < 1e-6
+def test_d_spe11b(tmp_path, monkeypatch):
+    """Run spe11c and validate outputs"""
+    monkeypatch.chdir(tmp_path)
+    spe11b = (testpth / "configs/spe11b_data_format.toml").resolve()
+    subprocess.run(
+        [
+            "pyopmspe11",
+            "-w",
+            "0.1",
+            "-m",
+            "deck_flow_data",
+            "-g",
+            "dense_performance_sparse",
+            "-i",
+            str(spe11b),
+            "-o",
+            "spe11b",
+            "-r",
+            "840,1,120",
+            "-t",
+            "5",
+            "-w",
+            "0.1",
+        ],
+        check=True,
+    )
+    for file in ("is_notebook", "check_format"):
+        subprocess.run(
+            [
+                "curl",
+                "-o",
+                f"{file}.py",
+                "https://raw.githubusercontent.com/Simulation-Benchmarks/"
+                + f"11thSPE-CSP/main/evaluation/{file}.py",
+            ],
+            check=True,
+        )
+    result = subprocess.run(
+        ["python3", "check_format.py", "-f", "./spe11b/data", "-c", "B"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert result.stdout.count("Successfully") == 2, "Issue in spe11b/data"

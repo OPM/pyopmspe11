@@ -6,6 +6,7 @@
 
 import os
 import argparse
+import sys
 import shutil
 import math as mt
 import subprocess
@@ -15,6 +16,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import colors, ticker
+from numpy.typing import NDArray
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 SECONDS_IN_YEAR = 31536000.0
@@ -55,15 +57,15 @@ class GridState:
     times: list
     xmsh: np.ndarray
     zmsh: np.ndarray
-    xmx: list
-    ymy: list
-    zmz: list
+    xmx: np.ndarray
+    ymy: np.ndarray
+    zmz: np.ndarray
     kinds: list
     cmaps: list
     dims: int
 
 
-def configure_matplotlib():
+def configure_matplotlib() -> None:
     """Parameters for the figures"""
     if shutil.which("latex") == "None":
         print("\nLaTeX is recommended for the figures.")
@@ -82,12 +84,12 @@ def configure_matplotlib():
     )
 
 
-def load_csv(path):
+def load_csv(path: str) -> NDArray:
     """Load the csv"""
     return np.genfromtxt(path, delimiter=",", skip_header=1)
 
 
-def load_time_series(folder, case):
+def load_time_series(folder: str, case: str) -> tuple[NDArray | None, bool]:
     """Read the time_series.csv"""
     path = f"{folder}/data/{case}_time_series.csv"
     if not os.path.isfile(path):
@@ -97,7 +99,7 @@ def load_time_series(folder, case):
     return load_csv(path), True
 
 
-def load_performance(folder, case, kind):
+def load_performance(folder: str, case: str, kind: str) -> tuple[NDArray | None, bool]:
     """Read the performance_time_series*.csv"""
     path = f"{folder}/data/{case}_performance_time_series{kind}.csv"
     if not os.path.isfile(path):
@@ -107,12 +109,14 @@ def load_performance(folder, case, kind):
     return load_csv(path), True
 
 
-def load_spatial(folder, dataf, case, kind, time, tlabel):
+def load_spatial(
+    folder: str, dataf: str, case: str, kind: str, time: str, tlabel: str
+) -> NDArray:
     """Read the spatial_map_*.csv"""
     return load_csv(f"{folder}{dataf}/{case}{kind}_spatial_map_{time}{tlabel}.csv")
 
 
-def performance_label(csv, index, folder):
+def performance_label(csv: NDArray, index: int, folder: str) -> str:
     """Set the metrics in the labels for the performance plots"""
     stats = [
         f"sum={np.sum(csv[:,1]):.3e}",
@@ -128,13 +132,15 @@ def performance_label(csv, index, folder):
     return f"{stats[index]} ({folder})"
 
 
-def generate_grid(folder, dataf, tlabel, dims, time):
+def generate_grid(
+    folder: str, dataf: str, tlabel: str, dims: int, time
+) -> tuple[list, NDArray, NDArray, NDArray, NDArray, NDArray]:
     """Create the meshgrid"""
     files = [f for f in os.listdir(f"{folder}{dataf}") if f.endswith(f"{tlabel}.csv")]
-    times = np.array([int(f[19:-5]) for f in files if len(f) < 30])
-    if times.size == 0:
-        times = np.array([int(f[31:-5]) for f in files])
-    times = list(times[np.argsort(times)])
+    tmp = np.array([int(f[19:-5]) for f in files if len(f) < 30])
+    if tmp.size == 0:
+        tmp = np.array([int(f[31:-5]) for f in files])
+    times = list(tmp[np.argsort(tmp)])
     if time.size == 1:
         if time > 0:
             times = list(range(0, times[-1] + 1, time))
@@ -153,7 +159,7 @@ def generate_grid(folder, dataf, tlabel, dims, time):
     return times, xmsh, zmsh, xmx, ymy, zmz
 
 
-def performance(case_cfg, run_cfg):
+def performance(case_cfg: CaseConfig, run_cfg: RunConfig) -> None:
     """Plot the performance"""
     for kind in ["", "_detailed"]:
         fig = plt.figure(figsize=(40, 75))
@@ -177,6 +183,7 @@ def performance(case_cfg, run_cfg):
                 )
                 if not has_performance_series:
                     return
+                assert csv is not None
                 if len(csv.flatten()) < 12:
                     csv = np.array([csv])
                 times = csv[:, 0] / case_cfg.tscale
@@ -198,7 +205,7 @@ def performance(case_cfg, run_cfg):
         )
 
 
-def sparse_data(case_cfg, run_cfg):
+def sparse_data(case_cfg: CaseConfig, run_cfg: RunConfig) -> None:
     """Plot the sparse data"""
     fig = plt.figure(figsize=(25, 40))
     plots = ["sensors", "boxA", "boxB", "boxC", "facie 1"]
@@ -232,6 +239,7 @@ def sparse_data(case_cfg, run_cfg):
             csv, has_time_series = load_time_series(folder, case_cfg.case)
             if not has_time_series:
                 return
+            assert csv is not None
             times = csv[:, 0] / case_cfg.tscale
             for j, label in enumerate(labels[k]):
                 if folder_index == 0:
@@ -264,7 +272,7 @@ def sparse_data(case_cfg, run_cfg):
     fig.savefig(f"{run_cfg.where}/{case_cfg.case}_sparse_data.png", bbox_inches="tight")
 
 
-def dense_data(case_cfg, run_cfg, grid):
+def dense_data(case_cfg: CaseConfig, run_cfg: RunConfig, grid: GridState) -> None:
     """Plot the dense data"""
     for kind in grid.kinds:
         if kind == "":
@@ -301,23 +309,22 @@ def dense_data(case_cfg, run_cfg, grid):
             units = [r"[m$^3$]", "[-]", "[-]", "[-]", "[-]", "[-]"]
             allplots = [0, 0, -1, -1, -1, -1]
         nplots = len(quantities)
-
+        csvs = [
+            load_spatial(
+                run_cfg.folders[0],
+                run_cfg.dataf,
+                case_cfg.case,
+                kind,
+                t,
+                case_cfg.tlabel,
+            )
+            for t in grid.times
+        ]
         for qi, quantity in enumerate(quantities):
             if qi + 1 < nplots:
                 print(f"Processing dense{kind} data {qi+1} out of {nplots}", end="\r")
             else:
                 print(f"Processing dense{kind} data {qi+1} out of {nplots}")
-            csvs = [
-                load_spatial(
-                    run_cfg.folders[0],
-                    run_cfg.dataf,
-                    case_cfg.case,
-                    kind,
-                    t,
-                    case_cfg.tlabel,
-                )
-                for t in grid.times
-            ]
             if qi == csvs[0].shape[1] - grid.dims:
                 break
             first = csvs[0][:, grid.dims + qi]
@@ -326,9 +333,9 @@ def dense_data(case_cfg, run_cfg, grid):
             minc, maxc = np.nanmin(first), np.nanmax(first)
             ptimes = grid.times[: allplots[qi]] + [grid.times[-1]]
             if case_cfg.case != "spe11a":
-                fig = plt.figure(figsize=(50, 3 * len(ptimes)))
-                if case_cfg.lower:
-                    fig = plt.figure(figsize=(100, 3 * len(ptimes)))
+                fig = plt.figure(
+                    figsize=(100 if case_cfg.lower else 50, 3 * len(ptimes))
+                )
             else:
                 fig = plt.figure(figsize=(45, 6.5 * len(ptimes)), dpi=80)
             plots = []
@@ -343,16 +350,17 @@ def dense_data(case_cfg, run_cfg, grid):
                     sums.append(np.sum(values[values >= 0]))
                 minc = min(minc, mins[-1])
                 maxc = max(maxc, maxs[-1])
-                arr = np.zeros((len(grid.zmz) - 1, len(grid.xmx) - 1))
-                for zi in range(len(grid.zmz) - 1):
-                    if case_cfg.case != "spe11c":
-                        start = zi * (len(grid.xmx) - 1)
-                        arr[-1 - zi, :] = values[start : start + (len(grid.xmx) - 1)]
-                    else:
-                        mid = mt.floor((len(grid.ymy) - 1) / 2)
-                        slice_size = len(grid.xmx) - 1
-                        offset = (zi * (len(grid.ymy) - 1) + mid) * slice_size
-                        arr[-1 - zi, :] = values[offset : offset + slice_size]
+                nx = len(grid.xmx) - 1
+                nz = len(grid.zmz) - 1
+                zi = np.arange(nz)
+                if case_cfg.case != "spe11c":
+                    idx = zi[:, None] * nx + np.arange(nx)
+                    arr = values[idx][::-1]
+                else:
+                    ny = len(grid.ymy) - 1
+                    mid = mt.floor(ny / 2)
+                    idx = (zi[:, None] * ny + mid) * nx + np.arange(nx)
+                    arr = values[idx][::-1]
                 plots.append(arr)
             for j, time in enumerate(ptimes):
                 axis = fig.add_subplot(len(ptimes), 3, j + 1)
@@ -401,7 +409,9 @@ def dense_data(case_cfg, run_cfg, grid):
                         format=lambda x, _: f"{x:.2e}",
                     )
                 if case_cfg.lower:
-                    axis.set_ylim([0, 0.55] if case_cfg.case == "spe11a" else [0, 550])
+                    axis.set_ylim(
+                        (0.0, 0.55) if case_cfg.case == "spe11a" else (0.0, 550.0)
+                    )
             fig.savefig(
                 f"{run_cfg.where}/{case_cfg.case}_{quantity}_2Dmaps.png",
                 bbox_inches="tight",
@@ -409,7 +419,7 @@ def dense_data(case_cfg, run_cfg, grid):
             plt.close(fig)
 
 
-def plot_results(args):
+def plot_results(args: dict) -> None:
     """Orchestrate the plotting"""
     configure_matplotlib()
     where = ""
@@ -417,6 +427,7 @@ def plot_results(args):
     if args["compare"]:
         args["deck"] = args["compare"]
         args["neighbourhood"] = ""
+        args["generate"] = "performance_sparse"
         where = "compare/"
         folders = sorted(
             [n for n in os.listdir(".") if os.path.isdir(n) and n != "compare"]
@@ -541,7 +552,7 @@ def plot_results(args):
         dense_data(case_cfg, run_cfg, grid)
 
 
-def main():
+def main(argv: list[str] | None) -> None:
     """Entry point"""
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -554,10 +565,10 @@ def main():
     parser.add_argument("-f", "--subfolders", default="1", type=str.strip)
     parser.add_argument("-t", "--time", default="5", type=str.strip)
     parser.add_argument("-n", "--neighbourhood", default="", type=str.strip)
-    args = vars(parser.parse_known_args()[0])
+    args = vars(parser.parse_known_args(argv)[0])
     plot_results(args)
     print(f"The png figures have been saved on {args['folder']}")
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

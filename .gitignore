@@ -174,11 +174,12 @@ opm-*
 
 # Examples outputs
 cssr
-compare
 debugging
 developing
 playground
+project
 examples/spe11b
 
 # Tests
 test_outputs
+tests/decks/spe11c/r2_cp_50m-50m-8mish/GRID.INC

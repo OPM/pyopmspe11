@@ -5,26 +5,27 @@
 
 import pathlib
 import subprocess
-from opm.io.ecl import ESmry as OpmSummary
-from opm.io.ecl import EclFile as OpmFile
 
 testpth: pathlib.Path = pathlib.Path(__file__).parent
 
 
-def test_c_spe11a(test_c_i_workdir, monkeypatch):
+def test_c_spe11a(tmp_path, monkeypatch):
     """Run spe11a and validate outputs"""
-    monkeypatch.chdir(test_c_i_workdir)
+    monkeypatch.chdir(tmp_path)
+    spe11a = (testpth / "configs/spe11a_data_format.toml").resolve()
     subprocess.run(
         [
             "pyopmspe11",
-            "-i",
-            f"{testpth}/configs/spe11a_data_format.toml",
-            "-o",
-            "spe11a",
+            "-g",
+            "dense_performance_sparse",
             "-m",
             "deck_flow_data",
-            "-g",
-            "all",
+            "-w",
+            "0.1",
+            "-i",
+            str(spe11a),
+            "-o",
+            "spe11a",
             "-r",
             "280,1,120",
             "-t",
@@ -34,8 +35,21 @@ def test_c_spe11a(test_c_i_workdir, monkeypatch):
         ],
         check=True,
     )
-    csv = test_c_i_workdir / "spe11a/data/spe11a_time_series.csv"
-    assert csv.exists()
-    case = test_c_i_workdir / "spe11a/flow/SPE11A"
-    assert abs(OpmSummary(f"{case}.SMSPEC")["FGMIP"][-1] - 0.0046843435) < 1e-6
-    assert abs(sum(OpmFile(f"{case}.INIT")["PORV"]) - 0.013631029) < 1e-6
+    for file in ("check_format", "is_notebook"):
+        subprocess.run(
+            [
+                "curl",
+                "https://raw.githubusercontent.com/Simulation-Benchmarks/11thSPE-CSP/"
+                + f"main/evaluation/{file}.py",
+                "-o",
+                f"{file}.py",
+            ],
+            check=True,
+        )
+    result = subprocess.run(
+        ["python3", "check_format.py", "-f", "./spe11a/data", "-c", "A"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert result.stdout.count("Successfully") == 2, "Issue in spe11a/data"

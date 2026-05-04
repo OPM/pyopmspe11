@@ -6,12 +6,14 @@
 
 import argparse
 import csv
+import sys
 from io import StringIO
 from dataclasses import dataclass
 from shapely.geometry import Polygon
 from alive_progress import alive_bar
 from rtree import index
 import numpy as np
+from numpy.typing import NDArray
 from scipy.interpolate import interp1d
 from opm.io.ecl import EclFile as OpmFile
 from opm.io.ecl import EGrid as OpmGrid
@@ -28,49 +30,48 @@ SGAS_THR = 0.097
 class BenchmarkConfig:
     """Paths and benchmark settings"""
 
-    outfol: str | None = None
-    case: str | None = None
-    mode: str | None = None
-    lower: bool | None = None
-    deckf: str | None = None
-    flowf: str | None = None
-    where: str | None = None
-    nxyz: np.ndarray | None = None
-    dims: list | None = None
-    denset: list | float | None = None
-    sparset: float | None = None
-    nocellsrepgrid: int | None = None
+    outfol: str
+    case: str
+    mode: str
+    lower: bool
+    deckfol: str
+    flowfol: str
+    where: str
+    nxyz: NDArray
+    dims: list
+    denset: NDArray
+    sparset: float
+    nocellsrepgrid: int
 
 
 @dataclass(slots=True)
 class SimulationData:
     """Simulation data"""
 
-    simres: str | None = None
-    unrst: OpmRestart | None = None
-    init: OpmFile | None = None
-    egrid: OpmGrid | None = None
-    smspec: OpmSummary | None = None
-    times: list | None = None
-    timesumary: list | None = None
-    timeini: float | None = None
-    noskiprst: int | None = None
-    norst: int | None = None
-    porv: np.ndarray | None = None
-    porva: np.ndarray | None = None
-    actind: list | None = None
-    actindr: np.ndarray | None = None
-    nocellst: int | None = None
-    nocellsa: int | None = None
-    dof: int | None = None
-    nocellsxz: int | None = None
-    simdim: list | None = None
-    cornpoint: bool | None = None
-    immiscible: bool | None = None
-    isothermal: bool | None = None
+    simres: str
+    unrst: OpmRestart
+    init: OpmFile
+    egrid: OpmGrid
+    smspec: OpmSummary
+    times: list
+    timesumary: list
+    timeini: float
+    noskiprst: int
+    norst: int
+    porv: NDArray
+    porva: NDArray
+    actind: list
+    immiscible: bool
+    isothermal: bool
+    cornpoint: bool
+    nocellst: int
+    nocellsa: int
+    dof: int
+    nocellsxz: int
+    simdim: list
 
 
-def main():
+def main(argv=None) -> None:
     """Postprocess simulation results into benchmark CSVs"""
     parser = argparse.ArgumentParser(description="Main script to process the data")
     parser.add_argument("-p", "--path", default="output", help="Output folder")
@@ -98,10 +99,9 @@ def main():
         "-n", "--neighbourhood", default="", help="Region: 'lower' or all"
     )
     parser.add_argument("-f", "--subfolders", default=1, help="Create subfolders")
-    cmdargs = vars(parser.parse_known_args()[0])
+    cmdargs = vars(parser.parse_known_args(argv)[0])
     cfg = build_config_from_args(cmdargs)
-    sim = SimulationData()
-    read_simulations(cfg, sim)
+    sim = read_simulations(cfg)
 
     if cfg.mode in (
         "performance",
@@ -135,92 +135,127 @@ def main():
     print(f"The csv files have been written to {cfg.where}")
 
 
-def build_config_from_args(cmdargs):
+def build_config_from_args(cmdargs: dict) -> BenchmarkConfig:
     """Prepare the methods according to the spe11x case"""
-    cfg = BenchmarkConfig()
-    cfg.outfol = cmdargs["path"].strip()
-    cfg.case = cmdargs["deck"].strip()
-    cfg.mode = cmdargs["generate"].strip()
-    cfg.lower = bool(cmdargs["neighbourhood"].strip())
+    outfol = cmdargs["path"].strip()
+    case = cmdargs["deck"].strip()
+    mode = cmdargs["generate"].strip()
+    lower = bool(cmdargs["neighbourhood"].strip())
     if int(cmdargs["subfolders"]) == 1:
-        cfg.deckf = f"{cfg.outfol}/deck"
-        cfg.flowf = f"{cfg.outfol}/flow"
-        cfg.where = f"{cfg.outfol}/data"
+        deckfol = f"{outfol}/deck"
+        flowfol = f"{outfol}/flow"
+        where = f"{outfol}/data"
     else:
-        cfg.deckf = cfg.flowf = cfg.where = cfg.outfol
-    cfg.nxyz = np.genfromtxt(StringIO(cmdargs["resolution"]), delimiter=",", dtype=int)
-    if cfg.case == "spe11a":
-        cfg.denset = (
+        deckfol = flowfol = where = outfol
+    nxyz = np.genfromtxt(StringIO(cmdargs["resolution"]), delimiter=",", dtype=int)
+    if case == "spe11a":
+        denset = (
             np.genfromtxt(StringIO(cmdargs["time"]), delimiter=",", dtype=float) * 3600
         )
-        cfg.sparset = round(float(cmdargs["write"].strip()) * 3600)
-        cfg.dims = [2.8, 1.0, 1.2]
-        cfg.nxyz[1] = 1
+        sparset = float(round(float(cmdargs["write"].strip()) * 3600))
+        dims = [2.8, 1.0, 1.2]
+        nxyz[1] = 1
     else:
-        cfg.denset = (
+        denset = (
             np.genfromtxt(StringIO(cmdargs["time"]), delimiter=",", dtype=float)
             * SECONDS_IN_YEAR
         )
-        cfg.sparset = float(cmdargs["write"].strip()) * SECONDS_IN_YEAR
-        cfg.dims = [8400.0, 1.0, 1200.0]
-    if cfg.case == "spe11c":
-        cfg.dims[1] = 5000.0
-    cfg.nocellsrepgrid = cfg.nxyz[0] * cfg.nxyz[1] * cfg.nxyz[2]
-    return cfg
+        sparset = float(cmdargs["write"].strip()) * SECONDS_IN_YEAR
+        dims = [8400.0, 1.0, 1200.0]
+    if case == "spe11c":
+        dims[1] = 5000.0
+    nocellsrepgrid = nxyz[0] * nxyz[1] * nxyz[2]
+    return BenchmarkConfig(
+        outfol=outfol,
+        case=case,
+        mode=mode,
+        lower=lower,
+        deckfol=deckfol,
+        flowfol=flowfol,
+        where=where,
+        nxyz=nxyz,
+        dims=dims,
+        denset=denset,
+        sparset=sparset,
+        nocellsrepgrid=nocellsrepgrid,
+    )
 
 
-def read_simulations(cfg, sim):
+def read_simulations(cfg: BenchmarkConfig) -> SimulationData:
     """Use opm Python package to read the results"""
-    sim.simres = f"{cfg.flowf}/{cfg.outfol.split('/')[-1].upper()}"
-    sim.unrst = OpmRestart(f"{sim.simres}.UNRST")
-    sim.immiscible = sim.unrst.count("RSW", 0) == 0
-    sim.isothermal = sim.unrst.count("TEMP", 0) == 0
-    sim.dof = 2 if sim.isothermal else 3
+    simres = f"{cfg.flowfol}/{cfg.outfol.split('/')[-1].upper()}"
+    unrst = OpmRestart(f"{simres}.UNRST")
+    immiscible = unrst.count("RSW", 0) == 0
+    isothermal = unrst.count("TEMP", 0) == 0
+    dof = 2 if isothermal else 3
     time = []
-    sim.times = []
-    sim.timeini = 0
-    sim.noskiprst = 0
-    for i in range(len(sim.unrst.report_steps)):
-        t = 86400 * sim.unrst["DOUBHEAD", i][0]
+    times: list[float] = []
+    timeini = 0
+    noskiprst = 0
+    for i in range(len(unrst.report_steps)):
+        t = 86400 * unrst["DOUBHEAD", i][0]
         time.append(t)
-        if not sim.times:
-            if (not sim.immiscible and np.max(sim.unrst["RSW", i]) > 0) or (
-                sim.immiscible and np.max(sim.unrst["SGAS", i]) > 0
+        if not times:
+            if (not immiscible and np.max(unrst["RSW", i]) > 0) or (
+                immiscible and np.max(unrst["SGAS", i]) > 0
             ):
-                sim.timeini = 86400 * sim.unrst["DOUBHEAD", i - 1][0]
-                sim.noskiprst = i - 1
-                sim.times = [0, t - sim.timeini]
+                timeini = 86400 * unrst["DOUBHEAD", i - 1][0]
+                noskiprst = i - 1
+                times = [0, t - timeini]
         else:
-            sim.times.append(t - sim.timeini)
-    if not sim.times:
-        sim.times = time
-    sim.init = OpmFile(f"{sim.simres}.INIT")
-    sim.egrid = OpmGrid(f"{sim.simres}.EGRID")
-    sim.smspec = OpmSummary(f"{sim.simres}.SMSPEC")
-    sim.norst = len(sim.unrst.report_steps)
-    sim.porv = np.array(sim.init["PORV"])
-    sim.actind = [i for i, p in enumerate(sim.porv) if p > 0]
-    sim.porva = np.array([p for p in sim.porv if p > 0])
-    sim.nocellst = len(sim.porv)
-    sim.nocellsa = sim.egrid.active_cells
-    sim.timesumary = [0.0] + list(86400.0 * sim.smspec["TIME"] - sim.timeini)
-    dims = sim.egrid.dimension
-    sim.simdim = [dims[0], dims[1], dims[2]]
-    sim.nocellsxz = dims[0] * dims[2]
-    sim.cornpoint = sim.porv[-1] == 0
+            times.append(t - timeini)
+    if not times:
+        times = time
+    init = OpmFile(f"{simres}.INIT")
+    egrid = OpmGrid(f"{simres}.EGRID")
+    smspec = OpmSummary(f"{simres}.SMSPEC")
+    norst = len(unrst.report_steps)
+    porv = np.array(init["PORV"])
+    actind = [i for i, p in enumerate(porv) if p > 0]
+    porva = np.array([p for p in porv if p > 0])
+    nocellst = len(porv)
+    nocellsa = egrid.active_cells
+    timesumary = [0.0] + list(86400.0 * smspec["TIME"] - timeini)
+    dims = egrid.dimension
+    simdim = [dims[0], dims[1], dims[2]]
+    nocellsxz = dims[0] * dims[2]
+    cornpoint = porv[-1] == 0
+    return SimulationData(
+        simres=simres,
+        unrst=unrst,
+        immiscible=immiscible,
+        isothermal=isothermal,
+        dof=dof,
+        times=times,
+        timeini=timeini,
+        noskiprst=noskiprst,
+        init=init,
+        egrid=egrid,
+        smspec=smspec,
+        norst=norst,
+        porv=porv,
+        actind=actind,
+        porva=porva,
+        nocellst=nocellst,
+        nocellsa=nocellsa,
+        timesumary=timesumary,
+        simdim=simdim,
+        nocellsxz=nocellsxz,
+        cornpoint=cornpoint,
+    )
 
 
-def performance(cfg, sim):
+def performance(cfg: BenchmarkConfig, sim: SimulationData) -> None:
     """Generate benchmark performance data"""
     perf = build_performance_data(cfg, sim)
     write_performance_csv(cfg, perf)
 
 
-def read_infostep(cfg, sim):
+def read_infostep(cfg: BenchmarkConfig, sim: SimulationData) -> tuple[list, NDArray]:
     """Read INFOSTEP file"""
     infosteps = []
     with open(
-        f"{cfg.flowf}/{cfg.outfol.split('/')[-1].upper()}.INFOSTEP",
+        f"{cfg.flowfol}/{cfg.outfol.split('/')[-1].upper()}.INFOSTEP",
         "r",
         encoding="utf8",
     ) as file:
@@ -233,7 +268,7 @@ def read_infostep(cfg, sim):
     return tags, np.array(infosteps)
 
 
-def build_performance_data(cfg, sim):
+def build_performance_data(cfg: BenchmarkConfig, sim: SimulationData) -> dict:
     """Build performance CSV data"""
     tags, infosteps = read_infostep(cfg, sim)
     infotimes = infosteps[:, tags.index("Time(day)")] * 86400.0 - sim.timeini
@@ -242,13 +277,13 @@ def build_performance_data(cfg, sim):
     map_info = np.array(
         [time_offset + int(np.floor(time_val / cfg.sparset)) for time_val in infotimes]
     )
-    detail_info = [0]
+    tmp = [0]
     for i in range(len(infotimes) - 1):
         if infotimes[i] != infotimes[i + 1]:
-            detail_info.append(detail_info[-1] + 1)
+            tmp.append(tmp[-1] + 1)
         else:
-            detail_info.append(detail_info[-1])
-    detail_info = np.array(detail_info)
+            tmp.append(tmp[-1])
+    detail_info = np.array(tmp)
     times_det = np.array(
         [np.max(infotimes[detail_info == i]) for i in range(np.max(detail_info) + 1)]
     )
@@ -269,7 +304,7 @@ def build_performance_data(cfg, sim):
     }
 
 
-def extract_solver_metrics(infosteps, tags):
+def extract_solver_metrics(infosteps: NDArray, tags: list) -> dict:
     """Extract solver metrics"""
     return {
         "fsteps": np.array(infosteps[:, tags.index("Conv")] == 0, dtype=float),
@@ -283,7 +318,9 @@ def extract_solver_metrics(infosteps, tags):
     }
 
 
-def compute_cpu_times(cfg, sim, times_det):
+def compute_cpu_times(
+    cfg: BenchmarkConfig, sim: SimulationData, times_det: NDArray
+) -> tuple[list, NDArray, NDArray]:
     """Compute CPU times"""
     cpu = sim.smspec["TCPU"]
     summary_times = 86400.0 * sim.smspec["TIME"] - sim.timeini
@@ -293,18 +330,35 @@ def compute_cpu_times(cfg, sim, times_det):
             for time_val in times_det
         ]
     )
+    # For some spe11a cases (e.g., benchmark/spe11a/r3_cp_1cmish_capmax2500Pa.toml), it
+    # seems a bug in OPM Flow is triggered where these arrays have different sizes. This is
+    # a temporal fix, removing it (hopefully) later when that bug is fixed in OPM Flow.
+    if cfg.case == "spe11a" and len(times_det) != len(cpu):
+        interp_cpu = interp1d(summary_times, cpu, fill_value="extrapolate")
+        tmp = np.append(times_det[1:], summary_times[-1])
+        cpu = interp_cpu(tmp)
     if sim.timeini > 0:
         cpu = cpu[-len(map_summary) - 1 :]
         cpu = cpu[1:] - cpu[:-1]
     else:
         cpu = cpu[-len(map_summary) :]
         cpu[1:] -= cpu[:-1]
-    return cpu, map_summary, summary_times
+    # Extend later the temporal fix to spe11b/c cases if this issue is observed
+    assert len(map_summary) == len(
+        cpu
+    ), "Please raise an issue with 'spe11b/c cpu/infostep fix'"
+    return cpu, map_summary, np.array(summary_times)
 
 
 def build_time_series(
-    sim, times_data, metrics, map_info, map_summary, interp_fgmip, cpu
-):
+    sim: SimulationData,
+    times_data: NDArray,
+    metrics: dict,
+    map_info: NDArray,
+    map_summary: NDArray,
+    interp_fgmip: interp1d,
+    cpu: list,
+) -> list:
     """Build time series rows"""
     header = (
         "# t [s], tstep [s], fsteps [-], mass [kg], dof [-], "
@@ -397,7 +451,14 @@ def build_time_series(
     return rows
 
 
-def build_detailed_series(sim, metrics, detail_info, infotimes, interp_fgmip, cpu):
+def build_detailed_series(
+    sim: SimulationData,
+    metrics: dict,
+    detail_info: NDArray,
+    infotimes: NDArray,
+    interp_fgmip: interp1d,
+    cpu: list,
+) -> list:
     """Build detailed time series rows"""
     header = (
         "# t [s], tstep [s], fsteps [-], mass [kg], dof [-], nliter [-], "
@@ -419,7 +480,7 @@ def build_detailed_series(sim, metrics, detail_info, infotimes, interp_fgmip, cp
     return rows
 
 
-def write_performance_csv(cfg, perf):
+def write_performance_csv(cfg: BenchmarkConfig, perf: dict) -> None:
     """Write performance CSV files"""
     with open(
         f"{cfg.where}/{cfg.case}_performance_time_series.csv", "w", encoding="utf8"
@@ -433,86 +494,13 @@ def write_performance_csv(cfg, perf):
         file.write("\n".join(perf["detailed"]))
 
 
-def create_from_summary(cfg, sim, ctx):
-    """Use summary arrays for sparse interpolation"""
-    ind, names, i_jk = 0, [], []
-    for key in sim.smspec.keys():
-        if key[: len("BWPR")] == "BWPR" and "," in key[len("BWPR") + 1 :]:
-            names.append(key)
-            i_jk.append(
-                np.genfromtxt(
-                    StringIO(key[len("BWPR") + 1 :]), delimiter=",", dtype=int
-                )[0]
-            )
-            ind += 1
-            if ind == 2:
-                break
-    sort = sorted(range(len(i_jk)), key=i_jk.__getitem__)
-    pop1 = (
-        sim.unrst["PRESSURE", 0][ctx.fipnum.index(8)]
-        - sim.unrst["PCGW", 0][ctx.fipnum.index(8)]
-    )
-    ctx.pop1 = [pop1 * 1.0e5] + list(sim.smspec[names[sort[0]]] * 1.0e5)
-    if not cfg.lower:
-        pop2 = (
-            sim.unrst["PRESSURE", 0][ctx.fipnum.index(9)]
-            - sim.unrst["PCGW", 0][ctx.fipnum.index(9)]
-        )
-        ctx.pop2 = [pop2 * 1.0e5] + list(sim.smspec[names[sort[1]]] * 1.0e5)
-    else:
-        ctx.pop2 = ctx.pop1
-    for i in ctx.fip_diss_a:
-        ctx.moba += sim.smspec[f"RGKMO:{i}"]
-        ctx.imma += sim.smspec[f"RGKTR:{i}"]
-        ctx.dissa += sim.smspec[f"RGMDS:{i}"]
-    for i in ctx.fip_seal_a:
-        ctx.seala += (
-            sim.smspec[f"RGMDS:{i}"]
-            + sim.smspec[f"RGKMO:{i}"]
-            + sim.smspec[f"RGKTR:{i}"]
-        )
-    for i in ctx.fip_diss_b:
-        ctx.mobb += sim.smspec[f"RGKMO:{i}"]
-        ctx.immb += sim.smspec[f"RGKTR:{i}"]
-        ctx.dissb += sim.smspec[f"RGMDS:{i}"]
-    for i in ctx.fip_seal_b:
-        ctx.sealb += (
-            sim.smspec[f"RGMDS:{i}"]
-            + sim.smspec[f"RGKMO:{i}"]
-            + sim.smspec[f"RGKTR:{i}"]
-        )
-    ctx.sealt = ctx.seala + ctx.sealb
-    for n in ("RGMDS", "RGKMO", "RGKTR"):
-        if not cfg.lower:
-            ctx.sealt += sim.smspec[f"{n}:7"] + sim.smspec[f"{n}:9"]
-        else:
-            if 7 in ctx.fipnum:
-                ctx.sealt += sim.smspec[f"{n}:7"]
-    if cfg.case != "spe11a":
-        if 10 in ctx.fipnum:
-            sealbound = (
-                sim.smspec["RGMDS:10"] + sim.smspec["RGKMO:10"] + sim.smspec["RGKTR:10"]
-            )
-            ctx.sealt += sealbound
-            ctx.boundtot = sealbound
-        else:
-            ctx.boundtot = 0
-        for i in ctx.fip_bound_t:
-            if i in ctx.fipnum:
-                ctx.boundtot += (
-                    sim.smspec[f"RGMDS:{i}"]
-                    + sim.smspec[f"RGKMO:{i}"]
-                    + sim.smspec[f"RGKTR:{i}"]
-                )
-
-
-def sparse_data(cfg, sim):
+def sparse_data(cfg: BenchmarkConfig, sim: SimulationData) -> None:
     """Generate sparse benchmark data"""
     sparse = build_sparse_data(cfg, sim)
     write_sparse_csv(cfg, sparse)
 
 
-def build_sparse_data(cfg, sim):
+def build_sparse_data(cfg: BenchmarkConfig, sim: SimulationData) -> dict:
     """Build sparse benchmark data"""
     times_data = np.linspace(0, sim.times[-1], round(sim.times[-1] / cfg.sparset) + 1)
     fipnum = list(sim.init["FIPNUM"])
@@ -530,7 +518,7 @@ def build_sparse_data(cfg, sim):
     return interpolated
 
 
-def get_fip_groups(cfg):
+def get_fip_groups(cfg: BenchmarkConfig) -> dict:
     """Define FIP groups"""
     if cfg.lower:
         result = {
@@ -562,7 +550,9 @@ def get_fip_groups(cfg):
     return result
 
 
-def build_summary_data(cfg, sim, fipnum, groups):
+def build_summary_data(
+    cfg: BenchmarkConfig, sim: SimulationData, fipnum: list, groups: dict
+) -> dict:
     """Build sparse summary time series"""
     zero_series = 0.0 * sim.smspec["TIME"]
     pop1, pop2 = extract_boundary_pressures(cfg, sim, fipnum)
@@ -612,7 +602,9 @@ def build_summary_data(cfg, sim, fipnum, groups):
     return result
 
 
-def extract_boundary_pressures(cfg, sim, fipnum):
+def extract_boundary_pressures(
+    cfg: BenchmarkConfig, sim: SimulationData, fipnum: list
+) -> tuple[list, list]:
     """Extract boundary pressures"""
     pressure = sim.unrst["PRESSURE", 0]
     pcgw = sim.unrst["PCGW", 0]
@@ -630,7 +622,14 @@ def extract_boundary_pressures(cfg, sim, fipnum):
     return pop1, pop2
 
 
-def compute_m_c(cfg, sim, fipnum, dx, dy, dz):
+def compute_m_c(
+    cfg: BenchmarkConfig,
+    sim: SimulationData,
+    fipnum: list,
+    dx: NDArray,
+    dy: NDArray,
+    dz: NDArray,
+) -> list:
     """Compute Box C variation"""
     box_mask = np.isin(fipnum, (4, 12, 17, 18))
     box_x = np.roll(box_mask, 1)
@@ -658,7 +657,9 @@ def compute_m_c(cfg, sim, fipnum, dx, dy, dz):
     return values
 
 
-def interpolate_sparse(times_data, sim, summary, m_c):
+def interpolate_sparse(
+    times_data: NDArray, sim: SimulationData, summary: dict, m_c: list
+) -> dict:
     """Interpolate sparse outputs"""
     result = {}
     tsim = sim.timesumary
@@ -678,39 +679,53 @@ def interpolate_sparse(times_data, sim, summary, m_c):
     return result
 
 
-def write_sparse_csv(cfg, sparse):
+def write_sparse_csv(cfg: BenchmarkConfig, sparse: dict) -> None:
     """Write sparse CSV"""
     header = (
         "# t [s], p1 [Pa], p2 [Pa], mobA [kg], immA [kg], dissA [kg], sealA [kg], "
         + "mobB [kg], immB [kg], dissB [kg], sealB [kg], MC [m], sealTot [kg]"
     )
-    text = [header]
-    if cfg.case == "spe11a":
-        for i, time_val in enumerate(sparse["times"]):
-            text.append(
-                f"{time_val:.3e}, {sparse['pop1'][i]:.5e}, {sparse['pop2'][i]:.5e}, "
-                f"{sparse['moba'][i]:.3e}, {sparse['imma'][i]:.3e}, {sparse['dissa'][i]:.3e}, "
-                f"{sparse['seala'][i]:.3e}, {sparse['mobb'][i]:.3e}, {sparse['immb'][i]:.3e}, "
-                f"{sparse['dissb'][i]:.3e}, {sparse['sealb'][i]:.3e}, {sparse['m_c'][i]:.3e}, "
-                f"{sparse['sealt'][i]:.3e}"
-            )
-    else:
-        text[0] += ", boundTot [kg]"
-        for i, time_val in enumerate(sparse["times"]):
-            text.append(
-                f"{time_val:.4e}, {sparse['pop1'][i]:.3e}, {sparse['pop2'][i]:.3e}, "
-                f"{sparse['moba'][i]:.3e}, {sparse['imma'][i]:.3e}, {sparse['dissa'][i]:.3e}, "
-                f"{sparse['seala'][i]:.3e}, {sparse['mobb'][i]:.3e}, {sparse['immb'][i]:.3e}, "
-                f"{sparse['dissb'][i]:.3e}, {sparse['sealb'][i]:.3e}, {sparse['m_c'][i]:.3e}, "
-                f"{sparse['sealt'][i]:.3e}, {sparse['boundtot'][i]:.3e}"
-            )
-    with open(f"{cfg.where}/{cfg.case}_time_series.csv", "w", encoding="utf8") as file:
-        file.write("\n".join(text))
+    times = sparse["times"]
+    pop1 = sparse["pop1"]
+    pop2 = sparse["pop2"]
+    moba = sparse["moba"]
+    imma = sparse["imma"]
+    dissa = sparse["dissa"]
+    seala = sparse["seala"]
+    mobb = sparse["mobb"]
+    immb = sparse["immb"]
+    dissb = sparse["dissb"]
+    sealb = sparse["sealb"]
+    mc = sparse["m_c"]
+    sealt = sparse["sealt"]
+    path = f"{cfg.where}/{cfg.case}_time_series.csv"
+    with open(path, "w", encoding="utf8") as file:
+        if cfg.case == "spe11a":
+            file.write(header)
+            for i, time_val in enumerate(times):
+                file.write(
+                    f"\n{time_val:.3e}, {pop1[i]:.5e}, {pop2[i]:.5e}, "
+                    f"{moba[i]:.3e}, {imma[i]:.3e}, {dissa[i]:.3e}, "
+                    f"{seala[i]:.3e}, {mobb[i]:.3e}, {immb[i]:.3e}, "
+                    f"{dissb[i]:.3e}, {sealb[i]:.3e}, {mc[i]:.3e}, "
+                    f"{sealt[i]:.3e}"
+                )
+        else:
+            file.write(header + ", boundTot [kg]")
+            boundtot = sparse["boundtot"]
+            for i, time_val in enumerate(times):
+                file.write(
+                    f"\n{time_val:.4e}, {pop1[i]:.3e}, {pop2[i]:.3e}, "
+                    f"{moba[i]:.3e}, {imma[i]:.3e}, {dissa[i]:.3e}, "
+                    f"{seala[i]:.3e}, {mobb[i]:.3e}, {immb[i]:.3e}, "
+                    f"{dissb[i]:.3e}, {sealb[i]:.3e}, {mc[i]:.3e}, "
+                    f"{sealt[i]:.3e}, {boundtot[i]:.3e}"
+                )
 
 
-def dense_data(cfg, sim):
+def dense_data(cfg: BenchmarkConfig, sim: SimulationData) -> None:
     """Generate dense benchmark data"""
-    rstno, nrstno, refgrid, mapping = build_dense_static(cfg, sim)
+    rstno, nrstno, refgrid, mapping, actindr = build_dense_static(cfg, sim)
     if cfg.mode == "all" or cfg.mode[:5] == "dense":
         for step_index, restart in enumerate(rstno):
             if step_index + 1 < nrstno:
@@ -718,13 +733,15 @@ def dense_data(cfg, sim):
             else:
                 print(f"Processing dense data {step_index+1} out of {nrstno}")
             restart_index = restart + sim.noskiprst
-            dense_step = build_dense_step(cfg, sim, mapping, restart_index)
+            dense_step = build_dense_step(cfg, sim, mapping, restart_index, actindr)
             write_dense_csv(cfg, sim, refgrid, dense_step, step_index)
     if cfg.mode in ("all", "performance-spatial", "dense_performance-spatial"):
-        handle_performance_spatial(cfg, sim, rstno, refgrid, mapping)
+        handle_performance_spatial(cfg, sim, rstno, refgrid, mapping, actindr)
 
 
-def can_use_fast_dense_mapping(cfg, sim, dx, dz):
+def can_use_fast_dense_mapping(
+    cfg: BenchmarkConfig, sim: SimulationData, dx: NDArray, dz: NDArray
+) -> bool:
     """Check if fast dense mapping can be used"""
     if cfg.lower:
         return False
@@ -741,11 +758,16 @@ def can_use_fast_dense_mapping(cfg, sim, dx, dz):
     return False
 
 
-def build_general_dense_mapping(cfg, sim, refgrid, geometry):
+def build_general_dense_mapping(
+    cfg: BenchmarkConfig,
+    sim: SimulationData,
+    refgrid: tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray],
+    geometry: tuple[NDArray, NDArray, list],
+) -> tuple[list[list[list[int | float]]], NDArray]:
     """General sim-to-report mapping using geometry"""
     refxvert, _, refzvert, refxcent, _, refzcent = refgrid
     simxcent, simzcent, simpoly = geometry
-    cell_ind = [[] for _ in range(sim.nocellsxz)]
+    cell_ind: list[list[list[int | float]]] = [[] for _ in range(sim.nocellsxz)]
     cell_cent = np.zeros(cfg.nocellsrepgrid, dtype=float)
     nrefx = cfg.nxyz[0]
     nrefz = cfg.nxyz[2]
@@ -767,7 +789,7 @@ def build_general_dense_mapping(cfg, sim, refgrid, geometry):
             idx.insert(rid, poly.bounds)
             rid += 1
     print("Processing polygon intersections between simulation and reporting grids")
-    with alive_bar(len(simpoly)) as bar_animation:
+    with alive_bar(len(simpoly), bar="fish") as bar_animation:
         for sim_cell, poly_s in enumerate(simpoly):
             bar_animation()
             if poly_s.area > 0.0:
@@ -781,14 +803,20 @@ def build_general_dense_mapping(cfg, sim, refgrid, geometry):
     sx = np.asarray(simxcent)
     sz = np.asarray(simzcent)
     print("Finding the cell indices between simulation and reporting grids")
-    with alive_bar(len(refxgrid)) as bar_animation:
+    with alive_bar(len(refxgrid), bar="fish") as bar_animation:
         for rep, (xc, zc) in enumerate(zip(refxgrid, refzgrid)):
             bar_animation()
             cell_cent[rep] = np.argmin(np.abs(sx - xc) + np.abs(sz - zc))
     return cell_ind, cell_cent
 
 
-def build_dense_static(cfg, sim):
+def build_dense_static(cfg: BenchmarkConfig, sim: SimulationData) -> tuple[
+    list,
+    int,
+    tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray],
+    tuple[list[list[list[int | float]]], NDArray],
+    NDArray,
+]:
     """Build static dense grid data"""
     rstno, nrstno = build_dense_schedule(cfg, sim)
     refgrid = build_dense_reference_grid(cfg)
@@ -801,19 +829,21 @@ def build_dense_static(cfg, sim):
         cell_ind, cell_cent = build_general_dense_mapping(
             cfg, sim, refgrid, (simxcent, simzcent, simpoly)
         )
-    cell_ind, cell_cent = handle_post_mapping(
+    cell_ind, cell_cent, actindr = handle_post_mapping(
         cfg, sim, refgrid, (cell_ind, cell_cent), simycent, satnum
     )
-    return rstno, nrstno, refgrid, (cell_ind, cell_cent)
+    return rstno, nrstno, refgrid, (cell_ind, cell_cent), actindr
 
 
-def build_dense_schedule(cfg, sim):
+def build_dense_schedule(cfg: BenchmarkConfig, sim: SimulationData) -> tuple[list, int]:
     """Compute restart indices for dense output"""
     rstno = [sim.times.index(time_val) for time_val in cfg.denset]
     return rstno, len(rstno)
 
 
-def build_dense_reference_grid(cfg):
+def build_dense_reference_grid(
+    cfg: BenchmarkConfig,
+) -> tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
     """Build reporting grid coordinates"""
     refxvert = np.linspace(0, cfg.dims[0], cfg.nxyz[0] + 1)
     refyvert = np.linspace(0, cfg.dims[1], cfg.nxyz[1] + 1)
@@ -824,13 +854,15 @@ def build_dense_reference_grid(cfg):
     return refxvert, refyvert, refzvert, refxcent, refycent, refzcent
 
 
-def extract_sim_geometry(cfg, sim):
+def extract_sim_geometry(
+    cfg: BenchmarkConfig, sim: SimulationData
+) -> tuple[NDArray, NDArray, NDArray, list, NDArray]:
     """Extract simulation geometry"""
     simxcent = np.zeros(sim.nocellsxz)
     simzcent = np.zeros(sim.nocellsxz)
     simycent = np.zeros(sim.simdim[1])
     simpoly = [None] * sim.nocellsxz
-    satnum = list(sim.init["SATNUM"])
+    satnum = np.array(sim.init["SATNUM"])
     z_0 = 155.04166666666666 if cfg.case == "spe11c" else 0.0
     nx, ny, nz = sim.simdim
     dims_z = cfg.dims[2]
@@ -861,9 +893,11 @@ def extract_sim_geometry(cfg, sim):
     return simxcent, simycent, simzcent, simpoly, satnum
 
 
-def build_fast_dense_mapping(cfg, sim, dx, dz):
+def build_fast_dense_mapping(
+    cfg: BenchmarkConfig, sim: SimulationData, dx: NDArray, dz: NDArray
+) -> tuple[list[list[list[int | float]]], NDArray]:
     """Fast sim-to-report mapping for aligned grids"""
-    cell_ind = [[] for _ in range(sim.nocellsxz)]
+    cell_ind: list[list[list[int | float]]] = [[] for _ in range(sim.nocellsxz)]
     cell_indc = np.zeros(sim.nocellsxz, dtype=int)
     cell_cent = np.zeros(cfg.nocellsrepgrid, dtype=float)
     iszunif = (np.min(dz) == np.max(dz)) and not cfg.lower
@@ -978,17 +1012,22 @@ def build_fast_dense_mapping(cfg, sim, dx, dz):
         for i, value in enumerate(cell_indc):
             cell_ind[i] = [[int(value), 1.0]]
 
-    else:
-        return None, None
-
     return cell_ind, cell_cent
 
 
-def handle_post_mapping(cfg, sim, refgrid, mapping, simycent, satnum):
+def handle_post_mapping(
+    cfg: BenchmarkConfig,
+    sim: SimulationData,
+    refgrid: tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray],
+    mapping: tuple[list[list[list[int | float]]], NDArray],
+    simycent: NDArray,
+    satnum: NDArray,
+) -> tuple[list[list[list[int | float]]], NDArray, NDArray]:
     """Post-process mapping"""
     cell_ind, cell_cent = mapping
+    actindr = np.empty(0)
     if np.max(satnum) < 7 and cfg.case == "spe11a":
-        handle_inactive_mapping(cfg, sim, {"cell_ind": cell_ind})
+        actindr = handle_inactive_mapping(cfg, sim, cell_ind)
     if cfg.case == "spe11c":
         cell_cent = handle_yaxis_mapping_intensive(
             cfg, sim, cell_cent, refgrid[4], simycent
@@ -996,20 +1035,32 @@ def handle_post_mapping(cfg, sim, refgrid, mapping, simycent, satnum):
         cell_ind = handle_yaxis_mapping_extensive(
             cfg, sim, cell_ind, simycent, refgrid[1]
         )
-    return cell_ind, cell_cent
+    return cell_ind, cell_cent, actindr
 
 
-def build_dense_step(cfg, sim, mapping, restart_index):
+def build_dense_step(
+    cfg: BenchmarkConfig,
+    sim: SimulationData,
+    mapping: tuple[list[list[list[int | float]]], NDArray],
+    restart_index: int,
+    actindr: NDArray,
+) -> dict:
     """Build dense data for one restart"""
     names = ["pressure", "sgas", "xco2", "xh20", "gden", "wden", "tco2"]
     if not sim.isothermal:
         names = ["temp"] + names
-    arrays = generate_arrays(cfg, sim, names, restart_index)
+    arrays = generate_arrays(cfg, sim, names, restart_index, actindr)
     map_to_report_grid(sim, mapping, arrays)
     return arrays
 
 
-def write_dense_csv(cfg, sim, refgrid, dense_step, step_index):
+def write_dense_csv(
+    cfg: BenchmarkConfig,
+    sim: SimulationData,
+    refgrid: tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray],
+    dense_step: dict,
+    step_index: int,
+) -> None:
     """Write dense spatial CSV"""
     name_t, text = get_header(cfg, sim, step_index)
     if cfg.lower:
@@ -1024,64 +1075,73 @@ def write_dense_csv(cfg, sim, refgrid, dense_step, step_index):
     wden_arr = dense_step["wden_refg"]
     tco2_arr = dense_step["tco2_refg"]
     temp_arr = dense_step.get("temp_refg")
-    idz = 0
-    for zcord in refzcent:
-        idxy = 0
-        for ycord in refycent:
-            for xcord in refxcent:
-                cell = -nx * ny * (nz - idz) + idxy
-                p = p_arr[cell]
-                if np.isnan(p):
-                    co2 = tco2_arr[cell]
-                    co2 = "n/a" if np.isnan(co2) else f"{co2:.3e}"
-                    if cfg.case == "spe11a":
-                        text.append(
-                            f"{xcord:.3e}, {zcord:.3e}, n/a, n/a, n/a, n/a, n/a, n/a, {co2}"
-                            + (", n/a" if not sim.isothermal else "")
-                        )
-                    elif cfg.case == "spe11b":
-                        text.append(
-                            f"{xcord:.3e}, {zcord:.3e}, n/a, n/a, n/a, n/a, n/a, n/a, {co2}, n/a"
-                        )
-                    else:
-                        text.append(
-                            f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, n/a, n/a, n/a, n/a, n/a, "
-                            + f"n/a, {co2}, n/a"
-                        )
-                else:
-                    pf = f"{p:.3e}"
-                    sf = f"{s_arr[cell]:.3e}"
-                    gf = f"{gden_arr[cell]:.3e}"
-                    wf = f"{wden_arr[cell]:.3e}"
-                    co2 = f"{tco2_arr[cell]:.3e}"
-                    if sim.immiscible:
-                        xf = hf = "n/a"
-                    else:
-                        xf = f"{xco2_arr[cell]:.3e}"
-                        hf = f"{xh20_arr[cell]:.3e}"
-                    tf = f"{temp_arr[cell]:.3e}" if not sim.isothermal else None
-                    if cfg.case == "spe11a":
-                        row = f"{xcord:.3e}, {zcord:.3e}, {pf}, {sf}, {xf}, {hf}, {gf}, {wf}, {co2}"
-                        text.append(row + (f", {tf}" if tf else ""))
-                    elif cfg.case == "spe11b":
-                        text.append(
-                            f"{xcord:.3e}, {zcord:.3e}, {pf}, {sf}, {xf}, {hf}, {gf}, {wf}, {co2}, "
-                            + f"{tf}"
-                        )
-                    else:
-                        text.append(
-                            f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, {pf}, {sf}, {xf}, {hf}, {gf}, "
-                            + f"{wf}, {co2}, {tf}"
-                        )
-                idxy += 1
-        idz += 1
-    with open(
-        f"{cfg.where}/{cfg.case}_spatial_map_{name_t}.csv", "w", encoding="utf8"
-    ) as file:
+    path = f"{cfg.where}/{cfg.case}_spatial_map_{name_t}.csv"
+    with open(path, "w", encoding="utf8") as file:
         file.write("\n".join(text))
+        idz = 0
+        for zcord in refzcent:
+            idxy = 0
+            for ycord in refycent:
+                for xcord in refxcent:
+                    cell = -nx * ny * (nz - idz) + idxy
+                    p = p_arr[cell]
+                    if np.isnan(p):
+                        co2v = tco2_arr[cell]
+                        co2 = "n/a" if np.isnan(co2v) else f"{co2v:.3e}"
+                        if cfg.case == "spe11a":
+                            row = (
+                                f"{xcord:.3e}, {zcord:.3e}, n/a, n/a, n/a, n/a, n/a, n/a, {co2}"
+                                + (", n/a" if not sim.isothermal else "")
+                            )
+                        elif cfg.case == "spe11b":
+                            row = (
+                                f"{xcord:.3e}, {zcord:.3e}, n/a, n/a, n/a, n/a, n/a, n/a, "
+                                f"{co2}, n/a"
+                            )
+                        else:
+                            row = (
+                                f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, n/a, n/a, n/a, n/a, "
+                                f"n/a, n/a, {co2}, n/a"
+                            )
+                    else:
+                        pf = f"{p:.3e}"
+                        sf = f"{s_arr[cell]:.3e}"
+                        gf = f"{gden_arr[cell]:.3e}"
+                        wf = f"{wden_arr[cell]:.3e}"
+                        co2 = f"{tco2_arr[cell]:.3e}"
+                        if sim.immiscible:
+                            xf = hf = "n/a"
+                        else:
+                            xf = f"{xco2_arr[cell]:.3e}"
+                            hf = f"{xh20_arr[cell]:.3e}"
+                        tf = f"{temp_arr[cell]:.3e}" if temp_arr is not None else None
+                        if cfg.case == "spe11a":
+                            row = (
+                                f"{xcord:.3e}, {zcord:.3e}, {pf}, {sf}, {xf}, {hf}, "
+                                f"{gf}, {wf}, {co2}" + (f", {tf}" if tf else "")
+                            )
+                        elif cfg.case == "spe11b":
+                            row = (
+                                f"{xcord:.3e}, {zcord:.3e}, {pf}, {sf}, {xf}, {hf}, {gf}, "
+                                f"{wf}, {co2}, {tf}"
+                            )
+                        else:
+                            row = (
+                                f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, {pf}, {sf}, {xf}, "
+                                f"{hf}, {gf}, {wf}, {co2}, {tf}"
+                            )
+                    file.write("\n" + row)
+                    idxy += 1
+            idz += 1
 
 
-def handle_yaxis_mapping_extensive(cfg, sim, cell_ind, simycent, refyvert):
+def handle_yaxis_mapping_extensive(
+    cfg: BenchmarkConfig,
+    sim: SimulationData,
+    cell_ind: list[list[list[int | float]]],
+    simycent: NDArray,
+    refyvert: NDArray,
+) -> list[list[list[int | float]]]:
     """Extend indices for y direction (extensive)"""
     simyvert = [0.0]
     for yval in simycent:
@@ -1103,7 +1163,7 @@ def handle_yaxis_mapping_extensive(cfg, sim, cell_ind, simycent, refyvert):
             ind += 1
     nx, ny, nz = sim.simdim
     nrep_x = cfg.nxyz[0]
-    expanded = [[] for _ in range(sim.nocellst)]
+    expanded: list[list[list[int | float]]] = [[] for _ in range(sim.nocellst)]
     for iz in range(nz):
         base_sim = nx * (nz - iz - 1)
         base_rep = nx * ny * (nz - iz - 1)
@@ -1124,7 +1184,13 @@ def handle_yaxis_mapping_extensive(cfg, sim, cell_ind, simycent, refyvert):
     return expanded
 
 
-def handle_yaxis_mapping_intensive(cfg, sim, cell_cent, refycent, simycent):
+def handle_yaxis_mapping_intensive(
+    cfg: BenchmarkConfig,
+    sim: SimulationData,
+    cell_cent: NDArray,
+    refycent: NDArray,
+    simycent: NDArray,
+) -> NDArray:
     """Extend representative cell indices for y direction (intensive)"""
     indy = np.array([np.argmin(np.abs(simycent - y)) for y in refycent])
     expanded = np.zeros(cfg.nocellsrepgrid, dtype=int)
@@ -1143,25 +1209,34 @@ def handle_yaxis_mapping_intensive(cfg, sim, cell_cent, refycent, simycent):
     return expanded
 
 
-def handle_inactive_mapping(cfg, sim, ctx):
+def handle_inactive_mapping(
+    cfg: BenchmarkConfig, sim: SimulationData, cell_ind: list[list[list[int | float]]]
+) -> NDArray:
     """Identify inactive reporting-grid cells"""
     actindr = []
     for i in sim.actind:
-        for mask in ctx["cell_ind"][i]:
+        for mask in cell_ind[i]:
             actindr.append(mask[0])
     actindr = list(dict.fromkeys(actindr))
     allc = np.linspace(0, cfg.nocellsrepgrid - 1, cfg.nocellsrepgrid, dtype=int)
-    sim.actindr = np.delete(allc, actindr)
+    return np.delete(allc, actindr)
 
 
-def handle_performance_spatial(cfg, sim, rstno, refgrid, mapping):
+def handle_performance_spatial(
+    cfg: BenchmarkConfig,
+    sim: SimulationData,
+    rstno: list,
+    refgrid: tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray],
+    mapping: tuple[list, NDArray],
+    actindr: NDArray,
+) -> None:
     """Create performance spatial maps"""
     cell_ind, _ = mapping
     _, _, _, refxcent, refycent, refzcent = refgrid
     counter = 0.0 * np.ones(cfg.nocellsrepgrid)
     pore_volume = 0.0 * np.ones(cfg.nocellsrepgrid)
-    if sim.actindr is not None:
-        pore_volume[sim.actindr] = 1.0
+    if actindr.size > 0:
+        pore_volume[actindr] = 1.0
     latest_dts, cvol_refg, arat_refg, valid = static_map_performance_spatial(
         cfg, sim, cell_ind, counter, pore_volume
     )
@@ -1187,8 +1262,14 @@ def handle_performance_spatial(cfg, sim, rstno, refgrid, mapping):
 
 
 def map_performance_to_report_grid(
-    cfg, sim, arrays, cell_ind, delta_t, pore_volume, valid
-):
+    cfg: BenchmarkConfig,
+    sim: SimulationData,
+    arrays: dict,
+    cell_ind: list,
+    delta_t: float,
+    pore_volume: NDArray,
+    valid: NDArray,
+) -> dict:
     """Map simulation grid to reporting grid"""
     refg = {
         "co2mn": np.full(cfg.nocellsrepgrid, -np.inf),
@@ -1221,21 +1302,27 @@ def map_performance_to_report_grid(
     return refg
 
 
-def static_map_performance_spatial(cfg, sim, cell_ind, counter, pore_volume):
+def static_map_performance_spatial(
+    cfg: BenchmarkConfig,
+    sim: SimulationData,
+    cell_ind: list,
+    counter: NDArray,
+    pore_volume: NDArray,
+) -> tuple[list, NDArray, NDArray, NDArray]:
     """Map static quantities for performance spatial data"""
-    infotimes, tsteps = [], []
+    tmp1, tmp2 = [], []
     with open(
-        f"{cfg.flowf}/{cfg.outfol.split('/')[-1].upper()}.INFOSTEP",
+        f"{cfg.flowfol}/{cfg.outfol.split('/')[-1].upper()}.INFOSTEP",
         "r",
         encoding="utf8",
     ) as file:
         for i, row in enumerate(csv.reader(file)):
             if i > 0:
                 vals = row[0].strip().split()
-                infotimes.append(86400.0 * float(vals[0]))
-                tsteps.append(86400.0 * float(vals[1]))
-    infotimes = np.array(infotimes)
-    tsteps = np.array(tsteps)
+                tmp1.append(86400.0 * float(vals[0]))
+                tmp2.append(86400.0 * float(vals[1]))
+    infotimes = np.array(tmp1)
+    tsteps = np.array(tmp2)
     latest_dts = []
     for time_val in cfg.denset[:-1]:
         pos = np.argmin(np.abs(infotimes - (time_val + sim.timeini)))
@@ -1269,7 +1356,9 @@ def static_map_performance_spatial(cfg, sim, cell_ind, counter, pore_volume):
     return latest_dts, cvol_refg, arat_refg, valid
 
 
-def init_performance_arrays(sim, names):
+def init_performance_arrays(
+    sim: SimulationData, names: tuple[str, str, str, str]
+) -> dict:
     """Initialize performance arrays"""
     arrays = {}
     for name in names:
@@ -1277,7 +1366,9 @@ def init_performance_arrays(sim, names):
     return arrays
 
 
-def populate_performance_arrays(sim, arrays, step_index):
+def populate_performance_arrays(
+    sim: SimulationData, arrays: dict, step_index: int
+) -> None:
     """Populate performance arrays"""
     act = sim.actind
     co2mb = arrays["co2mb_array"]
@@ -1295,66 +1386,79 @@ def populate_performance_arrays(sim, arrays, step_index):
 
 
 def write_dense_performance_spatial(
-    cfg, refg, cvol_refg, arat_refg, refxcent, refycent, refzcent, i
-):
+    cfg: BenchmarkConfig,
+    refg: dict,
+    cvol_refg: NDArray,
+    arat_refg: NDArray,
+    refxcent: NDArray,
+    refycent: NDArray,
+    refzcent: NDArray,
+    i: int,
+) -> None:
     """Write dense performance spatial CSV"""
     if cfg.case == "spe11a":
         name_t = f"{round(cfg.denset[i]/3600)}h"
     else:
         name_t = f"{round(cfg.denset[i]/SECONDS_IN_YEAR)}y"
-    if cfg.case != "spe11c":
-        text = [
-            "# x [m], z [m], cvol [m^3], arat [-], CO2 max_norm_res [-], "
-            + "H2O max_norm_res [-], CO2 mb_error [-], H2O mb_error [-], post_est [-]"
-        ]
-    else:
-        text = [
-            "# x [m], y [m], z [m], cvol [m^3], arat [-], CO2 max_norm_res [-], "
-            + "H2O max_norm_res [-], CO2 mb_error [-], H2O mb_error [-], post_est [-]"
-        ]
     nx, ny, nz = cfg.nxyz
-    idz = 0
-    for zcord in refzcent:
-        idxy = 0
-        for ycord in refycent:
-            for xcord in refxcent:
-                idc = -nx * ny * (nz - idz) + idxy
-                if np.isnan(cvol_refg[idc]):
-                    if cfg.case != "spe11c":
-                        text.append(
-                            f"{xcord:.3e}, {zcord:.3e}, n/a, n/a, n/a, n/a, n/a, n/a, n/a"
-                        )
+    co2mn = refg["co2mn"]
+    h2omn = refg["h2omn"]
+    co2mb = refg["co2mb"]
+    h2omb = refg["h2omb"]
+    path = f"{cfg.where}/{cfg.case}_performance_spatial_map_{name_t}.csv"
+    with open(path, "w", encoding="utf8") as file:
+        if cfg.case != "spe11c":
+            file.write(
+                "# x [m], z [m], cvol [m^3], arat [-], CO2 max_norm_res [-], "
+                "H2O max_norm_res [-], CO2 mb_error [-], H2O mb_error [-], post_est [-]"
+            )
+        else:
+            file.write(
+                "# x [m], y [m], z [m], cvol [m^3], arat [-], CO2 max_norm_res [-], "
+                "H2O max_norm_res [-], CO2 mb_error [-], H2O mb_error [-], post_est [-]"
+            )
+        idz = 0
+        for zcord in refzcent:
+            idxy = 0
+            basez = -nx * ny * (nz - idz)
+            for ycord in refycent:
+                for xcord in refxcent:
+                    idc = basez + idxy
+                    if np.isnan(cvol_refg[idc]):
+                        if cfg.case != "spe11c":
+                            file.write(
+                                f"\n{xcord:.3e}, {zcord:.3e}, n/a, n/a, n/a, n/a, n/a, n/a, n/a"
+                            )
+                        else:
+                            file.write(
+                                f"\n{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, n/a, n/a, n/a, n/a, "
+                                "n/a, n/a, n/a"
+                            )
                     else:
-                        text.append(
-                            f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, n/a, n/a, n/a, n/a, "
-                            + "n/a, n/a, n/a"
-                        )
-                else:
-                    if cfg.case != "spe11c":
-                        text.append(
-                            f"{xcord:.3e}, {zcord:.3e}, {cvol_refg[idc]:.3e}, "
-                            f"{arat_refg[idc]:.3e}, "
-                            f"{refg['co2mn'][idc]:.3e}, {refg['h2omn'][idc]:.3e}, "
-                            f"{refg['co2mb'][idc]:.3e}, {refg['h2omb'][idc]:.3e}, n/a"
-                        )
-                    else:
-                        text.append(
-                            f"{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, "
-                            f"{cvol_refg[idc]:.3e}, {arat_refg[idc]:.3e}, "
-                            f"{refg['co2mn'][idc]:.3e}, {refg['h2omn'][idc]:.3e}, "
-                            f"{refg['co2mb'][idc]:.3e}, {refg['h2omb'][idc]:.3e}, n/a"
-                        )
-                idxy += 1
-        idz += 1
-    with open(
-        f"{cfg.where}/{cfg.case}_performance_spatial_map_{name_t}.csv",
-        "w",
-        encoding="utf8",
-    ) as file:
-        file.write("\n".join(text))
+                        if cfg.case != "spe11c":
+                            file.write(
+                                f"\n{xcord:.3e}, {zcord:.3e}, {cvol_refg[idc]:.3e}, "
+                                f"{arat_refg[idc]:.3e}, {co2mn[idc]:.3e}, {h2omn[idc]:.3e}, "
+                                f"{co2mb[idc]:.3e}, {h2omb[idc]:.3e}, n/a"
+                            )
+                        else:
+                            file.write(
+                                f"\n{xcord:.3e}, {ycord:.3e}, {zcord:.3e}, "
+                                f"{cvol_refg[idc]:.3e}, {arat_refg[idc]:.3e}, "
+                                f"{co2mn[idc]:.3e}, {h2omn[idc]:.3e}, "
+                                f"{co2mb[idc]:.3e}, {h2omb[idc]:.3e}, n/a"
+                            )
+                    idxy += 1
+            idz += 1
 
 
-def generate_arrays(cfg, sim, names, restart_index):
+def generate_arrays(
+    cfg: BenchmarkConfig,
+    sim: SimulationData,
+    names: list,
+    restart_index: int,
+    actindr: NDArray,
+) -> dict:
     """Populate dense arrays for one restart"""
     arrays = {}
     act = sim.actind
@@ -1365,7 +1469,8 @@ def generate_arrays(cfg, sim, names, restart_index):
             arr[:] = np.nan
         arrays[f"{name}_array"] = arr
         refg = np.zeros(cfg.nocellsrepgrid)
-        refg[sim.actindr] = np.nan
+        if actindr.size > 0:
+            refg[actindr] = np.nan
         arrays[f"{name}_refg"] = refg
     tco2_array = np.zeros(sim.nocellst)
     tco2_refg = np.zeros(cfg.nocellsrepgrid)
@@ -1390,8 +1495,8 @@ def generate_arrays(cfg, sim, names, restart_index):
         co2_g = (1 - xh2o) * sgas * rhog * porva
         co2_d = xco2 * (1 - sgas) * rhow * porva
     else:
-        xco2 = 0.0
-        xh2o = 0.0
+        xco2 = 0.0 * sgas
+        xh2o = 0.0 * sgas
         co2_g = sgas * rhog * porva
         co2_d = 0.0
     arrays["pressure_array"][act] = 1e5 * pres
@@ -1411,7 +1516,11 @@ def generate_arrays(cfg, sim, names, restart_index):
     return arrays
 
 
-def map_to_report_grid(sim, mapping, arrays):
+def map_to_report_grid(
+    sim: SimulationData,
+    mapping: tuple[list[list[list[int | float]]], NDArray],
+    arrays: dict,
+) -> None:
     """Map simulation arrays to reporting grid"""
     cell_ind, cell_cent = mapping
     tco2_arr = arrays["tco2_array"]
@@ -1427,7 +1536,9 @@ def map_to_report_grid(sim, mapping, arrays):
                 arrays[key.replace("_array", "_refg")][rep] = arrays[key][cell]
 
 
-def get_header(cfg, sim, i):
+def get_header(
+    cfg: BenchmarkConfig, sim: SimulationData, i: int
+) -> tuple[str, list[str]]:
     """Get the CSV header for spe11x"""
     if cfg.case == "spe11a":
         name_t = f"{round(cfg.denset[i]/3600)}h"
@@ -1458,4 +1569,4 @@ def get_header(cfg, sim, i):
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
