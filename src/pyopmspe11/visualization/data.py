@@ -800,13 +800,11 @@ def build_general_dense_mapping(
                         cell_ind[sim_cell].append([tgt, a / area_s])
             else:
                 cell_ind[sim_cell] = cell_ind[sim_cell - 1]
-    sx = np.asarray(simxcent)
-    sz = np.asarray(simzcent)
     print("Finding the cell indices between simulation and reporting grids")
     with alive_bar(len(refxgrid), bar="fish") as bar_animation:
         for rep, (xc, zc) in enumerate(zip(refxgrid, refzgrid)):
             bar_animation()
-            cell_cent[rep] = np.argmin(np.abs(sx - xc) + np.abs(sz - zc))
+            cell_cent[rep] = np.nanargmin(np.abs(simxcent - xc) + np.abs(simzcent - zc))
     return cell_ind, cell_cent
 
 
@@ -880,14 +878,13 @@ def extract_sim_geometry(
             )
             simpoly[n] = poly
             xcen, zcen = (float(v) for v in poly.centroid.wkt[7:-1].split())
-            simxcent[n], simzcent[n] = xcen, zcen
+            simxcent[n] = xcen if zcen > 0 else np.nan
+            simzcent[n] = zcen if zcen > 0 else np.nan
     for j in range(ny):
         xyz = sim.egrid.xyz_from_ijk(0, j, 0)
         simycent[j] = 0.5 * (xyz[1][2] - xyz[1][1]) + xyz[1][1]
     if cfg.lower and sim.cornpoint:
         nx = sim.simdim[0]
-
-        simzcent = np.array(simzcent)
         simxcent = np.insert(simxcent, 0, simxcent[:nx])
         simzcent = np.insert(simzcent, 0, simzcent[:nx] + 1e-4)
     return simxcent, simycent, simzcent, simpoly, satnum

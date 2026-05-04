@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 """Test the script to write the data as required in the benchmark.
-Note we use smaller grids and simulation times for testing purposes."""
+Note we use smaller grids and simulation times for testing purposes"""
 
 import pathlib
 import filecmp
