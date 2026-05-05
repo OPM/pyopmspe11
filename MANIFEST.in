@@ -1,5 +1,6 @@
 include README.md
 include LICENSE
+include src/pyopmspe11/config/*
 include src/pyopmspe11/core/*
 include src/pyopmspe11/templates/co2/*
 include src/pyopmspe11/templates/common/*
