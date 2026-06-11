@@ -1,0 +1,43 @@
+name: Docker
+
+on:
+ push:
+   branches:
+     - main
+   
+jobs:
+  run-pyopmspe11-docker:
+    permissions:
+      contents: read
+      pull-requests: write
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Build Docker image
+      run: docker build -t test-image .
+
+    - name: Run a simple example using pyopmspe11
+      run: |
+        docker run --rm \
+          -u root \
+          -v ${{ github.workspace }}:/workspace \
+          -w /workspace \
+          test-image \
+          bash -c "
+            pyopmspe11 -i examples/spe11b.toml \
+                  -o spe11b -m deck_flow -f 0
+        "
+
+    - name: Check if the example run
+      run: |
+        file="${{ github.workspace }}/spe11b/SPE11B.UNRST"
+        if [ -f "$file" ]; then
+          echo "pyopmspe11 succeeded"
+        else
+          echo "pyopmspe11 failed"
+          exit 1
+        fi

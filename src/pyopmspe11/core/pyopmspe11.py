@@ -140,7 +140,7 @@ def load_parser(argv: list[str] | None) -> dict:
             "dense_performance_sparse",
             "all",
         ],
-        help="Type of fata to generate",
+        help="Type of data to generate",
     )
     parser.add_argument(
         "-w",

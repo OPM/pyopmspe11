@@ -149,7 +149,7 @@ You can install it by typing in the terminal:</p>
 <p>In a <a class="reference external" href="https://link.springer.com/article/10.1007/s11242-025-02275-0">recent paper</a> to history match the FluidFlower data using the laboratory images, a more regular coner-point grid
 was used consisting in 11 levels instead of 18 as the submitted results for the SPE11 benchmark. Then, the corner-point grid from that paper has been included in the
 <strong>pyopmspe11</strong> tool. To use this corner-point grid, then one needs to give an array of size 11 for the variable “z_n” in the toml files. For example, in the
-<a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/spe11b.toml">spe11b.toml</a> in the examples folder, setting z_n to [3, 2, 2, 2, 3, 2, 2, 8, 4, 8, 8, 1] and
+<a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/examples/spe11b.toml">spe11b.toml</a> in the examples folder, setting z_n to [2, 2, 2, 3, 2, 2, 8, 4, 8, 8, 1] and
 saving the configuration file as spe11b_11-levels.toml, running them (we add the flag <strong>-f 0</strong> to generate the deck and simulation files in the output folder, i.e., no subfolders deck and flow), and using <strong>plopm</strong> to generate the figure:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b.toml<span class="w"> </span>-o<span class="w"> </span>18_levels<span class="w"> </span>-f<span class="w"> </span><span class="m">0</span>
 pyopmspe11<span class="w"> </span>-i<span class="w"> </span>spe11b_11-levels.toml<span class="w"> </span>-o<span class="w"> </span>11_levels<span class="w"> </span>-f<span class="w"> </span><span class="m">0</span>
