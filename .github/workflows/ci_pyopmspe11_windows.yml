@@ -1,0 +1,50 @@
+name: Windows
+
+on:
+ push:
+   branches:
+     - main
+   
+jobs:
+  run-pyopmspe11-windows:
+    permissions:
+      contents: read
+      pull-requests: write
+    timeout-minutes: 30
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install python requirements
+        shell: pwsh
+        run: |
+          python -m venv vpyopmspe11
+          .\vpyopmspe11\Scripts\Activate.ps1
+          "$env:GITHUB_WORKSPACE\vpyopmspe11\Scripts" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          python -m pip install --upgrade pip setuptools wheel
+          pip install git+https://github.com/daavid00/pyopmspe11.git@dev
+
+      - name: Run a simple example using pyopmspe11
+        shell: pwsh
+        run: |
+          pyopmspe11 -i examples/spe11b.toml -o spe11b -m deck -f 0
+
+      - name: Check if the deck was generated
+        shell: pwsh
+        run: |
+          $file = "$env:GITHUB_WORKSPACE\spe11b\SPE11B.DATA"
+
+          if (Test-Path $file) {
+            Write-Output "pyopmspe11 succeeded"
+          }
+          else {
+            Write-Output "pyopmspe11 failed"
+            exit 1
+          }

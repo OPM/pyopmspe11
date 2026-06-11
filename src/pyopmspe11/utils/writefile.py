@@ -4,6 +4,8 @@
 
 """Utility functions to write necessary files and variables"""
 
+import os
+import sys
 import subprocess
 from pathlib import Path
 import numpy as np
@@ -198,6 +200,7 @@ def compact_format_numeric(v: NDArray) -> list:
 
 def opm_files(cfg: Config) -> None:
     """Write opm-related files by running mako templates"""
+    deckfol = Path(cfg.deckfol)
     mytemplate = Template(filename=f"{cfg.pat}/templates/co2/{cfg.spe11}.mako")
     filledtemplate = mytemplate.render(
         nxyz=cfg.nxyz,
@@ -228,27 +231,29 @@ def opm_files(cfg: Config) -> None:
         tuning=cfg.tuning,
         drsdtcon=cfg.drsdtcon,
     )
-    with open(
-        f"{cfg.deckfol}/{cfg.fol.split('/')[-1].upper()}.DATA", "w", encoding="utf8"
-    ) as file:
+    filename = Path(cfg.fol).name.upper() + ".DATA"
+    filepath = deckfol / filename
+    with open(filepath, "w", encoding="utf8") as file:
         file.write(filledtemplate)
     mytemplate = Template(
         filename=f"{cfg.pat}/templates/common/saturation_functions.mako"
     )
+    deckfol = Path(cfg.deckfol)
     filledtemplate = mytemplate.render(
         s_w=cfg.s_w,
         krw_expr=cfg.krw,
         krn_expr=cfg.krn,
         pcap_expr=cfg.pcap,
         safu=cfg.safu,
-        deckfol=cfg.deckfol,
+        deckfol=deckfol.as_posix(),
     )
-    script = f"{cfg.deckfol}/saturation_functions.py"
+    script = deckfol / "saturation_functions.py"
     with open(script, "w", encoding="utf8") as file:
         file.write(filledtemplate)
-    subprocess.run(["chmod", "u+x", script], check=True)
-    subprocess.run(["python3", script], check=True)
-    Path(script).unlink(missing_ok=True)
+    if os.name != "nt":
+        subprocess.run(["chmod", "u+x", str(script)], check=True)
+    subprocess.run([sys.executable, str(script)], check=True)
+    script.unlink(missing_ok=True)
 
 
 def write_regular_spe11c_grid(
