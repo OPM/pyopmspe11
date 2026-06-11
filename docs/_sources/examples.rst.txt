@@ -40,7 +40,7 @@ Then, we run the simulations:
     pyopmspe11 -i convective.toml -o convective -m deck_flow_data -w 1
 
 Here we have just set the framework to generate the deck, run the simulations, and generate the performance and sparse data (default value for **-g**).
-Then, to visualize the comparison between both runs, this can be achived by executing:
+Then, to visualize the comparison between both runs, this can be achieved by executing:
 
 .. code-block:: bash
 
@@ -68,7 +68,7 @@ This example uses a very coarser grid to run fast. See the :doc:`benchmark <./be
 ===========================
 Cp grids (11 and 18 levels)
 ===========================
-In a `recent paper <https://link.springer.com/article/10.1007/s11242-025-02275-0>`_ to history match the FluidFlower data using the laboratory images, a more regular coner-point grid
+In a `recent paper <https://link.springer.com/article/10.1007/s11242-025-02275-0>`_ to history match the FluidFlower data using the laboratory images, a more regular corner-point grid
 was used consisting in 11 levels instead of 18 as the submitted results for the SPE11 benchmark. Then, the corner-point grid from that paper has been included in the
 **pyopmspe11** tool. To use this corner-point grid, then one needs to give an array of size 11 for the variable "z_n" in the toml files. For example, in the
 `spe11b.toml <https://github.com/OPM/pyopmspe11/blob/main/examples/spe11b.toml>`_ in the examples folder, setting z_n to [2, 2, 2, 3, 2, 2, 8, 4, 8, 8, 1] and

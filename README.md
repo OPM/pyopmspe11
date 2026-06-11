@@ -42,7 +42,7 @@ pip install -e .
 pip install -r dev-requirements.txt
 ```
 
-To generate only the input files (e.g., .DATA, .GRID, .INC), this does not required to have OPM Flow installed, and in principle should work in Windows without using the subsystem for Linux. Then, one could always generate a deck with the grid and all include files, and modify them in order to use other simulators different than OPM Flow.
+To generate only the input files (e.g., .DATA, .GRID, .INC), this does not required to have OPM Flow installed, and works in Windows without using the subsystem for Linux (see [_ci_pyopmspe11_windows.yml_](https://github.com/OPM/pyopmspe11/actions/workflows/ci_pyopmspe11_windows.yml)). Then, one could always generate a deck with the grid and all include files, and modify them in order to use other simulators different than OPM Flow.
 
 If you are insterested in running the cases via ***pyopmspe11*** and generating the CSV files with the benchmark format, then you will first need to install
 * Flow (https://opm-project.org, Release 2026.04 or current master branches)
