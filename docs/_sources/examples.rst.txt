@@ -27,7 +27,7 @@ compare your example results to this figure to evaluate if your example ran corr
 
         pyopmspe11 -i spe11b.toml -o spe11b -m deck
     
-    This does not required to have OPM Flow installed, and in principle should work in Windows without using the subsystem for Linux.
+    This does not required to have OPM Flow installed, and works in Windows without using the subsystem for Linux (see `ci_pyopmspe11_windows.yml <https://github.com/opm/pyopmspe11/blob/main/.github/workflows/ci_pyopmspe11_windows.yml>`_).
     Then, one could always generate a deck with the grid and all include files, and modify them in order to use other simulators different than OPM Flow. 
 
 Let us now change the model type from complete to immiscible, isothermal, and convective in line 7 of the configuration file, saving the toml file to these three model respectively.

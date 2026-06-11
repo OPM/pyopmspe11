@@ -1,5 +1,6 @@
 [![Build Status](https://github.com/OPM/pyopmspe11/actions/workflows/ci_pyopmspe11_ubuntu.yml/badge.svg)](https://github.com/OPM/pyopmspe11/actions/workflows/ci_pyopmspe11_ubuntu.yml)
 [![Build Status](https://github.com/OPM/pyopmspe11/actions/workflows/ci_pyopmspe11_macos.yml/badge.svg)](https://github.com/OPM/pyopmspe11/actions/workflows/ci_pyopmspe11_macos.yml)
+[![Build Status](https://github.com/OPM/pyopmspe11/actions/workflows/ci_pyopmspe11_windows.yml/badge.svg)](https://github.com/OPM/pyopmspe11/actions/workflows/ci_pyopmspe11_windows.yml)
 [![Build Status](https://github.com/OPM/pyopmspe11/actions/workflows/ci_pyopmspe11_docker.yml/badge.svg)](https://github.com/OPM/pyopmspe11/actions/workflows/ci_pyopmspe11_docker.yml)
 <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.11%20to%203.14-blue.svg"></a>
 [![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
