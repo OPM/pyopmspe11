@@ -90,7 +90,7 @@ def load_parser(argv: list[str] | None) -> dict:
             "all",
         ],
         default="deck_flow",
-        help="Parts of pyopmsoe11 to run",
+        help="Parts of pyopmspe11 to run",
     )
     parser.add_argument(
         "-c",
