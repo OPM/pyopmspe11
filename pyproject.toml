@@ -29,7 +29,7 @@ dependencies = [
     "alive_progress",
     "mako",
     "matplotlib",
-    "opm",
+    "opm; platform_system != 'Windows'",
     "pyarrow",
     "rtree",
     "scipy",

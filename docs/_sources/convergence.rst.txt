@@ -54,7 +54,7 @@ In general to generate a GIF and compare results, **plopm** can also be used. Fo
 
 .. code-block:: bash
     
-    plopm -i 'spe11b/opm4/spe11b_spatial_map_PLOPMy spe11b/cau-kiel1/spe11b_spatial_map_PLOPMy' -r 0:1000:25 -csv '1,2,5' -m gif -interval 1000 -loop 1 -subfigs 2,1 -tunits years -t 'OPM4  CAU-KIEL1' -c cet_CET_CBTL1_r -clabel 'CO$_2$ mass fraction in liquid [-]' -cbsfax 0.35,0.87,0.3,0.02 -delax 1
+    plopm -i 'spe11b/opm4/spe11b_spatial_map_PLOPMy spe11b/cau-kiel1/spe11b_spatial_map_PLOPMy' -r 0:1000:25 -csv '1,2,5' -m gif -interval 1000 -loop 1 -subfigs 2,1 -tunits y -t 'OPM4  CAU-KIEL1' -c cet_CET_CBTL1_r -clabel 'CO$_2$ mass fraction in liquid [-]' -cbsfax 0.35,0.87,0.3,0.02 -delax 1
 
 .. image:: figs/csv.gif
 

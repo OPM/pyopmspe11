@@ -110,6 +110,10 @@
 <dt class="sig sig-object py" id="pyopmspe11.utils.inputvalues.process_input">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.utils.inputvalues.</span></span><span class="sig-name descname"><span class="pre">process_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pyopmspe11.config.config.html#pyopmspe11.config.config.Config" title="pyopmspe11.config.config.Config"><span class="pre">Config</span></a></span></span><a class="headerlink" href="#pyopmspe11.utils.inputvalues.process_input" title="Link to this definition"></a></dt>
 <dd><p>Process configuration input.</p>
+<p>The function constructs a <code class="docutils literal notranslate"><span class="pre">Config</span></code> object from CLI and file input, then
+mutates it in place during post-processing (for example via
+<code class="docutils literal notranslate"><span class="pre">setcaseproperties</span></code>, <code class="docutils literal notranslate"><span class="pre">postprocesstoml</span></code>, and optional tuning flag
+updates) before returning it.</p>
 </dd></dl>
 
 <dl class="py function">

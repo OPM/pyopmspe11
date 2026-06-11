@@ -1,13 +1,10 @@
-name: Run pyopmspe11
+name: Ubuntu
 
 on:
- push:
-   branches:
-     - main
  pull_request:
    
 jobs:
-  run-pyopmspe11-local:
+  run-pyopmspe11-ubuntu:
     permissions:
       contents: read
       pull-requests: write
@@ -15,9 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
     - name: Set up Python 3.12
       uses: actions/setup-python@v2
@@ -45,14 +41,14 @@ jobs:
         
     - name: Check code style and linting 
       run: |
-        black --target-version py312 --check src/ tests/ convergence/
+        black --target-version py312 src/ tests/ convergence/ --check
         pylint src/ tests/ convergence/
         ruff check src/ tests/ convergence/
         mypy --ignore-missing-imports src/ tests/ convergence/
       
     - name: Run the tests
       run: |
-        pytest --cov=pyopmspe11 --exitfirst --cov-report term-missing --basetemp=test_outputs tests/
+        pytest --cov=pyopmspe11 --cov-report term-missing --basetemp=test_outputs tests/ --exitfirst
         
     - name: Build documentation
       run: |

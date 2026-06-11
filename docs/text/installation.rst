@@ -78,7 +78,7 @@ supported either via source builds or through running a virtual machine.
 
 .. tip::
 
-    See the `CI.yml <https://github.com/opm/pyopmspe11/blob/main/.github/workflows/CI.yml>`_ script 
+    See the `ci_pyopmspe11_ubuntu.yml <https://github.com/opm/pyopmspe11/blob/main/.github/workflows/ci_pyopmspe11_ubuntu.yml>`_ script 
     for installation of OPM Flow (binary packages), LaTeX (optional) libraries, and the pyopmspe11 package in Ubuntu.
 
 Source build in Linux/Windows
