@@ -4,20 +4,21 @@
 
 """Script to plot the results"""
 
-import os
 import argparse
-import sys
-import shutil
 import math as mt
+import os
+import shutil
 import subprocess
-from io import StringIO
+import sys
 from dataclasses import dataclass
-import numpy as np
+from io import StringIO
+
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib import colors, ticker
-from numpy.typing import NDArray
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from numpy.typing import NDArray
 
 SECONDS_IN_YEAR = 31536000.0
 

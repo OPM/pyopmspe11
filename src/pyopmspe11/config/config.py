@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2023-2026 NORCE Research AS
 # SPDX-License-Identifier: GPL-3.0
 # pylint: disable=C0103, R0902
@@ -7,7 +6,6 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
 
 
 @dataclass(slots=True)
@@ -33,51 +31,51 @@ class Config:
     version: str
     model: str
     grid: str
-    dims: List[float]
-    x_n: List[int]
-    y_n: List[int]
-    z_n: List[int]
-    temperature: List[float]
+    dims: list[float]
+    x_n: list[int]
+    y_n: list[int]
+    z_n: list[int]
+    temperature: list[float]
     datum: float
     pressure: float
     kzMult: float
-    diffusion: List[float]
-    dispersion: List[float]
-    radius: List[float]
-    wellCoord: List[List[float]]
+    diffusion: list[float]
+    dispersion: list[float]
+    radius: list[float]
+    wellCoord: list[list[float]]
     krw: str
     krn: str
     pcap: str
     s_w: str
-    safu: List[List[float]]
-    rock: List[List[float]]
-    inj: List[List[float]]
+    safu: list[list[float]]
+    rock: list[list[float]]
+    inj: list[list[float]]
     # ------------------------------------------------------------------
     # TOML configuration optional (e.g., bc spe11a, convective mixing)
     # ------------------------------------------------------------------
-    spe11aBC: Optional[float] = 0
-    drsdtcon: Optional[List[List[str]]] = None
-    elevation: Optional[float] = None
-    backElevation: Optional[float] = None
-    rockCond: Optional[List[float]] = None
-    widthBuffer: Optional[float] = None
-    rockExtra: Optional[List[float]] = None
-    pvAdded: Optional[float] = None
-    wellCoordF: Optional[List[List[float]]] = None
+    spe11aBC: float | None = 0
+    drsdtcon: list[list[str]] | None = None
+    elevation: float | None = None
+    backElevation: float | None = None
+    rockCond: list[float] | None = None
+    widthBuffer: float | None = None
+    rockExtra: list[float] | None = None
+    pvAdded: float | None = None
+    wellCoordF: list[list[float]] | None = None
     # ------------------------------------------------------------------
     # SPE11 geometry and observation setup
     # ------------------------------------------------------------------
     maxelevation: float = 0
-    cut: Optional[float] = 0
-    nxyz: List[int] = field(default_factory=lambda: [0, 0, 0])
-    boxa: List[List[float]] = field(default_factory=lambda: [[0, 0, 0], [0, 0, 0]])
-    boxb: List[List[float]] = field(default_factory=lambda: [[0, 0, 0], [0, 0, 0]])
-    boxc: List[List[float]] = field(default_factory=lambda: [[0, 0, 0], [0, 0, 0]])
-    sensors: List[List[float]] = field(default_factory=lambda: [[0, 0, 0], [0, 0, 0]])
-    sensorijk: List[List[int]] = field(default_factory=lambda: [[0, 0, 0], [0, 0, 0]])
-    wellijk: List[List[int]] = field(default_factory=lambda: [[0, 0, 0], [0, 0, 0]])
-    wellijkf: List[List[int]] = field(default_factory=lambda: [[0, 0, 0], [0, 0, 0]])
-    wellkh: Optional[List[int]] = field(default_factory=lambda: [])
+    cut: float | None = 0
+    nxyz: list[int] = field(default_factory=lambda: [0, 0, 0])
+    boxa: list[list[float]] = field(default_factory=lambda: [[0, 0, 0], [0, 0, 0]])
+    boxb: list[list[float]] = field(default_factory=lambda: [[0, 0, 0], [0, 0, 0]])
+    boxc: list[list[float]] = field(default_factory=lambda: [[0, 0, 0], [0, 0, 0]])
+    sensors: list[list[float]] = field(default_factory=lambda: [[0, 0, 0], [0, 0, 0]])
+    sensorijk: list[list[int]] = field(default_factory=lambda: [[0, 0, 0], [0, 0, 0]])
+    wellijk: list[list[int]] = field(default_factory=lambda: [[0, 0, 0], [0, 0, 0]])
+    wellijkf: list[list[int]] = field(default_factory=lambda: [[0, 0, 0], [0, 0, 0]])
+    wellkh: list[int] | None = field(default_factory=list)
     # ------------------------------------------------------------------
     # Miscellaneous runtime flags and metadata
     # ------------------------------------------------------------------

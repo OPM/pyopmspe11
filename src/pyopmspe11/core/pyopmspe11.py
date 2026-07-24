@@ -4,15 +4,15 @@
 
 """Main script for pyopmspe11"""
 
-import os
-import sys
 import argparse
+import os
 import subprocess
+import sys
 
-from pyopmspe11.utils.inputvalues import process_input, check_deck
-from pyopmspe11.utils.runs import simulations, plotting, data
-from pyopmspe11.visualization.plotting import plot_results
+from pyopmspe11.utils.inputvalues import check_deck, process_input
 from pyopmspe11.utils.mapproperties import generate_files
+from pyopmspe11.utils.runs import data, plotting, simulations
+from pyopmspe11.visualization.plotting import plot_results
 
 
 def main(argv: list[str] | None = None) -> None:

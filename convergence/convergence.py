@@ -3,9 +3,10 @@
 
 """Script to reproduce the results in https://doi.org/10.2118/231853-PA"""
 
-import os
 import csv
+import os
 import subprocess
+
 import numpy as np
 from mako.template import Template
 
@@ -178,11 +179,11 @@ if not os.path.isdir("spe11b"):  # Skip if the data has been downloaded
         )
         run_command(f"unzip {file_id}")
         os.remove(str(file_id))
-        latest = sorted(
+        latest = max(
             name
             for name in os.listdir("spe11b")
             if os.path.isdir(os.path.join("spe11b", name))
-        )[-1]
+        )
         folder_path = f"spe11b/{latest}"
         for item in os.listdir(folder_path):
             item_path = os.path.join(folder_path, item)

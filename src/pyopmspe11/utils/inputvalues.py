@@ -5,13 +5,14 @@
 """Utility functions to set required input values for pyopmspe11."""
 
 import csv
-import sys
 import os
-from io import StringIO
-from typing import Any
 import subprocess
-from subprocess import PIPE
+import sys
 import tomllib
+from io import StringIO
+from subprocess import PIPE
+from typing import Any
+
 import numpy as np
 
 from pyopmspe11.config.config import Config
@@ -45,8 +46,7 @@ def process_input(cli: dict) -> Config:
     else:
         lines = []
         with open(cli["input"], "r", encoding="utf8") as file:
-            for row in csv.reader(file, delimiter="#"):
-                lines.append(row)
+            lines = list(csv.reader(file, delimiter="#"))
         cfg_file = load_config_txt(lines)
     cfg = Config(
         fol=os.path.abspath(cli["output"]),

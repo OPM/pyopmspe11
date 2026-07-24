@@ -3,8 +3,8 @@
 
 """Compare the content of two folders"""
 
-import filecmp
 import argparse
+import filecmp
 import os
 
 
@@ -45,7 +45,7 @@ def main():
                 if file.endswith(ext):
                     afile = os.path.join(root, file)
                     bfile = os.path.join(
-                        bfolder + "/" + "/".join((root.split("/")[1:])), file
+                        bfolder + "/" + "/".join(root.split("/")[1:]), file
                     )
                     assert os.path.isfile(bfile), f"File {bfile} does not exist"
                     is_equal = filecmp.cmp(afile, bfile, shallow=False)
