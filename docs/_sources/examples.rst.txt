@@ -19,6 +19,7 @@ compare your example results to this figure to evaluate if your example ran corr
 
 .. figure:: figs/spe11b_tco2_2Dmaps.png
 
+This example uses a very coarser grid to run fast. See the :doc:`benchmark <./benchmark>` section for finer grids.
 
 .. note::
     To generate only the input files, this can be achieved by executing:
@@ -53,17 +54,25 @@ The following are some of the figures generated in the compare folder:
 
     The immiscible and isothermal simulations run faster since they have less dof.
 
+The `plopm <https://github.com/cssr-tools/plopm>`_ tool facilitates the visualization of selected results, and can be installed by:
+
+.. code-block:: bash
+    
+    pip install git+https://github.com/cssr-tools/plopm.git
+
+For example, the following figures are generates with the commands:
+
+.. code-block:: bash
+
+    plopm -i isothermal/flow/ISOTHERMAL -v sgas -t 'Isothermal simulation (end of simulation)'
+    plopm -i 'immiscible/data/spe11b_time_series convective/data/spe11b_time_series' -csv 1,4 -labels "Immiscible  Convective" -tunits y -ylabel 'mobA [kg]' -xformat .0f -x '[0,25]' -xlnum 6 -f 20 -d 10,5 -yformat .1e -e 'solid,solid' -lw 4
+
+.. figure:: figs/plopm_hello_world.png
+
 .. tip::
 
     `This example <https://cssr-tools.github.io/plopm/examples.html#reading-from-csv-files>`_ shows how to use `plopm <https://github.com/cssr-tools/plopm>`_ to
     generate nice figures to compare simulation results (both from csv files (e.g., using the `benchmark data set <https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4750>`_ ) and from OPM Flow output files).
-    You can install it by typing in the terminal:
-    
-    .. code-block:: bash
-    
-        pip install git+https://github.com/cssr-tools/plopm.git
-
-This example uses a very coarser grid to run fast. See the :doc:`benchmark <./benchmark>` section for finer grids. 
 
 ===========================
 Cp grids (11 and 18 levels)

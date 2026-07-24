@@ -4,21 +4,21 @@
 
 """Utility function for the grid and locations in the geological models."""
 
-import sys
 import csv
+import sys
 from contextlib import nullcontext
+
 import numpy as np
-from shapely.geometry import Point, Polygon
-from shapely.prepared import prep
 from alive_progress import alive_bar
 from numpy.typing import NDArray
-
+from shapely.geometry import Point, Polygon
+from shapely.prepared import prep
 
 from pyopmspe11.config.config import Config
 from pyopmspe11.utils.writefile import (
     create_corner_point_grid,
-    write_keywords,
     opm_files,
+    write_keywords,
     write_regular_spe11c_grid,
 )
 
@@ -136,8 +136,7 @@ def structured_handling_spe11a(
     w = 1.0 if cfg.spe11 == "spe11a" else 1200.0 / 1.2
     ztopbot = cfg.dims[2] - 0.644 * w
     zmidbot = cfg.dims[2] - 0.265 * w
-    if cfg.lower:
-        lowpoly = get_lower_polygon(cfg)
+    lowpoly = get_lower_polygon(cfg) if cfg.lower else Polygon()
     xmx, ymy, zmz = prepare_structured_grid(cfg)
     xcent, ycent, zcent = vertices_centers(xmx, ymy, zmz)
     nxz = cfg.nxyz[0] * cfg.nxyz[2]
@@ -160,9 +159,8 @@ def structured_handling_spe11a(
                     if polygons[ind].contains(Point(xcent[i], zcent[k])):
                         n = facies[ind]
                         break
-                if cfg.lower:
-                    if not lowpoly.contains(Point(xcent[i], zcent[k])):
-                        n = 7
+                if cfg.lower and not lowpoly.contains(Point(xcent[i], zcent[k])):
+                    n = 7
                 fluxnum[gind] = n
                 fipnum[gind] = boxes(
                     cfg,
@@ -314,10 +312,12 @@ def add_pv_fipnum_front_back(
     pv_added = cfg.pvAdded + cfg.widthBuffer
     for k in range(no_cells_z):
         for i in range(no_cells_x - 2):
-            if grid != "corner-point":
-                if cfg.lower:
-                    if not lowpoly.contains(Point(xcent[i], zcent[k])):
-                        continue
+            if (
+                grid != "corner-point"
+                and cfg.lower
+                and not lowpoly.contains(Point(xcent[i], zcent[k]))
+            ):
+                continue
             ind = i + 1 + k * no_cells_x * no_cells_y
             n = fluxnum[ind]
             if n not in (0, 1, 7):
@@ -871,9 +871,8 @@ def get_lines(cfg: Config, points: list[Point]):
                         lines[-1].append([points[idx0][0], points[idx0][1]])
                     idx1 = int(line[3][:-2]) - 1
                     lines[-1].append([points[idx1][0], points[idx1][1]])
-                if len(line) > 1:
-                    if line[1] == "Horizont":
-                        lines.append([])
+                if len(line) > 1 and line[1] == "Horizont":
+                    lines.append([])
         lines = lines[::-1]
     return lines
 
@@ -941,7 +940,7 @@ def corner(
     res = zcoord[-1]
     n_z = int(np.where(zcoord == res)[0][0])
     res = xcoord[xcoord > 0][0]
-    n_x = int(round(len(xcoord) / np.where(xcoord == res)[0][0])) - 1
+    n_x = round(len(xcoord) / np.where(xcoord == res)[0][0]) - 1
     cfg.nxyz[0], cfg.nxyz[2] = n_x, n_z
     xcoord, zcoord, cfg.nxyz[0], cfg.nxyz[2] = refinement_z(
         xcoord, zcoord, cfg.nxyz[2], cfg.z_n[shf:]

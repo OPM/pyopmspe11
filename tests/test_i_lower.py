@@ -5,6 +5,7 @@
 
 import pathlib
 import subprocess
+
 import numpy as np
 
 testpth: pathlib.Path = pathlib.Path(__file__).parent

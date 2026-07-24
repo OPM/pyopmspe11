@@ -9,17 +9,17 @@ jobs:
   run-pyopmspe11-macos:
     permissions:
       contents: read
-      pull-requests: write
     timeout-minutes: 90
-    runs-on: macos-latest
+    runs-on: macos-26
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Install OPM Flow
       run: |
-        brew install cssr-tools/opm/opm-simulators
+        brew tap cssr-tools/opm
+        brew trust cssr-tools/opm
+        brew install cssr-tools/opm/opm-simulators -y
 
     - name: Install python requirements
       run: |

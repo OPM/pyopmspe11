@@ -4,6 +4,7 @@
 """Test the different models (immiscible, isothermal, convective, and complete)"""
 
 import pathlib
+
 from mako.template import Template
 
 from pyopmspe11.core.pyopmspe11 import main

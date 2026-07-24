@@ -4,10 +4,10 @@
 
 """Compare Cartesian and corner-point files used in the benchmark"""
 
-import pathlib
-import subprocess
 import filecmp
+import pathlib
 import shutil
+import subprocess
 
 testpth = pathlib.Path(__file__).parent
 mainpth = pathlib.Path(__file__).parents[1]

@@ -7,19 +7,21 @@
 import argparse
 import csv
 import sys
-from io import StringIO
-from dataclasses import dataclass
 from contextlib import nullcontext
-from shapely.geometry import Polygon
-from alive_progress import alive_bar
-from rtree import index
+from dataclasses import dataclass
+from io import StringIO
+from itertools import pairwise
+
 import numpy as np
+from alive_progress import alive_bar
 from numpy.typing import NDArray
-from scipy.interpolate import interp1d
 from opm.io.ecl import EclFile as OpmFile
 from opm.io.ecl import EGrid as OpmGrid
 from opm.io.ecl import ERst as OpmRestart
 from opm.io.ecl import ESmry as OpmSummary
+from rtree import index
+from scipy.interpolate import interp1d
+from shapely.geometry import Polygon
 
 GAS_DEN_REF = 1.86843
 WAT_DEN_REF = 998.108
@@ -611,7 +613,8 @@ def extract_boundary_pressures(
     pcgw = sim.unrst["PCGW", 0]
     index_pop1 = fipnum.index(8)
     pop1_value = (pressure[index_pop1] - pcgw[index_pop1]) * 1.0e5
-    summary_keys = [key for key in sim.smspec.keys() if key.startswith("BWPR")]
+    keys = sim.smspec.keys()
+    summary_keys = [key for key in keys if key.startswith("BWPR")]
     summary_keys.sort()
     pop1 = [pop1_value] + list(sim.smspec[summary_keys[0]] * 1.0e5)
     if cfg.lower:
@@ -703,25 +706,25 @@ def write_sparse_csv(cfg: BenchmarkConfig, sparse: dict) -> None:
     with open(path, "w", encoding="utf8") as file:
         if cfg.case == "spe11a":
             file.write(header)
-            for i, time_val in enumerate(times):
-                file.write(
-                    f"\n{time_val:.3e}, {pop1[i]:.5e}, {pop2[i]:.5e}, "
-                    f"{moba[i]:.3e}, {imma[i]:.3e}, {dissa[i]:.3e}, "
-                    f"{seala[i]:.3e}, {mobb[i]:.3e}, {immb[i]:.3e}, "
-                    f"{dissb[i]:.3e}, {sealb[i]:.3e}, {mc[i]:.3e}, "
-                    f"{sealt[i]:.3e}"
-                )
+            file.writelines(
+                f"\n{time_val:.3e}, {pop1[i]:.5e}, {pop2[i]:.5e}, "
+                f"{moba[i]:.3e}, {imma[i]:.3e}, {dissa[i]:.3e}, "
+                f"{seala[i]:.3e}, {mobb[i]:.3e}, {immb[i]:.3e}, "
+                f"{dissb[i]:.3e}, {sealb[i]:.3e}, {mc[i]:.3e}, "
+                f"{sealt[i]:.3e}"
+                for i, time_val in enumerate(times)
+            )
         else:
             file.write(header + ", boundTot [kg]")
             boundtot = sparse["boundtot"]
-            for i, time_val in enumerate(times):
-                file.write(
-                    f"\n{time_val:.4e}, {pop1[i]:.3e}, {pop2[i]:.3e}, "
-                    f"{moba[i]:.3e}, {imma[i]:.3e}, {dissa[i]:.3e}, "
-                    f"{seala[i]:.3e}, {mobb[i]:.3e}, {immb[i]:.3e}, "
-                    f"{dissb[i]:.3e}, {sealb[i]:.3e}, {mc[i]:.3e}, "
-                    f"{sealt[i]:.3e}, {boundtot[i]:.3e}"
-                )
+            file.writelines(
+                f"\n{time_val:.4e}, {pop1[i]:.3e}, {pop2[i]:.3e}, "
+                f"{moba[i]:.3e}, {imma[i]:.3e}, {dissa[i]:.3e}, "
+                f"{seala[i]:.3e}, {mobb[i]:.3e}, {immb[i]:.3e}, "
+                f"{dissb[i]:.3e}, {sealb[i]:.3e}, {mc[i]:.3e}, "
+                f"{sealt[i]:.3e}, {boundtot[i]:.3e}"
+                for i, time_val in enumerate(times)
+            )
 
 
 def dense_data(cfg: BenchmarkConfig, sim: SimulationData) -> None:
@@ -1088,8 +1091,7 @@ def write_dense_csv(
     path = f"{cfg.where}/{cfg.case}_spatial_map_{name_t}.csv"
     with open(path, "w", encoding="utf8") as file:
         file.write("\n".join(text))
-        idz = 0
-        for zcord in refzcent:
+        for idz, zcord in enumerate(refzcent):
             idxy = 0
             for ycord in refycent:
                 for xcord in refxcent:
@@ -1142,7 +1144,6 @@ def write_dense_csv(
                             )
                     file.write("\n" + row)
                     idxy += 1
-            idz += 1
 
 
 def handle_yaxis_mapping_extensive(
@@ -1159,7 +1160,7 @@ def handle_yaxis_mapping_extensive(
     weights = []
     indy = []
     ind = 0
-    for y_i, y_f in zip(simyvert[:-1], simyvert[1:]):
+    for y_i, y_f in pairwise(simyvert):
         if refyvert[ind + 1] <= y_i:
             ind += 1
         if refyvert[ind] <= y_i and y_f <= refyvert[ind + 1]:
@@ -1427,8 +1428,7 @@ def write_dense_performance_spatial(
                 "# x [m], y [m], z [m], cvol [m^3], arat [-], CO2 max_norm_res [-], "
                 "H2O max_norm_res [-], CO2 mb_error [-], H2O mb_error [-], post_est [-]"
             )
-        idz = 0
-        for zcord in refzcent:
+        for idz, zcord in enumerate(refzcent):
             idxy = 0
             basez = -nx * ny * (nz - idz)
             for ycord in refycent:
@@ -1459,7 +1459,6 @@ def write_dense_performance_spatial(
                                 f"{co2mb[idc]:.3e}, {h2omb[idc]:.3e}, n/a"
                             )
                     idxy += 1
-            idz += 1
 
 
 def generate_arrays(
@@ -1520,9 +1519,9 @@ def generate_arrays(
     arrays["tco2_refg"] = tco2_refg
     if cfg.lower and sim.cornpoint:
         pad = np.full(sim.simdim[0] * sim.simdim[1], np.nan)
-        for key in arrays:
+        for key, value in arrays.items():
             if key.endswith("_array") and key != "tco2_array":
-                arrays[key] = np.insert(arrays[key], 0, pad)
+                arrays[key] = np.insert(value, 0, pad)
     return arrays
 
 

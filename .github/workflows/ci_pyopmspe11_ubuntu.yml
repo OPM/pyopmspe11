@@ -1,27 +1,17 @@
 name: Ubuntu
 
 on:
- push:
-   branches:
-     - main
  pull_request:
    
 jobs:
   run-pyopmspe11-ubuntu:
     permissions:
       contents: read
-      pull-requests: write
     timeout-minutes: 60
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Set up Python 3.12
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.12
+    - uses: actions/checkout@v5
     
     - name: Install Flow Simulator
       run: |
@@ -29,22 +19,20 @@ jobs:
         sudo apt-get install software-properties-common
         sudo apt-add-repository ppa:opm/ppa
         sudo apt-get update
-        sudo apt-get install mpi-default-bin
-        sudo apt-get install libopm-simulators-bin
-        sudo apt-get install texlive-fonts-recommended texlive-fonts-extra dvipng cm-super
+        sudo apt-get install mpi-default-bin libopm-simulators-bin texlive-fonts-recommended texlive-fonts-extra dvipng cm-super
         
-    - name: Install dependecies
+    - name: Install pyopmspe11 and python requirements
       run: |
+        python3.14 -m venv vpyopmspe11
+        . vpyopmspe11/bin/activate
+        echo "$PWD/vpyopmspe11/bin" >> $GITHUB_PATH
         pip install --upgrade pip setuptools wheel
-        pip install -r dev-requirements.txt
-        
-    - name: Install pyopmspe11
-      run: |
         pip install .
+        pip install -r dev-requirements.txt
         
     - name: Check code style and linting 
       run: |
-        black --target-version py312 src/ tests/ convergence/ --check
+        black --target-version py314 src/ tests/ convergence/ --check
         pylint src/ tests/ convergence/
         ruff check src/ tests/ convergence/
         mypy --ignore-missing-imports src/ tests/ convergence/
@@ -56,4 +44,4 @@ jobs:
     - name: Build documentation
       run: |
         pushd docs
-        make html
+        make html SPHINXOPTS="-W"

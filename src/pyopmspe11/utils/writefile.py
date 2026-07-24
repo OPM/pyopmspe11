@@ -5,12 +5,13 @@
 """Utility functions to write necessary files and variables"""
 
 import os
-import sys
 import subprocess
+import sys
 from pathlib import Path
+
 import numpy as np
-from numpy.typing import NDArray
 from mako.template import Template
+from numpy.typing import NDArray
 
 from pyopmspe11.config.config import Config
 

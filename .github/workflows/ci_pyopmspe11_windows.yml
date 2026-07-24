@@ -1,26 +1,17 @@
 name: Windows
 
 on:
- push:
-   branches:
-     - main
+ pull_request:
    
 jobs:
   run-pyopmspe11-windows:
     permissions:
       contents: read
-      pull-requests: write
     timeout-minutes: 30
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
+      - uses: actions/checkout@v5
 
       - name: Install python requirements
         shell: pwsh

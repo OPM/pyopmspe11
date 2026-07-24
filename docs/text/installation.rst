@@ -117,7 +117,7 @@ Brew formula for macOS
 ++++++++++++++++++++++
 For macOS, there are no available binary packages, so OPM Flow needs to be built from source. Recently, a formula to build flow using brew has
 been added in `https://github.com/cssr-tools/homebrew-opm <https://github.com/cssr-tools/homebrew-opm>`_. 
-Then, you can try to install flow (v2026.02) by simply typing:
+Then, you can try to install flow (Interim Release v2026.07) by simply typing:
 
 .. code-block:: console
 
@@ -130,4 +130,4 @@ You can check if the installation of OPM Flow succeeded by typing in the termina
 
 Source build in macOS
 +++++++++++++++++++++
-See `this repository <https://github.com/daavid00/OPM-Flow_macOS>`_ dedicated to build OPM Flow from source in the latest macOS (GitHub actions), and tested with **pycopm**, a repository in cssr-tools.
+See `this repository <https://github.com/daavid00/OPM-Flow_macOS>`_ dedicated to build OPM Flow from source in macOS 26 (GitHub actions), and tested with **pycopm**, a repository in cssr-tools.
