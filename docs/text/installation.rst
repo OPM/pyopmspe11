@@ -14,7 +14,9 @@ The supported Python versions are 3.11 to 3.14.
 
     .. code-block:: bash
 
-        brew install cssr-tools/opm/resinsight
+        brew tap cssr-tools/opm
+        brew trust cssr-tools/opm
+        brew install cssr-tools/opm/resinsight -y
     
     Then, you should be able to open resinsight by typing in the terminal **resinsight**.
 
@@ -121,7 +123,9 @@ Then, you can try to install flow (Interim Release v2026.07) by simply typing:
 
 .. code-block:: console
 
-    brew install cssr-tools/opm/opm-simulators
+    brew tap cssr-tools/opm
+    brew trust cssr-tools/opm
+    brew install cssr-tools/opm/opm-simulators -y
 
 You can check if the installation of OPM Flow succeeded by typing in the terminal **flow \-\-help**.
 

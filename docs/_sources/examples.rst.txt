@@ -60,7 +60,7 @@ The `plopm <https://github.com/cssr-tools/plopm>`_ tool facilitates the visualiz
     
     pip install git+https://github.com/cssr-tools/plopm.git
 
-For example, the following figures are generates with the commands:
+For example, the following figures are generated with the commands:
 
 .. code-block:: bash
 
