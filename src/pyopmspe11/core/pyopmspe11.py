@@ -18,6 +18,7 @@ from pyopmspe11.visualization.plotting import plot_results
 def main(argv: list[str] | None = None) -> None:
     """Main entry point"""
     args = load_parser(argv)
+    check_cmdargs(args)
 
     if args["compare"]:
         print("\nCompare: Generating common plots to compare results, please wait.")
@@ -167,6 +168,114 @@ def load_parser(argv: list[str] | None) -> dict:
         help="Region to model (the default '' means the whole system)",
     )
     return vars(parser.parse_known_args(argv)[0])
+
+
+def check_cmdargs(cmdargs: dict[str, str]) -> None:
+    """Validate command-line arguments and incompatible operations.
+
+    The checks cover configuration and output names, spatial resolution,
+    reporting times and intervals, comparison mode, and options restricted
+    to data-generation workflows.
+
+    Parameters
+    ----------
+    cmdargs
+        Parsed arguments returned by :func:`load_parser`.
+
+    Raises
+    ------
+    SystemExit
+        If an argument is invalid or an incompatible combination is requested.
+    """
+    input_file = cmdargs["input"]
+    if not input_file:
+        print("\nInvalid value for '-i', the input file cannot be empty.\n")
+        raise SystemExit(1)
+    if not input_file.lower().endswith((".toml", ".txt")):
+        print(
+            f"\nInvalid extension for input file '-i {input_file}', "
+            "valid extensions are .toml or .txt.\n"
+        )
+        raise SystemExit(1)
+    if not cmdargs["output"]:
+        print("\nInvalid value for '-o', the output folder cannot be empty.\n")
+        raise SystemExit(1)
+    resolution = cmdargs["resolution"]
+    try:
+        resolution_values = [int(value.strip()) for value in resolution.split(",")]
+    except ValueError:
+        resolution_values = []
+    if len(resolution_values) != 3 or any(value <= 0 for value in resolution_values):
+        print(
+            f"\nInvalid value '-r {resolution}', expected three positive "
+            "integers separated by commas, e.g., '-r 8,1,5'.\n"
+        )
+        raise SystemExit(1)
+    time = cmdargs["time"]
+    try:
+        time_values = [float(value.strip()) for value in time.split(",")]
+    except ValueError:
+        time_values = []
+    if not time_values or any(value < 0 for value in time_values):
+        print(
+            f"\nInvalid value '-t {time}', expected non-negative numbers "
+            "separated by commas.\n"
+        )
+        raise SystemExit(1)
+    write = cmdargs["write"]
+    try:
+        write_value = float(write)
+    except ValueError:
+        write_value = 0
+    if write_value <= 0:
+        print(f"\nInvalid value '-w {write}', expected a positive number.\n")
+        raise SystemExit(1)
+    mode = cmdargs["mode"]
+    has_data = mode == "all" or "data" in mode
+    data_options = {
+        "-g": ("generate", "performance_sparse"),
+        "-r": ("resolution", "8,1,5"),
+        "-t": ("time", "5"),
+        "-w": ("write", "0.1"),
+    }
+    if not has_data:
+        invalid_options = [
+            option
+            for option, (name, default) in data_options.items()
+            if cmdargs[name] != default
+        ]
+        if invalid_options:
+            print(
+                f"\nInvalid option for '-m {mode}'; {', '.join(invalid_options)} "
+                "can only be used when the selected mode writes benchmark "
+                "data.\n"
+            )
+            raise SystemExit(1)
+    compare = cmdargs["compare"]
+    if compare:
+        compare_options = {
+            "-i": ("input", "input.toml"),
+            "-m": ("mode", "deck_flow"),
+            "-o": ("output", "output"),
+            "-t": ("time", "5"),
+            "-r": ("resolution", "8,1,5"),
+            "-g": ("generate", "performance_sparse"),
+            "-w": ("write", "0.1"),
+            "-f": ("subfolders", "1"),
+            "-n": ("neighbourhood", ""),
+        }
+        invalid_options = [
+            option
+            for option, (name, default) in compare_options.items()
+            if cmdargs[name] != default
+        ]
+        if invalid_options:
+            print(
+                "\nInvalid combination, '-c' runs the standalone comparison "
+                "workflow and cannot be combined with "
+                f"{', '.join(invalid_options)}.\n"
+            )
+            raise SystemExit(1)
 
 
 if __name__ == "__main__":

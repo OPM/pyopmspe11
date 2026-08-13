@@ -128,24 +128,31 @@ Then, to visualize the comparison between both runs, this can be achieved by exe
 <figure class="align-default">
 <img alt="_images/spe11b_sparse_data.png" src="_images/spe11b_sparse_data.png" />
 </figure>
-<figure class="align-default" id="id3">
+<figure class="align-default" id="id4">
 <img alt="_images/spe11b_performance.png" src="_images/spe11b_performance.png" />
 <figcaption>
-<p><span class="caption-text">The immiscible and isothermal simulations run faster since they have less dof.</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
+<p><span class="caption-text">The immiscible and isothermal simulations run faster since they have less dof.</span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
 </figcaption>
 </figure>
-<p>The <a class="reference external" href="https://github.com/cssr-tools/plopm">plopm</a> tool facilitates the visualization of selected results, and can be installed by:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference external" href="https://github.com/cssr-tools/plopm">plopm</a> facilitates the visualization of selected results, and can be installed by:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/cssr-tools/plopm.git
 </pre></div>
 </div>
-<p>For example, the following figures are generated with the commands:</p>
+</div>
+<p>For example, the following figures are generated using <a class="reference external" href="https://github.com/cssr-tools/plopm">plopm</a> with the commands:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>plopm<span class="w"> </span>-i<span class="w"> </span>isothermal/flow/ISOTHERMAL<span class="w"> </span>-v<span class="w"> </span>sgas<span class="w"> </span>-t<span class="w"> </span><span class="s1">&#39;Isothermal simulation (end of simulation)&#39;</span>
-plopm<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;immiscible/data/spe11b_time_series convective/data/spe11b_time_series&#39;</span><span class="w"> </span>-csv<span class="w"> </span><span class="m">1</span>,4<span class="w"> </span>-labels<span class="w"> </span><span class="s2">&quot;Immiscible  Convective&quot;</span><span class="w"> </span>-tunits<span class="w"> </span>y<span class="w"> </span>-ylabel<span class="w"> </span><span class="s1">&#39;mobA [kg]&#39;</span><span class="w"> </span>-xformat<span class="w"> </span>.0f<span class="w"> </span>-x<span class="w"> </span><span class="s1">&#39;[0,25]&#39;</span><span class="w"> </span>-xlnum<span class="w"> </span><span class="m">6</span><span class="w"> </span>-f<span class="w"> </span><span class="m">20</span><span class="w"> </span>-d<span class="w"> </span><span class="m">10</span>,5<span class="w"> </span>-yformat<span class="w"> </span>.1e<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;solid,solid&#39;</span><span class="w"> </span>-lw<span class="w"> </span><span class="m">4</span>
+plopm<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;immiscible/data/spe11b_time_series convective/data/spe11b_time_series&#39;</span><span class="w"> </span>-csv<span class="w"> </span><span class="m">1</span>,4<span class="w"> </span>-labels<span class="w"> </span><span class="s2">&quot;Immiscible  Convective&quot;</span><span class="w"> </span>-tunits<span class="w"> </span>y<span class="w"> </span>-ylabel<span class="w"> </span><span class="s1">&#39;mobA [kg]&#39;</span><span class="w"> </span>-xformat<span class="w"> </span>.0f<span class="w"> </span>-x<span class="w"> </span><span class="s1">&#39;[0,25]&#39;</span><span class="w"> </span>-xlnum<span class="w"> </span><span class="m">6</span><span class="w"> </span>-f<span class="w"> </span><span class="m">20</span><span class="w"> </span>-d<span class="w"> </span><span class="m">10</span>,5<span class="w"> </span>-yformat<span class="w"> </span>.1e<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;solid,solid&#39;</span><span class="w"> </span>-lw<span class="w"> </span><span class="m">4</span><span class="w"> </span>-step<span class="w"> </span><span class="m">1</span>
 </pre></div>
 </div>
 <figure class="align-default">
 <img alt="_images/plopm_hello_world.png" src="_images/plopm_hello_world.png" />
 </figure>
+<p>All previous commands can be executed from the main repository location as (<a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/tests/scripts/docs_hello_world.sh">docs_hello_world.sh</a>):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>.<span class="w"> </span>./tests/scripts/docs_hello_world.sh
+</pre></div>
+</div>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p><a class="reference external" href="https://cssr-tools.github.io/plopm/examples.html#reading-from-csv-files">This example</a> shows how to use <a class="reference external" href="https://github.com/cssr-tools/plopm">plopm</a> to
@@ -165,6 +172,10 @@ plopm<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;18_
 </pre></div>
 </div>
 <img alt="_images/11_levels_dz_i%2C1%2Ck_t5.png" src="_images/11_levels_dz_i%2C1%2Ck_t5.png" />
+<p>All previous commands can be executed from the main repository location as (<a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/tests/scripts/docs_cp_grids.sh">docs_cp_grids.sh</a>):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>.<span class="w"> </span>./tests/scripts/docs_cp_grids.sh
+</pre></div>
+</div>
 </section>
 <section id="localized-lower-domain">
 <h2>Localized lower domain<a class="headerlink" href="#localized-lower-domain" title="Link to this heading"></a></h2>
@@ -174,6 +185,10 @@ plopm<span class="w"> </span>-i<span class="w"> </span>lower_domain/LOWER_DOMAIN
 </pre></div>
 </div>
 <img alt="_images/lower_domain_pvtnum-1-satnum_i%2C14%2Ck_t5.png" src="_images/lower_domain_pvtnum-1-satnum_i%2C14%2Ck_t5.png" />
+<p>All previous commands can be executed from the main repository location as (<a class="reference external" href="https://github.com/OPM/pyopmspe11/blob/main/tests/scripts/docs_localized_lower_domain.sh">docs_localized_lower_domain.sh</a>):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>.<span class="w"> </span>./tests/scripts/docs_localized_lower_domain.sh
+</pre></div>
+</div>
 <p>See the <a class="reference internal" href="convergence.html"><span class="doc">convergence</span></a> for using the localized domain in the SPE11B corner-point grid case.</p>
 </section>
 </section>
