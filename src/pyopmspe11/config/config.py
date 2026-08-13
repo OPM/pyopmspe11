@@ -1,5 +1,5 @@
 # SPDX-FileCopyrightText: 2023-2026 NORCE Research AS
-# SPDX-License-Identifier: GPL-3.0
+# SPDX-License-Identifier: MIT
 # pylint: disable=C0103, R0902
 
 """Central configuration models for pyopmspe11"""

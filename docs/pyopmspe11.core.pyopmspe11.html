@@ -89,6 +89,23 @@
 <span id="pyopmspe11-core-pyopmspe11-module"></span><h1>pyopmspe11.core.pyopmspe11 module<a class="headerlink" href="#module-pyopmspe11.core.pyopmspe11" title="Link to this heading"></a></h1>
 <p>Main script for pyopmspe11</p>
 <dl class="py function">
+<dt class="sig sig-object py" id="pyopmspe11.core.pyopmspe11.check_cmdargs">
+<span class="sig-prename descclassname"><span class="pre">pyopmspe11.core.pyopmspe11.</span></span><span class="sig-name descname"><span class="pre">check_cmdargs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmdargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pyopmspe11.core.pyopmspe11.check_cmdargs" title="Link to this definition"></a></dt>
+<dd><p>Validate command-line arguments and incompatible operations.</p>
+<p>The checks cover configuration and output names, spatial resolution,
+reporting times and intervals, comparison mode, and options restricted
+to data-generation workflows.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cmdargs</strong> – Parsed arguments returned by <a class="reference internal" href="#pyopmspe11.core.pyopmspe11.load_parser" title="pyopmspe11.core.pyopmspe11.load_parser"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_parser()</span></code></a>.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>SystemExit</strong> – If an argument is invalid or an incompatible combination is requested.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="pyopmspe11.core.pyopmspe11.load_parser">
 <span class="sig-prename descclassname"><span class="pre">pyopmspe11.core.pyopmspe11.</span></span><span class="sig-name descname"><span class="pre">load_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#pyopmspe11.core.pyopmspe11.load_parser" title="Link to this definition"></a></dt>
 <dd><p>CLI arguments</p>

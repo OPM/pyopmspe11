@@ -54,20 +54,28 @@ The following are some of the figures generated in the compare folder:
 
     The immiscible and isothermal simulations run faster since they have less dof.
 
-The `plopm <https://github.com/cssr-tools/plopm>`_ tool facilitates the visualization of selected results, and can be installed by:
+.. note::
 
-.. code-block:: bash
-    
-    pip install git+https://github.com/cssr-tools/plopm.git
+    `plopm <https://github.com/cssr-tools/plopm>`_ facilitates the visualization of selected results, and can be installed by:
 
-For example, the following figures are generated with the commands:
+    .. code-block:: bash
+        
+        pip install git+https://github.com/cssr-tools/plopm.git
+
+For example, the following figures are generated using `plopm <https://github.com/cssr-tools/plopm>`_ with the commands:
 
 .. code-block:: bash
 
     plopm -i isothermal/flow/ISOTHERMAL -v sgas -t 'Isothermal simulation (end of simulation)'
-    plopm -i 'immiscible/data/spe11b_time_series convective/data/spe11b_time_series' -csv 1,4 -labels "Immiscible  Convective" -tunits y -ylabel 'mobA [kg]' -xformat .0f -x '[0,25]' -xlnum 6 -f 20 -d 10,5 -yformat .1e -e 'solid,solid' -lw 4
+    plopm -i 'immiscible/data/spe11b_time_series convective/data/spe11b_time_series' -csv 1,4 -labels "Immiscible  Convective" -tunits y -ylabel 'mobA [kg]' -xformat .0f -x '[0,25]' -xlnum 6 -f 20 -d 10,5 -yformat .1e -e 'solid,solid' -lw 4 -step 1
 
 .. figure:: figs/plopm_hello_world.png
+
+All previous commands can be executed from the main repository location as (`docs_hello_world.sh <https://github.com/OPM/pyopmspe11/blob/main/tests/scripts/docs_hello_world.sh>`_):
+
+.. code-block:: bash
+
+    . ./tests/scripts/docs_hello_world.sh
 
 .. tip::
 
@@ -91,6 +99,12 @@ saving the configuration file as spe11b_11-levels.toml, running them (we add the
 
 .. image:: ./figs/11_levels_dz_i,1,k_t5.png
 
+All previous commands can be executed from the main repository location as (`docs_cp_grids.sh <https://github.com/OPM/pyopmspe11/blob/main/tests/scripts/docs_cp_grids.sh>`_):
+
+.. code-block:: bash
+
+    . ./tests/scripts/docs_cp_grids.sh
+
 ======================
 Localized lower domain
 ======================
@@ -102,5 +116,11 @@ The flag **-n lower** results in the generation of files for the lower part (low
     plopm -i lower_domain/LOWER_DOMAIN -s ,14, -y '[1200,700]' -z 0 -grid 'black,1e-2' -t "SPE11C Cartesian lower domain (y = 2500 m)" -clabel "Facies" -c '161;163;160 101;64;147 81;124;66 181;73;57 193;127;97 127;148;191 193;147;56' -cticks '[7, 6, 5, 4, 3, 2, 1]' -v 'pvtnum - 1 - satnum'
 
 .. image:: ./figs/lower_domain_pvtnum-1-satnum_i,14,k_t5.png
+
+All previous commands can be executed from the main repository location as (`docs_localized_lower_domain.sh <https://github.com/OPM/pyopmspe11/blob/main/tests/scripts/docs_localized_lower_domain.sh>`_):
+
+.. code-block:: bash
+
+    . ./tests/scripts/docs_localized_lower_domain.sh
 
 See the :doc:`convergence <./convergence>` for using the localized domain in the SPE11B corner-point grid case.
