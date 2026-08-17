@@ -50,6 +50,7 @@ printf '%s\n' "$files" | while IFS= read -r f; do
     [ -z "$f" ] && continue
     if [ ! -f "$f" ]; then
         echo "$f" >> "$missing_file"
+        missing=$((missing + 1))
     fi
 done
 
