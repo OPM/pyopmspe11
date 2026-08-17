@@ -20,9 +20,9 @@ def main(argv: list[str] | None = None) -> None:
     args = load_parser(argv)
     check_cmdargs(args)
 
-    if args["compare"]:
+    if args.compare:
         print("\nCompare: Generating common plots to compare results, please wait.")
-        plot_results({"compare": args["compare"]})
+        plot_results({"compare": args.compare})
         print(f"\nThe figures have been written to {os.getcwd()}/compare/")
         return
 
@@ -60,7 +60,7 @@ def make_dir(path: str) -> None:
         subprocess.run(["mkdir", "-p", path], check=True)
 
 
-def load_parser(argv: list[str] | None) -> dict:
+def load_parser(argv: list[str] | None) -> argparse.Namespace:
     """CLI arguments"""
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -167,10 +167,10 @@ def load_parser(argv: list[str] | None) -> dict:
         default="",
         help="Region to model (the default '' means the whole system)",
     )
-    return vars(parser.parse_known_args(argv)[0])
+    return parser.parse_args(argv)
 
 
-def check_cmdargs(cmdargs: dict[str, str]) -> None:
+def check_cmdargs(cmdargs: argparse.Namespace) -> None:
     """Validate command-line arguments and incompatible operations.
 
     The checks cover configuration and output names, spatial resolution,
@@ -187,7 +187,7 @@ def check_cmdargs(cmdargs: dict[str, str]) -> None:
     SystemExit
         If an argument is invalid or an incompatible combination is requested.
     """
-    input_file = cmdargs["input"]
+    input_file = cmdargs.input
     if not input_file:
         print("\nInvalid value for '-i', the input file cannot be empty.\n")
         raise SystemExit(1)
@@ -197,10 +197,10 @@ def check_cmdargs(cmdargs: dict[str, str]) -> None:
             "valid extensions are .toml or .txt.\n"
         )
         raise SystemExit(1)
-    if not cmdargs["output"]:
+    if not cmdargs.output:
         print("\nInvalid value for '-o', the output folder cannot be empty.\n")
         raise SystemExit(1)
-    resolution = cmdargs["resolution"]
+    resolution = cmdargs.resolution
     try:
         resolution_values = [int(value.strip()) for value in resolution.split(",")]
     except ValueError:
@@ -211,7 +211,7 @@ def check_cmdargs(cmdargs: dict[str, str]) -> None:
             "integers separated by commas, e.g., '-r 8,1,5'.\n"
         )
         raise SystemExit(1)
-    time = cmdargs["time"]
+    time = cmdargs.time
     try:
         time_values = [float(value.strip()) for value in time.split(",")]
     except ValueError:
@@ -222,7 +222,7 @@ def check_cmdargs(cmdargs: dict[str, str]) -> None:
             "separated by commas.\n"
         )
         raise SystemExit(1)
-    write = cmdargs["write"]
+    write = cmdargs.write
     try:
         write_value = float(write)
     except ValueError:
@@ -230,7 +230,7 @@ def check_cmdargs(cmdargs: dict[str, str]) -> None:
     if write_value <= 0:
         print(f"\nInvalid value '-w {write}', expected a positive number.\n")
         raise SystemExit(1)
-    mode = cmdargs["mode"]
+    mode = cmdargs.mode
     has_data = mode == "all" or "data" in mode
     data_options = {
         "-g": ("generate", "performance_sparse"),
@@ -242,7 +242,7 @@ def check_cmdargs(cmdargs: dict[str, str]) -> None:
         invalid_options = [
             option
             for option, (name, default) in data_options.items()
-            if cmdargs[name] != default
+            if getattr(cmdargs, name) != default
         ]
         if invalid_options:
             print(
@@ -251,7 +251,7 @@ def check_cmdargs(cmdargs: dict[str, str]) -> None:
                 "data.\n"
             )
             raise SystemExit(1)
-    compare = cmdargs["compare"]
+    compare = cmdargs.compare
     if compare:
         compare_options = {
             "-i": ("input", "input.toml"),
@@ -267,7 +267,7 @@ def check_cmdargs(cmdargs: dict[str, str]) -> None:
         invalid_options = [
             option
             for option, (name, default) in compare_options.items()
-            if cmdargs[name] != default
+            if getattr(cmdargs, name) != default
         ]
         if invalid_options:
             print(
