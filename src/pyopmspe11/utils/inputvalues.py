@@ -4,6 +4,7 @@
 
 """Utility functions to set required input values for pyopmspe11."""
 
+import argparse
 import csv
 import os
 import subprocess
@@ -18,7 +19,7 @@ import numpy as np
 from pyopmspe11.config.config import Config
 
 
-def process_input(cli: dict) -> Config:
+def process_input(cli: argparse.Namespace) -> Config:
     """Process configuration input.
 
     The function constructs a ``Config`` object from CLI and file input, then
@@ -40,29 +41,31 @@ def process_input(cli: dict) -> Config:
         + "the simulations. Please see the configuration files in the examples and "
         + "online documentation, and update your configuration file accordingly.\n"
     )
-    if cli["input"].endswith(".toml"):
-        with open(cli["input"], "rb") as f:
-            cfg_file = tomllib.load(f)
+    if cli.input.lower().endswith(".toml"):
+        with open(cli.input, "rb") as file:
+            cfg_file = tomllib.load(file)
     else:
-        lines = []
-        with open(cli["input"], "r", encoding="utf8") as file:
+        with open(cli.input, "r", encoding="utf8") as file:
             lines = list(csv.reader(file, delimiter="#"))
         cfg_file = load_config_txt(lines)
     cfg = Config(
-        fol=os.path.abspath(cli["output"]),
-        generate=cli["generate"],
-        mode=cli["mode"],
-        resolution=cli["resolution"],
-        time_data=cli["time"],
-        dt_data=float(cli["write"]),
-        lower=cli["neighbourhood"],
-        subfolders=cli["subfolders"],
+        fol=os.path.abspath(cli.output),
+        generate=cli.generate,
+        mode=cli.mode,
+        resolution=cli.resolution,
+        time_data=cli.time,
+        dt_data=float(cli.write),
+        lower=cli.neighbourhood,
+        subfolders=cli.subfolders,
         **cfg_file,
     )
     time = setcaseproperties(cfg)
     postprocesstoml(cfg, time, msg1, msg2)
     for value in cfg.flow.split():
-        if "--enable-tuning" in value and value[16:] in ["true", "True", "1"]:
+        if value.lower() in {
+            "--enable-tuning=true",
+            "--enable-tuning=1",
+        }:
             cfg.tuning = True
             break
 
